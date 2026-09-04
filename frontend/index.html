@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Piket SMK MedikaCom</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="login-body">
+
+<div class="container-login">
+  <img src="https://i.imgur.com/gGZSCOY.png" class="logo" alt="Logo" />
+  <h2>Portal Presensi Piket</h2><br>
+
+  <input type="text" id="idPiket" class="login-input" placeholder="Username" />
+  <input type="password" id="kodeAkses" class="login-input" placeholder="Password" />
+
+  <button onclick="login()" class="login-btn">Login</button>
+
+  <div class="error-msg" id="errorMsg"></div>
+</div>
+
+<div id="loadingOverlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <p id="loadingText">Memproses...</p>
+  </div>
+</div>
+
+<script src="js/auth.js"></script>
+</body>
+</html>

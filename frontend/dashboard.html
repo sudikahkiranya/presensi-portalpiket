@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Form Piket</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="toastContainer"></div>
+
+<div id="loadingOverlay">
+  <div>
+    <div class="spinner"></div>
+    <p id="loadingText" style="margin-top:12px; font-weight:500;">Memproses...</p>
+  </div>
+</div>
+
+<main>
+  <div class="header-box-kelas">
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <h2 style="margin: 0; font-size: 18px;">Portal Presensi Piket</h2>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div style="text-align: right;">
+        <div style="font-weight: 600; font-size: 13px;" id="petugasPiket">👤 -</div>
+      </div>
+      <button onclick="logout()" class="btn-logout">Logout</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="filter-wrapper">
+      <div class="filter-group">
+        <div class="filter-item">
+          <label for="filterKelas">Kelas:</label>
+          <select id="filterKelas" onchange="applyFilter()"></select>
+        </div>
+        <div class="filter-item">
+          <label for="filterTingkat">Tingkat:</label>
+          <select id="filterTingkat" onchange="applyFilter()">
+            <option value="">Semua</option>
+            <option value="X">X</option>
+            <option value="XI">XI</option>
+            <option value="XII">XII</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label for="filterStatus">Status:</label>
+          <select id="filterStatus" onchange="applyFilter()">
+            <option value="">Semua</option>
+            <option value="Kosong">Kosong</option>
+            <option value="Tepat Waktu">Tepat Waktu</option>
+            <option value="Terlambat">Terlambat</option>
+            <option value="Sakit">Sakit</option>
+            <option value="Izin">Izin</option>
+            <option value="Alpa">Alpa</option>
+          </select>
+        </div>
+        <div class="filter-item">
+          <label for="filterNama">Nama:</label>
+          <input type="text" id="filterNama" placeholder="Cari nama..." oninput="applyFilter()" />
+        </div>
+      </div>
+      <div class="jumlah-data-box">
+        <label>Total</label>
+        <span id="jumlahData">0</span>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table>
+        <thead>
+          <tr>
+            <th>Nama Siswa</th>
+            <th>Kelas</th>
+            <th>Tingkat</th>
+            <th>Scan Masuk</th>
+            <th>Status Masuk</th>
+            <th>Scan Pulang</th>
+          </tr>
+        </thead>
+        <tbody id="tbodySiswa">
+          <tr><td colspan="6">Memuat data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="js/dashboard.js"></script>
+</body>
+</html>
