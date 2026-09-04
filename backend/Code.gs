@@ -76,21 +76,25 @@ function doGet(e) {
 ========================================================= */
 
 function verifikasiLoginPiket(idInput, kodeInput) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("User");
-  if (!sheet) return { success: false, message: "Sheet User tidak ditemukan." };
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("user_piket");
+  if (!sheet) return { success: false, message: "Sheet user_piket tidak ditemukan." };
 
   const data = sheet.getDataRange().getValues();
-  const hariIni = Utilities.formatDate(new Date(), "GMT+7", "EEEE");
+  
+  const hariList = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  const now = new Date();
+  const hariIni = hariList[now.getDay()];
 
   for (let i = 1; i < data.length; i++) {
-    const hari = (data[i][0] || "").toString().trim();
+    const hari = (data[i][0] || "").toString().trim().toLowerCase();
     const nama = (data[i][1] || "").toString().trim();
     const id = (data[i][2] || "").toString().trim().toUpperCase();
     const kode = (data[i][3] || "").toString().trim();
     const role = (data[i][4] || "").toString().trim();
 
+    // 💡 Mengecek nama hari ATAU "setiap hari"
     if (
-      (hari === hariIni || hari.toLowerCase() === "everyday") &&
+      (hari === hariIni.toLowerCase() || hari === "setiap hari") &&
       id === idInput.toUpperCase() &&
       kode === kodeInput
     ) {
