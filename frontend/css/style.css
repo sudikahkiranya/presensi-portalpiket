@@ -1,4 +1,10 @@
-/* RESET & BASE */
+/* ==========================================
+   1. RESET & BASE STYLES
+   ========================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 html, body {
   height: 100%;
   margin: 0;
@@ -6,6 +12,9 @@ html, body {
   font-family: 'Poppins', sans-serif;
 }
 
+/* ==========================================
+   2. LOGIN PAGE STYLING
+   ========================================== */
 body.login-body {
   min-height: 100vh;
   display: flex;
@@ -17,7 +26,6 @@ body.login-body {
   background-size: cover;
 }
 
-/* LOGIN CARD */
 .container-login {
   width: 100%;
   max-width: 380px;
@@ -28,7 +36,6 @@ body.login-body {
   border: 1px solid #e3eff2;
   box-shadow: 0 10px 25px rgba(0,0,0,0.08);
   text-align: center;
-  box-sizing: border-box;
 }
 
 .logo {
@@ -37,17 +44,15 @@ body.login-body {
   max-width: 160px;
 }
 
-h2 {
+.container-login h2 {
   margin: 0;
-  font-size: 22px;
+  font-size: 20px;
   font-weight: 600;
   color: #1f2d2f;
 }
 
-/* INPUTS & BUTTONS */
 .login-input {
   width: 100%;
-  box-sizing: border-box;
   padding: 14px 18px;
   margin-bottom: 16px;
   border-radius: 12px;
@@ -138,7 +143,9 @@ h2 {
   to { transform: rotate(360deg); }
 }
 
-/* DASHBOARD LAYOUT */
+/* ==========================================
+   3. DASHBOARD PAGE STYLING
+   ========================================== */
 body.dashboard-body {
   background-color: #f4f7f8;
   color: #2c3e50;
@@ -175,6 +182,7 @@ body.dashboard-body {
 .brand h2 {
   font-size: 18px;
   color: #006D77;
+  margin: 0;
 }
 
 .user-info {
