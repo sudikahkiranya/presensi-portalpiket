@@ -1,0 +1,139 @@
+/* RESET & BASE */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+}
+
+body.login-body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #d6e6ea;
+  background: linear-gradient(rgba(214, 230, 234, 0.8), rgba(214, 230, 234, 0.8)), 
+              url('https://i.imgur.com/hqZ98He.jpeg') no-repeat center center;
+  background-size: cover;
+}
+
+/* LOGIN CARD */
+.container-login {
+  width: 100%;
+  max-width: 380px;
+  background: white;
+  padding: 40px 30px;
+  margin: 20px;
+  border-radius: 20px;
+  border: 1px solid #e3eff2;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.logo {
+  display: block;
+  margin: 0 auto 20px auto;
+  max-width: 160px;
+}
+
+h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: #1f2d2f;
+}
+
+/* INPUTS & BUTTONS */
+.login-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 18px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  border: 1px solid #cfe3e7;
+  background: #f1f7f8;
+  text-align: center;
+  font-size: 15px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.3s ease;
+}
+
+.login-input:focus {
+  border-color: #006D77;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(0,109,119,0.1);
+}
+
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background-color: #006D77;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0,109,119,0.2);
+  margin-top: 10px;
+}
+
+.login-btn:hover {
+  background-color: #005B63;
+  transform: translateY(-2px);
+}
+
+.error-msg {
+  color: #e53935;
+  background: #ffebee;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-top: 20px;
+  display: none;
+}
+
+/* OVERLAY LOADING */
+#loadingOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+#loadingOverlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.loading-box {
+  background: white;
+  padding: 24px 30px;
+  border-radius: 14px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.spinner {
+  border: 4px solid #e3eff2;
+  border-top: 4px solid #006D77;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  margin: auto;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
