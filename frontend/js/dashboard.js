@@ -504,3 +504,47 @@ function cetakRekap() {
     showToast("Fitur rekap siap diproses via Apps Script", "info");
   }, 1200);
 }
+
+/**
+ * Konversi Dinamis gabungan id_rombel & tingkat
+ * Contoh: idRombel="AKN-A26", tingkat="X" -> Output: "AKN X-A"
+ */
+function formatNamaKelas(idRombel, tingkat) {
+  if (!idRombel || typeof idRombel !== "string") return "-";
+
+  const parts = idRombel.trim().split("-");
+  const jurusan = parts[0] || "";
+  const subKelas = parts[1] ? parts[1].replace(/[0-9]/g, "") : ""; 
+  const tkt = tingkat || "";
+
+  if (jurusan && tkt && subKelas) {
+    return `${jurusan.toUpperCase()} ${tkt.toUpperCase()}-${subKelas.toUpperCase()}`;
+  }
+
+  return idRombel;
+}
+
+// 💡 Update pada Rendering Baris Tabel
+// Di dalam loop applyFilter():
+const kelasTd = document.createElement("td"); 
+kelasTd.textContent = formatNamaKelas(s.kelas, s.tingkat);
+
+// 💡 Update pada Populating Dropdown Filter Kelas
+function populateFilterKelas(data) {
+  const filterKelas = document.getElementById("filterKelas");
+  filterKelas.innerHTML = `<option value="">Semua</option>`;
+  
+  const kelasMap = new Map();
+  data.forEach(s => {
+    if (s.kelas && !kelasMap.has(s.kelas)) {
+      kelasMap.set(s.kelas, formatNamaKelas(s.kelas, s.tingkat));
+    }
+  });
+
+  [...kelasMap.keys()].sort().forEach(idRombel => {
+    const opt = document.createElement("option");
+    opt.value = idRombel; 
+    opt.textContent = kelasMap.get(idRombel); 
+    filterKelas.appendChild(opt);
+  });
+}
