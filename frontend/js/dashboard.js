@@ -1,76 +1,93 @@
-const API_URL = "https://script.google.com/macros/s/AKfycbx_GANTI_DENGAN_DEPLOYMENT_ID_ANDA/exec";
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Presensi Piket</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body class="dashboard-body">
 
-function showLoading(text = "Memproses...") {
-  const el = document.getElementById("loadingOverlay");
-  const label = document.getElementById("loadingText");
-  if (label) label.textContent = text;
-  if (el) el.classList.add("active");
-}
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="brand">
+        <img src="https://i.imgur.com/gGZSCOY.png" alt="Logo" class="nav-logo" />
+        <h2>Portal Presensi Piket</h2>
+      </div>
+      <div class="user-info">
+        <span id="userName">👤 -</span>
+        <button onclick="logout()" class="logout-btn">Logout</button>
+      </div>
+    </div>
+  </nav>
 
-function hideLoading() {
-  const el = document.getElementById("loadingOverlay");
-  if (el) el.classList.remove("active");
-}
+  <main class="main-container">
+    <div class="filter-card">
+      <div class="filter-grid">
+        <div class="filter-group">
+          <label for="filterKelas">Kelas</label>
+          <select id="filterKelas" onchange="applyFilters()">
+            <option value="">Semua Kelas</option>
+          </select>
+        </div>
 
-window.onload = function () {
-  const savedID = localStorage.getItem("piketID");
-  const savedNama = localStorage.getItem("namaPetugas");
-  const savedDate = localStorage.getItem("loginDate");
-  const today = new Date().toLocaleDateString("id-ID");
+        <div class="filter-group">
+          <label for="filterTingkat">Tingkat</label>
+          <select id="filterTingkat" onchange="applyFilters()">
+            <option value="Semua">Semua Tingkat</option>
+            <option value="X">X</option>
+            <option value="XI">XI</option>
+            <option value="XII">XII</option>
+          </select>
+        </div>
 
-  if (savedDate !== today) {
-    localStorage.clear();
-    return;
-  }
+        <div class="filter-group">
+          <label for="filterStatus">Status</label>
+          <select id="filterStatus" onchange="applyFilters()">
+            <option value="Semua">Semua Status</option>
+            <option value="Hadir">Hadir</option>
+            <option value="Sakit">Sakit</option>
+            <option value="Izin">Izin</option>
+            <option value="Alpha">Alpha</option>
+          </select>
+        </div>
 
-  if (savedID && savedNama) {
-    window.location.href = "dashboard.html";
-  }
-};
+        <div class="filter-group">
+          <label for="searchNama">Cari Nama</label>
+          <input type="text" id="searchNama" placeholder="Ketik nama siswa..." onkeyup="applyFilters()" />
+        </div>
+      </div>
 
-async function login() {
-  const id = document.getElementById("idPiket").value.trim();
-  const kode = document.getElementById("kodeAkses").value.trim();
-  const errorMsg = document.getElementById("errorMsg");
+      <div class="stats-bar">
+        <span>Total Data: <strong id="totalCount">0</strong> siswa</span>
+      </div>
+    </div>
 
-  errorMsg.style.display = "none";
-  errorMsg.textContent = "";
+    <div class="table-card">
+      <div class="table-responsive">
+        <table id="presensiTable">
+          <thead>
+            <tr>
+              <th>Nama Siswa</th>
+              <th>Kelas</th>
+              <th>Tingkat</th>
+              <th>Scan Masuk</th>
+              <th>Status Masuk</th>
+              <th>Scan Pulang</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr>
+              <td colspan="6" class="text-center">Memuat data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
 
-  if (!id || !kode) {
-    errorMsg.textContent = "Username dan Password isi terlebih dahulu.";
-    errorMsg.style.display = "block";
-    return;
-  }
-
-  showLoading("Login...");
-
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({
-        action: "login",
-        idInput: id,
-        kodeInput: kode
-      })
-    });
-
-    const result = await response.json();
-
-    if (result.success) {
-      localStorage.setItem("piketID", id);
-      localStorage.setItem("namaPetugas", result.nama);
-      localStorage.setItem("loginDate", new Date().toLocaleDateString("id-ID"));
-      localStorage.setItem("role", result.role);
-
-      window.location.href = "dashboard.html";
-    } else {
-      hideLoading();
-      errorMsg.textContent = "Username/Password salah atau tidak diizinkan.";
-      errorMsg.style.display = "block";
-    }
-  } catch (err) {
-    hideLoading();
-    errorMsg.textContent = "Gagal terhubung ke server.";
-    errorMsg.style.display = "block";
-  }
-}
+  <script src="./js/dashboard.js"></script>
+</body>
+</html>
