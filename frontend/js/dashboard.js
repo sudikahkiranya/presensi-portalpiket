@@ -97,11 +97,96 @@ async function fetchData(selectedDate) {
 function renderTable(data) {
   dataSiswa = data;
   populateFilterKelas(data);
+  populateFilterStatus(data); // 💡 Populate status secara dinamis
+  
   document.getElementById("filterKelas").value = lastFilter.kelas || "";
   document.getElementById("filterTingkat").value = lastFilter.tingkat || "";
   document.getElementById("filterStatus").value = lastFilter.status || "";
+  
   applyFilter();
   hideLoading();
+}
+
+/**
+ * POPULATE DROPDOWN KELAS DINAMIS
+ */
+function populateFilterKelas(data) {
+  const kelasSet = new Set(data.map(s => s.kelas).filter(Boolean));
+  const filterKelas = document.getElementById("filterKelas");
+  filterKelas.innerHTML = `<option value="">Semua</option>`;
+  [...kelasSet].sort().forEach(kelas => {
+    const opt = document.createElement("option");
+    opt.value = kelas;
+    opt.textContent = kelas;
+    filterKelas.appendChild(opt);
+  });
+}
+
+/**
+ * 💡 POPULATE DROPDOWN STATUS MASUK DINAMIS
+ */
+function populateFilterStatus(data) {
+  const filterStatus = document.getElementById("filterStatus");
+  const currentVal = filterStatus.value;
+  
+  // Ambil semua status unique yang ada di data
+  const statusSet = new Set(data.map(s => s.statusMasuk).filter(Boolean));
+  
+  // Urutan standar sebagai acuan jika ada di data
+  const defaultOrder = [
+    "Tepat Waktu", "Terlambat", "Sangat Terlambat", 
+    "Sangat Terlambat Sekali", "Sakit", "Izin", 
+    "Alpa", "Hadir Tidak Presensi", "Libur"
+  ];
+
+  // Gabungkan status dari data dengan urutan standar
+  const sortedStatus = [...statusSet].sort((a, b) => {
+    let idxA = defaultOrder.indexOf(a);
+    let idxB = defaultOrder.indexOf(b);
+    if (idxA === -1) idxA = 99;
+    if (idxB === -1) idxB = 99;
+    return idxA - idxB;
+  });
+
+  filterStatus.innerHTML = `
+    <option value="">Semua</option>
+    <option value="Kosong">Kosong</option>
+  `;
+
+  sortedStatus.forEach(st => {
+    const opt = document.createElement("option");
+    opt.value = st;
+    opt.textContent = st;
+    filterStatus.appendChild(opt);
+  });
+
+  filterStatus.value = currentVal;
+}
+
+/**
+ * 💡 DROPDOWN EDIT STATUS DALAM TABEL (DINAMIS & LENGKAP)
+ */
+function getDropdownHTML(index, selected, rowIndex) {
+  // Opsi pilihan status saat petugas/admin mengubah status siswa
+  const opsiStatus = [
+    "", 
+    "Tepat Waktu", 
+    "Terlambat", 
+    "Sangat Terlambat", 
+    "Sangat Terlambat Sekali", 
+    "Sakit", 
+    "Izin", 
+    "Alpa", 
+    "Hadir Tidak Presensi", 
+    "Libur"
+  ];
+
+  return `
+    <select name="statusMasuk" id="statusSelect-${index}">
+      ${opsiStatus.map(o => `<option value="${o}" ${o === selected ? "selected" : ""}>${o || "-- Pilih Status --"}</option>`).join('')}
+    </select>
+    <input type="hidden" name="rowIndex" value="${rowIndex}">
+  `;
 }
 
 function populateFilterKelas(data) {
