@@ -453,11 +453,15 @@ function getStatusClass(status) {
   if (!status) return "status-kosong";
   const s = status.toLowerCase();
   if (s.includes("tepat waktu")) return "status-hadir";
+  if (s.includes("sangat terlambat sekali")) return "status-terlambat-ekstrem";
+  if (s.includes("sangat terlambat")) return "status-terlambat-berat";
   if (s.includes("terlambat")) return "status-terlambat";
+  if (s.includes("hadir tidak presensi")) return "status-htp";
   if (s.includes("sakit")) return "status-sakit";
   if (s.includes("izin")) return "status-izin";
   if (s.includes("alpa")) return "status-alpa";
   if (s.includes("libur")) return "status-libur";
+  if (s.includes("prakerin") || s.includes("pkl")) return "status-prakerin";
   return "";
 }
 

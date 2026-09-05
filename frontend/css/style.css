@@ -239,9 +239,9 @@ th { background: #c2e0e5 !important; color: #00383e !important; font-size: 12px;
 td { padding: 11px 10px; border-bottom: 1px solid #e3eff2 !important; text-align: center; color: #1f2d2f; }
 tr:nth-child(even) td { background-color: #f8fafb; }
 
-.status { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; white-space: nowrap; }
 .status-hadir { background: #d1e7dd; color: #0f5132; }
 .status-terlambat { background: #fff3cd; color: #664d03; }
+.status-terlambat-berat { background: #ffe69c; color: #856404; }
 .status-terlambat-ekstrem { background: #f8d7da; color: #842029; }
 .status-sakit { background: #cff4fc; color: #055160; }
 .status-izin { background: #e2e3e5; color: #41464b; }
@@ -250,6 +250,7 @@ tr:nth-child(even) td { background-color: #f8fafb; }
 .status-htp { background: #fef3c7; color: #92400e; }
 .status-kosong { background: #fee2e2; color: #991b1b; }
 .status-kosong-cell { background: #fff1f1 !important; }
+.status-prakerin { background: #e0e7ff; color: #3730a3; }
 
 .table-footer { display: flex; justify-content: center; align-items: center; margin-top: 20px; }
 #pagination button { background: #edf6f8 !important; color: #004f56 !important; border: 1px solid #bcd6db !important; margin: 2px; padding: 6px 12px !important; border-radius: 8px !important; font-size: 13px !important; height: auto !important; }
