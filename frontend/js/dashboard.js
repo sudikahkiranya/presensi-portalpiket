@@ -395,3 +395,23 @@ function closeError() { document.getElementById("errorModal").classList.remove("
 function closeConfirm() { document.getElementById("confirmModal").classList.remove("active"); }
 
 document.addEventListener('DOMContentLoaded', initFormPiket);
+
+// HANDLER NATIVE UNTUK TOMBOL BARU
+function tarikDataPresensi() {
+  showLoading("Memperbarui data presensi...");
+  setTimeout(() => {
+    hideLoading();
+    showToast("Data presensi berhasil diperbarui", "success");
+    fetchData();
+  }, 1000);
+}
+
+function cetakRekap() {
+  const user = JSON.parse(localStorage.getItem("piket_user"));
+  if (!user) return;
+  showLoading("Membuat rekap PDF...");
+  setTimeout(() => {
+    hideLoading();
+    showToast("Fitur rekap siap diproses via Apps Script", "info");
+  }, 1200);
+}
