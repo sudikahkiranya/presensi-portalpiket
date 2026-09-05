@@ -392,28 +392,98 @@ function getDropdownHTML(index, selected, rowIndex) {
   `;
 }
 
+let syncTimer = null; // Timer untuk Debounce
+
+/**
+ * 💡 Fungsi Utama: Catat Perubahan + Trigger Debounced Auto-Sync
+ */
 function processStatusChange(rowIndex, newValue) {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   const piketID = user ? user.nama : "Petugas";
   const timestamp = new Date().toISOString();
 
+  // 1. Update data di memori aplikasi
   const targetSiswa = dataSiswa.find(s => Number(s.rowIndex) === Number(rowIndex));
   if (targetSiswa) targetSiswa.statusMasuk = newValue;
 
+  // 2. Simpan / Perbarui Antrean di LocalStorage
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   const existingIdx = queue.findIndex(item => Number(item.rowIndex) === Number(rowIndex));
 
   if (existingIdx > -1) {
     queue[existingIdx].statusMasuk = newValue;
     queue[existingIdx].timestamp = timestamp;
-    queue[existingIdx].sent = false;
   } else {
-    queue.push({ rowIndex: parseInt(rowIndex, 10), statusMasuk: newValue, piketID: piketID, timestamp: timestamp, sent: false });
+    queue.push({
+      rowIndex: parseInt(rowIndex, 10),
+      statusMasuk: newValue,
+      piketID: piketID,
+      timestamp: timestamp
+    });
   }
 
   localStorage.setItem("piket_pending_updates", JSON.stringify(queue));
   updatePendingBadge();
+
+  // 3. ⚡ DEBOUNCE AUTO-SYNC: Tunggu 1.5 detik setelah editan terakhir
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    triggerAutoSync();
+  }, 1500); 
 }
+
+/**
+ * ⚡ Eksekutor Auto-Sync ke Server
+ */
+async function triggerAutoSync() {
+  // Jika offline, batalkan auto-sync (data tetap aman di LocalStorage)
+  if (!navigator.onLine) {
+    showToast("Offline: Perubahan tersimpan lokal", "info", 2000);
+    return;
+  }
+
+  let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
+  if (queue.length === 0) return;
+
+  // Ubah status tombol jadi indikator Syncing
+  const saveBtn = document.querySelector("#absenForm button[type='submit']");
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = `Syncing (${queue.length})...`;
+  }
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "simpanStatusMasuk", payload: queue })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      // Clear queue setelah berhasil tersimpan di Google Sheets
+      localStorage.setItem("piket_pending_updates", "[]");
+      updatePendingBadge();
+      showToast("Data tersimpan otomatis ke server", "success", 2000);
+    }
+  } catch (err) {
+    console.warn("[Auto-Sync Background] Server sibuk atau jaringan terputus. Data aman di LocalStorage.");
+    updatePendingBadge();
+  }
+}
+
+/**
+ * 🌐 EVENT LISTENERS: Auto-Sync Saat Koneksi Internet Kembali
+ */
+window.addEventListener("online", () => {
+  showToast("Koneksi terhubung kembali. Menyingkronkan data...", "info");
+  triggerAutoSync();
+});
+
+window.addEventListener("offline", () => {
+  showToast("Koneksi terputus. Mode Offline aktif.", "error");
+});
 
 function updatePendingBadge() {
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
