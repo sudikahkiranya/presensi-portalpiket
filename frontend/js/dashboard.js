@@ -111,13 +111,42 @@ function renderTable(data) {
  * POPULATE DROPDOWN KELAS DINAMIS
  */
 function populateFilterKelas(data) {
-  const kelasSet = new Set(data.map(s => s.kelas).filter(Boolean));
   const filterKelas = document.getElementById("filterKelas");
   filterKelas.innerHTML = `<option value="">Semua</option>`;
-  [...kelasSet].sort().forEach(kelas => {
+  
+  const kelasMap = new Map();
+  data.forEach(s => {
+    if (s.kelas && !kelasMap.has(s.kelas)) {
+      kelasMap.set(s.kelas, formatNamaKelas(s.kelas, s.tingkat));
+    }
+  });
+
+  // Bobot urutan tingkat (X = 1, XI = 2, XII = 3)
+  const getWeight = (label) => {
+    if (label.includes(" X-") || label.endsWith(" X")) return 1;
+    if (label.includes(" XI-") || label.endsWith(" XI")) return 2;
+    if (label.includes(" XII-") || label.endsWith(" XII")) return 3;
+    return 99;
+  };
+
+  // Sort berdasarkan Jurusan dulu, lalu Urutan Tingkat (X -> XI -> XII)
+  const sortedKeys = [...kelasMap.keys()].sort((a, b) => {
+    const labelA = kelasMap.get(a);
+    const labelB = kelasMap.get(b);
+    
+    const weightA = getWeight(labelA);
+    const weightB = getWeight(labelB);
+
+    if (weightA !== weightB) {
+      return weightA - weightB; // Urutkan X -> XI -> XII
+    }
+    return labelA.localeCompare(labelB); // Urutkan nama sub-kelas/jurusan
+  });
+
+  sortedKeys.forEach(idRombel => {
     const opt = document.createElement("option");
-    opt.value = kelas;
-    opt.textContent = kelas;
+    opt.value = idRombel; 
+    opt.textContent = kelasMap.get(idRombel); 
     filterKelas.appendChild(opt);
   });
 }
@@ -236,7 +265,7 @@ function applyFilter() {
   pageData.forEach((s, idx) => {
     const tr = document.createElement("tr");
     const namaTd = document.createElement("td"); namaTd.textContent = s.nama || "-";
-    const kelasTd = document.createElement("td"); kelasTd.textContent = s.kelas || "-";
+    const kelasTd = document.createElement("td"); kelasTd.textContent = formatNamaKelas(s.kelas, s.tingkat); // Mengubah AKN-A26 + X jadi "AKN X-A"
     const tingkatTd = document.createElement("td"); tingkatTd.textContent = s.tingkat || "-";
     const jamMasukTd = document.createElement("td"); jamMasukTd.textContent = s.jamMasuk || "-";
     const jamPulangTd = document.createElement("td"); jamPulangTd.textContent = s.jamPulang || "-";
@@ -523,11 +552,6 @@ function formatNamaKelas(idRombel, tingkat) {
 
   return idRombel;
 }
-
-// 💡 Update pada Rendering Baris Tabel
-// Di dalam loop applyFilter():
-const kelasTd = document.createElement("td"); 
-kelasTd.textContent = formatNamaKelas(s.kelas, s.tingkat);
 
 // 💡 Update pada Populating Dropdown Filter Kelas
 function populateFilterKelas(data) {
