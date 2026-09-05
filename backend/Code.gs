@@ -76,21 +76,25 @@ function doGet(e) {
 ========================================================= */
 
 function verifikasiLoginPiket(idInput, kodeInput) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("User");
-  if (!sheet) return { success: false, message: "Sheet User tidak ditemukan." };
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("user_piket");
+  if (!sheet) return { success: false, message: "Sheet user_piket tidak ditemukan." };
 
   const data = sheet.getDataRange().getValues();
-  const hariIni = Utilities.formatDate(new Date(), "GMT+7", "EEEE");
+  
+  const hariList = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  const now = new Date();
+  const hariIni = hariList[now.getDay()];
 
   for (let i = 1; i < data.length; i++) {
-    const hari = (data[i][0] || "").toString().trim();
+    const hari = (data[i][0] || "").toString().trim().toLowerCase();
     const nama = (data[i][1] || "").toString().trim();
     const id = (data[i][2] || "").toString().trim().toUpperCase();
     const kode = (data[i][3] || "").toString().trim();
     const role = (data[i][4] || "").toString().trim();
 
+    // 💡 Mengecek nama hari ATAU "setiap hari"
     if (
-      (hari === hariIni || hari.toLowerCase() === "everyday") &&
+      (hari === hariIni.toLowerCase() || hari === "setiap hari") &&
       id === idInput.toUpperCase() &&
       kode === kodeInput
     ) {
@@ -100,8 +104,21 @@ function verifikasiLoginPiket(idInput, kodeInput) {
   return { success: false };
 }
 
+/**
+ * HELPER: MENGAMBIL SPREADSHEET PRESENSI TA YANG AKTIF
+ */
+function getActivePresensiSpreadsheet() {
+  const activeSemester = getActiveSemesterConfig();
+  if (!activeSemester || !activeSemester.file_id_spreadsheet) {
+    throw new Error("⚠️ Tidak ada Semester Aktif atau File ID Spreadsheet belum di-set di DB Master.");
+  }
+  return SpreadsheetApp.openById(activeSemester.file_id_spreadsheet);
+}
+
 function getSiswaHariIni() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("MasterPresensi");
+  // 💡 Buka Spreadsheet TA Aktif via OpenById
+  const ss = getActivePresensiSpreadsheet();
+  const sheet = ss.getSheetByName("master_presensi"); // Sesuaikan nama sheet presensi di TA
   if (!sheet) return [];
 
   const now = new Date();
@@ -118,7 +135,7 @@ function getSiswaHariIni() {
   const endRow = results[results.length - 1].getRow();
   const totalRows = (endRow - startRow) + 1;
 
-  const chunkData = sheet.getRange(startRow, 1, totalRows, 9).getDisplayValues();
+  const chunkData = sheet.getRange(startRow, 1, totalRows, 10).getDisplayValues();
   const resultData = [];
 
   for (let i = 0; i < chunkData.length; i++) {
@@ -129,10 +146,10 @@ function getSiswaHariIni() {
         nama: row[2],
         kelas: row[3],
         tingkat: row[4],
-        jamMasuk: row[5],
-        statusMasuk: row[6] || "",
-        jamPulang: row[7],
-        statusPulang: row[8] || "",
+        jamMasuk: row[6],
+        statusMasuk: row[7] || "",
+        jamPulang: row[8],
+        statusPulang: row[9] || "",
         tanggal: todayStr
       });
     }
@@ -141,29 +158,16 @@ function getSiswaHariIni() {
 }
 
 function getSiswaByTanggal(tanggal) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("MasterPresensi");
+  // 💡 Buka Spreadsheet TA Aktif via OpenById
+  const ss = getActivePresensiSpreadsheet();
+  const sheet = ss.getSheetByName("master_presensi");
   if (!sheet) return [];
 
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return [];
 
-  if (!tanggal) {
-    const allData = sheet.getRange(2, 1, lastRow - 1, 9).getDisplayValues();
-    return allData.map((row, index) => ({
-      rowIndex: index + 2,
-      tanggal: row[0],
-      nama: row[2],
-      kelas: row[3],
-      tingkat: row[4],
-      jamMasuk: row[5],
-      statusMasuk: row[6] || "",
-      jamPulang: row[7],
-      statusPulang: row[8] || ""
-    }));
-  }
-
   let filterTanggal = tanggal;
-  if (tanggal.includes("-")) {
+  if (tanggal && tanggal.includes("-")) {
     const [y, m, d] = tanggal.split("-");
     filterTanggal = `${d}/${m}/${y}`;
   }
@@ -176,7 +180,7 @@ function getSiswaByTanggal(tanggal) {
   const endRow = results[results.length - 1].getRow();
   const totalRows = (endRow - startRow) + 1;
 
-  const chunkData = sheet.getRange(startRow, 1, totalRows, 9).getDisplayValues();
+  const chunkData = sheet.getRange(startRow, 1, totalRows, 10).getDisplayValues();
   const resultData = [];
 
   for (let i = 0; i < chunkData.length; i++) {
@@ -188,10 +192,10 @@ function getSiswaByTanggal(tanggal) {
         nama: row[2],
         kelas: row[3],
         tingkat: row[4],
-        jamMasuk: row[5],
-        statusMasuk: row[6] || "",
-        jamPulang: row[7],
-        statusPulang: row[8] || ""
+        jamMasuk: row[6],
+        statusMasuk: row[7] || "",
+        jamPulang: row[8],
+        statusPulang: row[9] || ""
       });
     }
   }
@@ -201,15 +205,18 @@ function getSiswaByTanggal(tanggal) {
 function simpanStatusMasuk(payload) {
   if (!payload || !Array.isArray(payload) || payload.length === 0) return { success: true };
 
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("MasterPresensi");
-  if (!sheet) throw new Error("Sheet MasterPresensi tidak ditemukan.");
+  // 💡 Buka Spreadsheet TA Aktif via OpenById
+  const ss = getActivePresensiSpreadsheet();
+  const sheet = ss.getSheetByName("master_presensi");
+  if (!sheet) throw new Error("Sheet master_presensi tidak ditemukan.");
 
   const rowIndexes = payload.map(item => Number(item.rowIndex));
   const minRow = Math.min(...rowIndexes);
   const maxRow = Math.max(...rowIndexes);
   const numRows = (maxRow - minRow) + 1;
 
-  const range = sheet.getRange(minRow, 6, numRows, 5);
+  // Sesuaikan range kolom jika di master_presensi status_masuk berada di Kolom H (8) dan id_piket di K (11)
+  const range = sheet.getRange(minRow, 7, numRows, 5); 
   const values = range.getValues();
 
   payload.forEach(item => {
@@ -220,10 +227,10 @@ function simpanStatusMasuk(payload) {
     const piketID = item.piketID || "";
 
     if (["Sakit", "Izin", "Alpa"].includes(newStatus)) {
-      values[arrayIndex][0] = ""; 
+      values[arrayIndex][0] = ""; // Kosongkan jam masuk
     }
-    values[arrayIndex][1] = newStatus;
-    values[arrayIndex][4] = piketID;
+    values[arrayIndex][1] = newStatus; // Status Masuk
+    values[arrayIndex][4] = piketID;    // ID Piket
   });
 
   range.setValues(values);
@@ -231,8 +238,9 @@ function simpanStatusMasuk(payload) {
 }
 
 function cekStatusKosongHariIni(tanggal) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName("MasterPresensi");
+  // 💡 Buka Spreadsheet TA Aktif via OpenById
+  const ss = getActivePresensiSpreadsheet();
+  const sheet = ss.getSheetByName("master_presensi"); // Disesuaikan ke master_presensi
   if (!sheet) return 0;
 
   const lastRow = sheet.getLastRow();
@@ -240,9 +248,12 @@ function cekStatusKosongHariIni(tanggal) {
   if (lastRow < 2) return 0;
 
   const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
-  const header = data[0];
-  const idxTanggal = header.indexOf("Tanggal");
-  const idxStatusMasuk = header.indexOf("Status Masuk");
+  const header = data[0].map(h => String(h).trim().toLowerCase()); // Case-insensitive header check
+  
+  const idxTanggal = header.indexOf("tanggal");
+  const idxStatusMasuk = header.indexOf("status_masuk");
+
+  if (idxTanggal === -1 || idxStatusMasuk === -1) return 0;
 
   let tanggalStr;
   if (typeof tanggal === "string") {
@@ -253,20 +264,25 @@ function cekStatusKosongHariIni(tanggal) {
       tanggalStr = tanggal;
     }
   } else if (tanggal instanceof Date) {
-    tanggalStr = Utilities.formatDate(tanggal, "Asia/Jakarta", "dd/MM/yyyy");
+    tanggalStr = Utilities.formatDate(tanggal, Session.getScriptTimeZone(), "dd/MM/yyyy");
   } else {
     throw new Error("Parameter tanggal tidak valid");
   }
 
   let jumlahKosong = 0;
+  // Reverse loop dari bawah
   for (let i = data.length - 1; i >= 1; i--) {
     const row = data[i];
-    const tgl = String(row[idxTanggal] || "").trim();
+    const tglCell = row[idxTanggal];
+    const tgl = tglCell instanceof Date 
+      ? Utilities.formatDate(tglCell, Session.getScriptTimeZone(), "dd/MM/yyyy")
+      : String(tglCell || "").trim();
 
     if (tgl === tanggalStr) {
       const status = String(row[idxStatusMasuk] || "").trim();
       if (!status) jumlahKosong++;
     } else if (jumlahKosong > 0) {
+      // Sudah melewati blok tanggal target
       break;
     }
   }
