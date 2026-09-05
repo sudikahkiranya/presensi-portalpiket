@@ -1,14 +1,5 @@
+// ⚠️ MASUKKAN URL DEPLOYMENT APPS SCRIPT LENGKAP KAMU DI SINI
 const API_URL = "https://script.google.com/macros/s/AKfycbxR0bwVJCXQY5DQKawqOBQO6vNwU8UMFLJ3AuBytSRgQR3TW9rJZ0r58JGkL2u_HxYMhw/exec";
-
-// Auth Guard
-const savedID = localStorage.getItem("piketID");
-const savedDate = localStorage.getItem("loginDate");
-const todayStr = new Date().toLocaleDateString("id-ID");
-
-if (!savedID || savedDate !== todayStr) {
-  localStorage.clear();
-  window.location.href = "index.html";
-}
 
 window.dataSiswa = [];
 window.currentPage = 1;
@@ -30,28 +21,76 @@ function showLoading(text = "Memproses...") {
   const el = document.getElementById("loadingOverlay");
   const label = document.getElementById("loadingText");
   if (label) label.textContent = text;
-  if (el) el.classList.add("active");
+  el.classList.add("active");
 }
 
 function hideLoading() {
-  const el = document.getElementById("loadingOverlay");
-  if (el) el.classList.remove("active");
+  document.getElementById("loadingOverlay").classList.remove("active");
+}
+
+function initFormPiket() {
+  const user = JSON.parse(localStorage.getItem("piket_user"));
+  if (!user) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  setPetugasPiket(user.nama);
+  setRoleUser(user.role);
+  updatePendingBadge();
+
+  if (user.role === "Admin") {
+    const adminFilter = document.getElementById("adminFilter");
+    if (adminFilter) adminFilter.style.display = "block";
+
+    const dateInput = document.getElementById("selectedDate");
+    if (dateInput && !dateInput.value) {
+      const today = new Date();
+      const local = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
+      dateInput.value = local.toISOString().split("T")[0];
+    }
+    fetchData(dateInput.value);
+  } else {
+    fetchData();
+  }
+}
+
+function refreshData() {
+  const user = JSON.parse(localStorage.getItem("piket_user"));
+  if (user && user.role === "Admin") {
+    const selectedDate = document.getElementById("selectedDate")?.value;
+    fetchData(selectedDate);
+  } else {
+    fetchData();
+  }
 }
 
 async function fetchData(selectedDate) {
   showLoading("Memuat data...");
-  const role = localStorage.getItem("role");
+  const user = JSON.parse(localStorage.getItem("piket_user"));
+  const tanggalPresensi = document.getElementById("tanggalPresensi");
   const dateVal = selectedDate || document.getElementById("selectedDate")?.value || new Date().toISOString().split("T")[0];
 
-  const action = (role === "Admin") ? `getSiswaByTanggal&tanggal=${dateVal}` : "getSiswaHariIni";
+  if (tanggalPresensi) {
+    let tanggalObj = (user && user.role === "Admin") ? new Date(dateVal) : new Date();
+    tanggalPresensi.textContent = tanggalObj.toLocaleDateString("id-ID", {
+      weekday: "long", day: "numeric", month: "long", year: "numeric"
+    });
+  }
 
   try {
-    const res = await fetch(`${API_URL}?action=${action}`);
-    const data = await res.json();
-    renderTable(data);
+    let url = `${API_URL}?action=getSiswaHariIni`;
+    if (user && user.role === "Admin" && dateVal) {
+      url = `${API_URL}?action=getSiswaByTanggal&tanggal=${dateVal}`;
+    }
+
+    const response = await fetch(url);
+    const data = await response.json();
+    renderTable(Array.isArray(data) ? data : []);
   } catch (err) {
+    console.error(err);
+    showToast("Gagal terhubung ke server Backend API", "error");
     hideLoading();
-    showToast("Gagal mengambil data dari server.", "error");
   }
 }
 
@@ -66,7 +105,7 @@ function renderTable(data) {
 }
 
 function populateFilterKelas(data) {
-  const kelasSet = new Set(data.map(s => s.kelas));
+  const kelasSet = new Set(data.map(s => s.kelas).filter(Boolean));
   const filterKelas = document.getElementById("filterKelas");
   filterKelas.innerHTML = `<option value="">Semua</option>`;
   [...kelasSet].sort().forEach(kelas => {
@@ -96,7 +135,7 @@ function applyFilter() {
       if (status === "Kosong") return !s.statusMasuk;
       return s.statusMasuk === status;
     })
-    .filter(s => !nama || s.nama.toLowerCase().includes(nama));
+    .filter(s => !nama || (s.nama && s.nama.toLowerCase().includes(nama)));
 
   const startIndex = (currentPage - 1) * rowsPerPage;
   const pageData = filtered.slice(startIndex, startIndex + rowsPerPage);
@@ -104,82 +143,225 @@ function applyFilter() {
   if (pageData.length === 0) {
     tbody.innerHTML = `<tr><td colspan="6">Tidak ada data.</td></tr>`;
     document.getElementById("jumlahData").textContent = "0";
+    renderPagination(0);
     return;
   }
 
   const fragment = document.createDocumentFragment();
   pageData.forEach((s, idx) => {
     const tr = document.createElement("tr");
+    const namaTd = document.createElement("td"); namaTd.textContent = s.nama || "-";
+    const kelasTd = document.createElement("td"); kelasTd.textContent = s.kelas || "-";
+    const tingkatTd = document.createElement("td"); tingkatTd.textContent = s.tingkat || "-";
+    const jamMasukTd = document.createElement("td"); jamMasukTd.textContent = s.jamMasuk || "-";
+    const jamPulangTd = document.createElement("td"); jamPulangTd.textContent = s.jamPulang || "-";
+
+    const statusTd = document.createElement("td");
     const index = startIndex + idx;
+    statusTd.id = `status-${index}`;
     const value = s.statusMasuk || "";
 
-    tr.innerHTML = `
-      <td>${s.nama}</td>
-      <td>${s.kelas}</td>
-      <td>${s.tingkat || "-"}</td>
-      <td>${s.jamMasuk || "-"}</td>
-      <td id="status-${index}" data-row-index="${s.rowIndex}" data-status-masuk="${value}">
-        ${value 
-          ? `<span class="status ${getStatusClass(value)}">${value}</span>
-             <button type="button" class="button-small" onclick="editStatus(${index}, '${value}', ${s.rowIndex})">${SVG_PENCIL}</button>`
-          : getDropdownHTML(index, "", s.rowIndex)}
-      </td>
-      <td>${s.jamPulang || "-"}</td>
-    `;
+    statusTd.dataset.rowIndex = s.rowIndex;
+    statusTd.dataset.statusMasuk = value;
+
+    if (value) {
+      statusTd.innerHTML = `
+        <span id="statusText-${index}" class="status ${getStatusClass(value)}">
+          ${value || "Belum diisi"}
+        </span>
+        <button type="button" class="button-small" onclick="editStatus(${index}, '${value}', ${s.rowIndex})" title="Edit Status">${SVG_PENCIL}</button>
+      `;
+    } else {
+      statusTd.classList.add("status-kosong-cell");
+      statusTd.innerHTML = getDropdownHTML(index, "", s.rowIndex);
+
+      const select = statusTd.querySelector("select[name=statusMasuk]");
+      select.addEventListener("change", () => {
+        statusTd.classList.remove("status-kosong-cell");
+        const newValue = select.value;
+        statusTd.innerHTML = `
+          <span id="statusText-${index}" class="status ${getStatusClass(newValue)}">
+            ${newValue || "-- Pilih Status --"}
+          </span>
+          <button type="button" class="button-small" onclick="editStatus(${index}, '${newValue}', ${s.rowIndex})" title="Edit Status">${SVG_PENCIL}</button>
+        `;
+        statusTd.dataset.statusMasuk = newValue;
+        processStatusChange(s.rowIndex, newValue);
+      });
+    }
+
+    tr.appendChild(namaTd);
+    tr.appendChild(kelasTd);
+    tr.appendChild(tingkatTd);
+    tr.appendChild(jamMasukTd);
+    tr.appendChild(statusTd);
+    tr.appendChild(jamPulangTd);
     fragment.appendChild(tr);
   });
 
   tbody.appendChild(fragment);
   document.getElementById("jumlahData").textContent = `${filtered.length}`;
+  renderPagination(filtered.length);
+}
+
+function renderPagination(total) {
+  const container = document.getElementById("pagination");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const totalPages = Math.ceil(total / rowsPerPage);
+  if (totalPages <= 1) return;
+
+  const prevBtn = document.createElement("button");
+  prevBtn.type = "button";
+  prevBtn.textContent = "«";
+  prevBtn.disabled = currentPage <= 1;
+  prevBtn.onclick = () => { currentPage--; applyFilter.keepPage = true; applyFilter(); };
+  container.appendChild(prevBtn);
+
+  for (let i = 1; i <= totalPages; i++) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = i;
+    if (i === currentPage) { btn.disabled = true; btn.classList.add("active"); }
+    else { btn.onclick = () => { currentPage = i; applyFilter.keepPage = true; applyFilter(); }; }
+    container.appendChild(btn);
+  }
+
+  const nextBtn = document.createElement("button");
+  nextBtn.type = "button";
+  nextBtn.textContent = "»";
+  nextBtn.disabled = currentPage >= totalPages;
+  nextBtn.onclick = () => { currentPage++; applyFilter.keepPage = true; applyFilter(); };
+  container.appendChild(nextBtn);
+}
+
+function editStatus(index, originalValue, rowIndex) {
+  const td = document.getElementById(`status-${index}`);
+  td.dataset.rowIndex = rowIndex;
+  td.innerHTML = `
+    ${getDropdownHTML(index, originalValue, rowIndex)}
+    <button type="button" class="button-small" onclick="cancelEdit(${index}, '${originalValue}', ${rowIndex})" title="Batal">${SVG_CLOSE}</button>
+  `;
+
+  const select = td.querySelector("select[name=statusMasuk]");
+  select.addEventListener("change", () => {
+    const newValue = select.value;
+    td.innerHTML = `
+      <span id="statusText-${index}" class="status ${getStatusClass(newValue)}">
+        ${newValue || "-- Pilih Status --"}
+      </span>
+      <button type="button" class="button-small" onclick="editStatus(${index}, '${newValue}', ${rowIndex})" title="Edit Status">${SVG_PENCIL}</button>
+    `;
+    td.dataset.statusMasuk = newValue;
+    processStatusChange(rowIndex, newValue);
+  });
+}
+
+function cancelEdit(index, originalValue, rowIndex) {
+  const td = document.getElementById(`status-${index}`);
+  td.innerHTML = `
+    <span id="statusText-${index}" class="status ${getStatusClass(originalValue)}">
+      ${originalValue || "-- Pilih Status --"}
+    </span>
+    <button type="button" class="button-small" onclick="editStatus(${index}, '${originalValue}', ${rowIndex})" title="Edit Status">${SVG_PENCIL}</button>
+  `;
 }
 
 function getDropdownHTML(index, selected, rowIndex) {
-  const opsi = ["", "Sakit", "Izin", "Alpa", "Hadir Tidak Presensi", "Libur"];
+  const opsi = ["", "Sakit", "Izin", "Alpa", "Libur"];
   return `
-    <select name="statusMasuk" onchange="processStatusSelect(${index}, this.value, ${rowIndex})">
+    <select name="statusMasuk" id="statusSelect-${index}">
       ${opsi.map(o => `<option value="${o}" ${o === selected ? "selected" : ""}>${o || "-- Pilih Status --"}</option>`).join('')}
     </select>
+    <input type="hidden" name="rowIndex" value="${rowIndex}">
   `;
-}
-
-function processStatusSelect(index, newValue, rowIndex) {
-  const td = document.getElementById(`status-${index}`);
-  td.innerHTML = `
-    <span class="status ${getStatusClass(newValue)}">${newValue || "-- Pilih Status --"}</span>
-    <button type="button" class="button-small" onclick="editStatus(${index}, '${newValue}', ${rowIndex})">${SVG_PENCIL}</button>
-  `;
-  processStatusChange(rowIndex, newValue);
 }
 
 function processStatusChange(rowIndex, newValue) {
-  const piketID = localStorage.getItem("piketID");
+  const user = JSON.parse(localStorage.getItem("piket_user"));
+  const piketID = user ? user.nama : "Petugas";
   const timestamp = new Date().toISOString();
 
+  const targetSiswa = dataSiswa.find(s => Number(s.rowIndex) === Number(rowIndex));
+  if (targetSiswa) targetSiswa.statusMasuk = newValue;
+
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
-  queue.push({ rowIndex: parseInt(rowIndex, 10), statusMasuk: newValue, piketID: piketID, timestamp: timestamp, sent: false });
+  const existingIdx = queue.findIndex(item => Number(item.rowIndex) === Number(rowIndex));
+
+  if (existingIdx > -1) {
+    queue[existingIdx].statusMasuk = newValue;
+    queue[existingIdx].timestamp = timestamp;
+    queue[existingIdx].sent = false;
+  } else {
+    queue.push({ rowIndex: parseInt(rowIndex, 10), statusMasuk: newValue, piketID: piketID, timestamp: timestamp, sent: false });
+  }
+
   localStorage.setItem("piket_pending_updates", JSON.stringify(queue));
-  
-  syncPendingData();
+  updatePendingBadge();
 }
 
-async function syncPendingData() {
+function updatePendingBadge() {
+  let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
+  let pendingCount = queue.filter(item => item.sent === false).length;
+  const saveBtn = document.querySelector("#absenForm button[type='submit']");
+  if (!saveBtn) return;
+
+  if (pendingCount > 0) {
+    saveBtn.disabled = false;
+    saveBtn.style.opacity = "1";
+    saveBtn.style.background = "#dd9787";
+    saveBtn.innerHTML = `Sync (${pendingCount})`;
+  } else {
+    saveBtn.disabled = true;
+    saveBtn.style.opacity = "0.5";
+    saveBtn.style.background = "#006D77";
+    saveBtn.innerHTML = `Tersimpan`;
+  }
+}
+
+async function handleSubmit(e) {
+  if (e) e.preventDefault();
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   let pendingItems = queue.filter(item => item.sent === false);
-  if (pendingItems.length === 0) return;
+
+  if (pendingItems.length === 0) {
+    showToast("Tidak ada perubahan data yang perlu disinkronkan.", "info");
+    return;
+  }
+
+  showLoading(`Menyinkronkan ${pendingItems.length} data ke server...`);
 
   try {
-    const res = await fetch(API_URL, {
+    const response = await fetch(API_URL, {
       method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: "simpanStatusMasuk", payload: pendingItems })
     });
-    const result = await res.json();
+    const resText = await response.text();
+    const result = JSON.parse(resText);
+
+    hideLoading();
     if (result.success) {
       localStorage.setItem("piket_pending_updates", "[]");
-      showToast("Data berhasil disinkronkan!", "success");
+      updatePendingBadge();
+      showToast("Semua perubahan berhasil disinkronkan!", "success");
+    } else {
+      showToast("Gagal menyimpan data ke server", "error");
     }
-  } catch (e) {
-    showToast("Tersimpan di offline browser.", "info");
+  } catch (err) {
+    hideLoading();
+    showToast("Gagal terhubung ke server API", "error");
   }
+}
+
+function setPetugasPiket(nama) {
+  document.getElementById('petugasPiket').textContent = `👤 ${nama || "-"}`;
+}
+
+function setRoleUser(role) {
+  const roleLabel = { "Admin": "🟣 Admin Presensi", "Piket": "🟢 Petugas Piket" };
+  document.getElementById("roleUser").textContent = roleLabel[role] || "⚪ -";
 }
 
 function getStatusClass(status) {
@@ -190,27 +372,26 @@ function getStatusClass(status) {
   if (s.includes("sakit")) return "status-sakit";
   if (s.includes("izin")) return "status-izin";
   if (s.includes("alpa")) return "status-alpa";
+  if (s.includes("libur")) return "status-libur";
   return "";
 }
 
-function showToast(message, type = "info") {
+function showToast(message, type = "info", duration = 3000) {
   const container = document.getElementById("toastContainer");
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
   toast.textContent = message;
   container.appendChild(toast);
-  setTimeout(() => { toast.remove(); }, 3000);
+  setTimeout(() => { toast.remove(); }, duration);
 }
 
 function logout() {
-  showLoading("Keluar...");
-  setTimeout(() => {
-    localStorage.clear();
-    window.location.href = "index.html";
-  }, 500);
+  localStorage.removeItem("piket_user");
+  window.location.href = "index.html";
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('petugasPiket').textContent = `👤 ${localStorage.getItem("namaPetugas") || "-"}`;
-  fetchData();
-});
+function closeNotif() { document.getElementById("notifModal").classList.remove("active"); }
+function closeError() { document.getElementById("errorModal").classList.remove("active"); }
+function closeConfirm() { document.getElementById("confirmModal").classList.remove("active"); }
+
+document.addEventListener('DOMContentLoaded', initFormPiket);
