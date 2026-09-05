@@ -12,21 +12,24 @@ function hideLoading() {
   if (el) el.classList.remove("active");
 }
 
-window.onload = function () {
+// 🟢 Pengecekan Sesi Login Otomatis saat Halaman Di-load
+window.addEventListener("DOMContentLoaded", function () {
   const savedID = localStorage.getItem("piketID");
   const savedNama = localStorage.getItem("namaPetugas");
   const savedDate = localStorage.getItem("loginDate");
   const today = new Date().toLocaleDateString("id-ID");
 
-  if (savedDate !== today) {
+  // Jika beda hari, bersihkan sesi lama
+  if (savedDate && savedDate !== today) {
     localStorage.clear();
     return;
   }
 
-  if (savedID && savedNama) {
+  // Jika sesi masih valid dan data lengkap, langsung lempar ke Dashboard
+  if (savedID && savedNama && savedDate === today) {
     window.location.href = "dashboard.html";
   }
-};
+});
 
 async function login() {
   const id = document.getElementById("idPiket").value.trim();
@@ -47,6 +50,7 @@ async function login() {
   try {
     const response = await fetch(API_URL, {
       method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
         action: "login",
         idInput: id,
@@ -57,18 +61,31 @@ async function login() {
     const result = await response.json();
 
     if (result.success) {
+      const today = new Date().toLocaleDateString("id-ID");
+
+      // 1. Simpan Data Individual (Untuk Dashboard v4.0)
       localStorage.setItem("piketID", id);
       localStorage.setItem("namaPetugas", result.nama);
-      localStorage.setItem("loginDate", new Date().toLocaleDateString("id-ID"));
-      localStorage.setItem("role", result.role);
+      localStorage.setItem("role", result.role || "Piket");
+      localStorage.setItem("loginDate", today);
 
+      // 2. Simpan Format Objek (Untuk Kompatibilitas Ekstra)
+      localStorage.setItem("piket_user", JSON.stringify({
+        piketID: id,
+        nama: result.nama,
+        role: result.role || "Piket",
+        loginDate: today
+      }));
+
+      // Pindah ke dashboard
       window.location.href = "dashboard.html";
     } else {
       hideLoading();
-      errorMsg.textContent = "Username/Password salah atau tidak diizinkan.";
+      errorMsg.textContent = result.message || "Username/Password salah atau tidak diizinkan.";
       errorMsg.style.display = "block";
     }
   } catch (err) {
+    console.error("Login error:", err);
     hideLoading();
     errorMsg.textContent = "Gagal terhubung ke server.";
     errorMsg.style.display = "block";
