@@ -565,7 +565,43 @@ function populateFilterKelas(data) {
     }
   });
 
-  [...kelasMap.keys()].sort().forEach(idRombel => {
+  // Helper untuk memecah label "AKN X-A" menjadi komponen [jurusan, bobotTingkat, subKelas]
+  const parseLabel = (label) => {
+    const parts = label.split(" "); // ["AKN", "X-A"]
+    const jurusan = parts[0] || "";
+    const sisa = parts[1] || ""; // "X-A"
+    const [tingkat, sub] = sisa.split("-"); // ["X", "A"]
+
+    let weight = 99;
+    if (tingkat === "X") weight = 1;
+    else if (tingkat === "XI") weight = 2;
+    else if (tingkat === "XII") weight = 3;
+
+    return { jurusan, weight, sub };
+  };
+
+  const sortedKeys = [...kelasMap.keys()].sort((a, b) => {
+    const labelA = kelasMap.get(a);
+    const labelB = kelasMap.get(b);
+
+    const pA = parseLabel(labelA);
+    const pB = parseLabel(labelB);
+
+    // 1. Urutkan berdasarkan Jurusan (AKN, DKV, FAR, dst.)
+    if (pA.jurusan !== pB.jurusan) {
+      return pA.jurusan.localeCompare(pB.jurusan);
+    }
+
+    // 2. Urutkan berdasarkan Tingkat (X -> XI -> XII)
+    if (pA.weight !== pB.weight) {
+      return pA.weight - pB.weight;
+    }
+
+    // 3. Urutkan berdasarkan Abjad Sub-Kelas (A -> B)
+    return pA.sub.localeCompare(pB.sub);
+  });
+
+  sortedKeys.forEach(idRombel => {
     const opt = document.createElement("option");
     opt.value = idRombel; 
     opt.textContent = kelasMap.get(idRombel); 
