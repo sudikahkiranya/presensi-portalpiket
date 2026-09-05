@@ -239,6 +239,7 @@ th { background: #c2e0e5 !important; color: #00383e !important; font-size: 12px;
 td { padding: 11px 10px; border-bottom: 1px solid #e3eff2 !important; text-align: center; color: #1f2d2f; }
 tr:nth-child(even) td { background-color: #f8fafb; }
 
+.status { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; white-space: nowrap; }
 .status-hadir { background: #d1e7dd; color: #0f5132; }
 .status-terlambat { background: #fff3cd; color: #664d03; }
 .status-terlambat-berat { background: #ffe69c; color: #856404; }
