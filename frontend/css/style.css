@@ -422,67 +422,78 @@ tr:nth-child(even) td {
   font-weight: 500 !important;
 }
 
-/* 💡 PALET WARNA BADGE STATUS PRESENSI */
+/* 💡 PALET WARNA BADGE STATUS PRESENSI (VIBRANT / LEBIH HIDUP) */
 .status-hadir { 
-  background: #d1e7dd !important; 
-  color: #0f5132 !important; 
+  background: #a3e4d7 !important; 
+  color: #0e6251 !important; 
+  border: 1px solid #76d7c4 !important;
 }
 
 .status-terlambat { 
-  background: #fff3cd !important; 
-  color: #664d03 !important; 
+  background: #f9e79f !important; 
+  color: #7d6608 !important; 
+  border: 1px solid #f7dc6f !important;
 }
 
 .status-terlambat-berat { 
-  background: #ffe69c !important; 
-  color: #856404 !important; 
+  background: #f5b041 !important; 
+  color: #6e2c00 !important; 
+  border: 1px solid #eb984e !important;
 }
 
 .status-terlambat-ekstrem { 
-  background: #f8d7da !important; 
-  color: #842029 !important; 
+  background: #f1948a !important; 
+  color: #641e16 !important; 
+  border: 1px solid #e74c3c !important;
 }
 
 .status-sakit { 
-  background: #cff4fc !important; 
-  color: #055160 !important; 
+  background: #85c1e9 !important; 
+  color: #1b4f72 !important; 
+  border: 1px solid #5499c7 !important;
 }
 
 .status-izin { 
-  background: #e2e3e5 !important; 
-  color: #41464b !important; 
+  background: #d7dbdd !important; 
+  color: #2c3e50 !important; 
+  border: 1px solid #bdc3c7 !important;
 }
 
 .status-alpa { 
-  background: #f8d7da !important; 
-  color: #842029 !important; 
+  background: #ec7063 !important; 
+  color: #ffffff !important; 
+  border: 1px solid #c0392b !important;
 }
 
 .status-libur { 
-  background: #edf6f8 !important; 
-  color: #006D77 !important; 
+  background: #a2d9ce !important; 
+  color: #117864 !important; 
+  border: 1px solid #48c9b0 !important;
 }
 
 .status-htp { 
-  background: #fef3c7 !important; 
-  color: #92400e !important; 
+  background: #f8c471 !important; 
+  color: #7e5109 !important; 
+  border: 1px solid #f39c12 !important;
 }
 
 .status-prakerin { 
-  background: #e0e7ff !important; 
-  color: #3730a3 !important; 
+  background: #a9cce3 !important; 
+  color: #154360 !important; 
+  border: 1px solid #5499c7 !important;
 }
 
-/* 💡 WARNA WARNING MERAH UNTUK BELUM PRESENSI / KOSONG */
+/* 💡 WARNA WARNING MERAH PEKAT UNTUK BELUM PRESENSI / KOSONG */
 .status-kosong,
 .status-kosong-cell {
-  background: #f8d7da !important;
-  color: #842029 !important;
-  border: 1px solid #f5c2c7 !important;
+  background: #f1948a !important;
+  color: #511510 !important;
+  border: 1px solid #e74c3c !important;
+  font-weight: 600 !important;
 }
 
 .status-kosong svg {
-  stroke: #842029 !important;
+  stroke: #511510 !important;
 }
 
 /* ==========================================================================
