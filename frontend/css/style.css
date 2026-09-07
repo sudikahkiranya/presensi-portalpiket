@@ -423,76 +423,76 @@ tr:nth-child(even) td {
 }
 
 /* ==========================================================================
-   1. ATUR WARNA MASING-MASING STATUS (DIJAMIN TIDAK KEMBAR)
+   ELEGANT SOFT-VIBRANT STATUS PALETTE (UI Modern & Clean)
    ========================================================================== */
 
-/* 🟢 Hadir */
+/* 🟢 Tepat Waktu: Hijau Mint Segar */
 .status-hadir { 
-  background: #d1e7dd !important; color: #0f5132 !important; border: 1px solid #badbcc !important; 
+  background: #d1e7dd !important; 
+  color: #0f5132 !important; 
+  border: 1px solid #badbcc !important;
 }
 
-/* 🟡 Terlambat (Kuning Emas) */
+/* 🟡 Terlambat: Kuning Emas Hangat (Tidak Pucat) */
 .status-terlambat { 
-  background: #ffecb5 !important; color: #664d03 !important; border: 1px solid #ffe8a1 !important; 
+  background: #ffecb5 !important; 
+  color: #664d03 !important; 
+  border: 1px solid #ffe8a1 !important;
 }
 
-/* 🟠 Terlambat Berat / HTP (Oranye) */
-.status-terlambat-berat,
-.status-htp { 
-  background: #ffe5d0 !important; color: #8c4700 !important; border: 1px solid #fed2b0 !important; 
+/* 🟠 Terlambat Berat: Oranye Soft */
+.status-terlambat-berat { 
+  background: #ffe5d0 !important; 
+  color: #8c4700 !important; 
+  border: 1px solid #fed2b0 !important;
 }
 
-/* 🛑 Sangat Terlambat Sekali & Alpa (Merah) */
+/* 🔴 Sangat Terlambat / Alpa: Merah Bata Soft Elegan */
 .status-terlambat-ekstrem,
 .status-alpa { 
-  background: #f8d7da !important; color: #842029 !important; border: 1px solid #f5c2c7 !important; 
+  background: #f8d7da !important; 
+  color: #842029 !important; 
+  border: 1px solid #f5c2c7 !important;
 }
 
-/* 🔵 Sakit */
+/* 🔵 Sakit: Biru Calm */
 .status-sakit { 
-  background: #cff4fc !important; color: #055160 !important; border: 1px solid #b6effb !important; 
+  background: #cff4fc !important; 
+  color: #055160 !important; 
+  border: 1px solid #b6effb !important;
 }
 
-/* ⚫ Izin, Libur, Prakerin */
-.status-izin,
+/* ⚫ Izin / Netral: Abu Modern */
+.status-izin { 
+  background: #e2e3e5 !important; 
+  color: #41464b !important; 
+  border: 1px solid #d3d6d8 !important;
+}
+
+/* 🟦 Libur / Prakerin: Indigo Soft */
 .status-libur,
 .status-prakerin { 
-  background: #e2e3e5 !important; color: #41464b !important; border: 1px solid #d3d6d8 !important; 
+  background: #cfe2ff !important; 
+  color: #084298 !important; 
+  border: 1px solid #b6d4fe !important;
 }
 
-/* 🔘 Belum Presensi / Kosong */
+.status-htp { 
+  background: #fff3cd !important; 
+  color: #664d03 !important; 
+  border: 1px solid #ffeeba !important;
+}
+
+/* 🟡 "Belum Presensi" / Kosong: Amber Kuning Madu (Pembeda Jelas) */
 .status-kosong,
 .status-kosong-cell {
-  background: #ced4da !important; color: #212529 !important; border: 1px solid #adb5bd !important; font-weight: 600 !important;
+  background: #ffe8a1 !important; 
+  color: #664d03 !important; 
+  border: 1px solid #ffd86b !important;
+  font-weight: 600 !important;
 }
 
-
-/* ==========================================================================
-   2. ATUR LEBAR CHIP (FIT TEKS) VS DROPDOWN (KONSISTEN)
-   ========================================================================== */
-
-/* Saat mode TAMPILAN CHIP (menyesuaikan panjang teks masing-masing) */
-.status-chip, 
-span.status-chip, 
-td .status-chip {
-  display: inline-flex !important;
-  width: fit-content !important;
-  max-width: max-content !important;
-  white-space: nowrap !important;
-  padding-left: 14px !important;
-  padding-right: 14px !important;
-}
-
-/* Saat mode DROPDOWN / EDIT (lebar dibuat rata/konsisten 100%) */
-select.status-dropdown,
-.tom-select .ts-control,
-.status-select {
-  display: flex !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* Kunci warna ikon pensil ikut teks */
+/* 💡 KUNCI WARNA IKON PENSIL MENYESUAIKAN TEKS */
 .status-chip svg,
 .status-kosong svg {
   stroke: currentColor !important;
