@@ -1,4 +1,6 @@
-/* RESET & BASE LOGIN */
+/* ==========================================================================
+   1. RESET & BASE CONFIGURATION
+   ========================================================================== */
 html, body {
   height: 100%;
   margin: 0;
@@ -7,6 +9,15 @@ html, body {
   -webkit-text-size-adjust: 100%;
 }
 
+h2, h3 { 
+  color: #1f2d2f; 
+  font-weight: 600; 
+  margin-top: 0; 
+}
+
+/* ==========================================================================
+   2. LOGIN PAGE STYLES
+   ========================================================================== */
 body.login-body {
   min-height: 100vh;
   display: flex;
@@ -20,12 +31,12 @@ body.login-body {
 .container-login {
   width: 100%;
   max-width: 380px;
-  background: white;
+  background: #ffffff;
   padding: 40px 30px;
   margin: 20px;
   border-radius: 20px;
   border: 1px solid #e3eff2;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   text-align: center;
   box-sizing: border-box;
 }
@@ -54,7 +65,7 @@ body.login-body {
   width: 100%;
   padding: 14px;
   background-color: #006D77;
-  color: white;
+  color: #ffffff;
   border: none;
   border-radius: 12px;
   font-size: 16px;
@@ -72,7 +83,9 @@ body.login-body {
   display: none;
 }
 
-/* DASHBOARD V4.0 STYLES */
+/* ==========================================================================
+   3. DASHBOARD LAYOUT & HEADERS
+   ========================================================================== */
 body.dashboard-body {
   background: #a3cbd3;
   padding: 20px;
@@ -90,14 +103,12 @@ main {
   margin: 0 auto;
 }
 
-h2, h3 { color: #1f2d2f; font-weight: 600; margin-top: 0; }
-
 .header-box-kelas {
   background: #ffffff;
   padding: 16px 20px;
   border-radius: 14px;
   border: 1px solid #e3eff2;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
   margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
@@ -107,7 +118,11 @@ h2, h3 { color: #1f2d2f; font-weight: 600; margin-top: 0; }
   box-sizing: border-box;
 }
 
-.logo-img { height: 60px; width: auto; object-fit: contain; }
+.logo-img { 
+  height: 60px; 
+  width: auto; 
+  object-fit: contain; 
+}
 
 .btn-logout {
   background: #edf6f8 !important;
@@ -128,17 +143,24 @@ h2, h3 { color: #1f2d2f; font-weight: 600; margin-top: 0; }
   color: #842029 !important;
 }
 
-.logout-icon { width: 18px; height: 18px; stroke: currentColor; }
+.logout-icon { 
+  width: 18px; 
+  height: 18px; 
+  stroke: currentColor; 
+}
 
 .card {
   background: #ffffff;
   border-radius: 14px;
   padding: 24px;
   border: 1px solid #e3eff2;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
   margin-bottom: 20px;
 }
 
+/* ==========================================================================
+   4. FORM INPUTS & BUTTONS
+   ========================================================================== */
 select, input[type="date"], input[type="text"] {
   padding: 8px 10px;
   border-radius: 8px;
@@ -158,7 +180,7 @@ select:focus, input[type="date"]:focus, input[type="text"]:focus {
 
 button {
   background-color: #006D77;
-  color: white !important;
+  color: #ffffff !important;
   padding: 8px 16px;
   border-radius: 8px;
   border: none;
@@ -174,8 +196,15 @@ button {
   box-sizing: border-box;
 }
 
-button:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
+button:hover:not(:disabled) { 
+  opacity: 0.9; 
+  transform: translateY(-1px); 
+}
+
+button:disabled { 
+  opacity: 0.5; 
+  cursor: not-allowed; 
+}
 
 .button-small {
   font-size: 12px !important;
@@ -190,6 +219,9 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   height: auto !important;
 }
 
+/* ==========================================================================
+   5. FILTERS & COUNTER BOX
+   ========================================================================== */
 .filter-wrapper {
   display: flex;
   justify-content: space-between;
@@ -203,8 +235,21 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   border: 1px solid #b2d5dc;
 }
 
-.filter-group { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
-.filter-item { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: #006D77; }
+.filter-group { 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 12px; 
+  align-items: flex-end; 
+}
+
+.filter-item { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 4px; 
+  font-size: 12px; 
+  font-weight: 600; 
+  color: #006D77; 
+}
 
 .jumlah-data-box {
   display: flex;
@@ -219,11 +264,37 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   min-width: 85px;
 }
 
-.jumlah-data-box label { font-size: 10px; color: #006D77; font-weight: 600; text-transform: uppercase; }
-.jumlah-data-box span { font-size: 18px; font-weight: 700; color: #C05621; }
+.jumlah-data-box label { 
+  font-size: 10px; 
+  color: #006D77; 
+  font-weight: 600; 
+  text-transform: uppercase; 
+}
 
-.table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px; }
-.left-action { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.jumlah-data-box span { 
+  font-size: 18px; 
+  font-weight: 700; 
+  color: #C05621; 
+}
+
+/* ==========================================================================
+   6. TABLE & DATA DISPLAY
+   ========================================================================== */
+.table-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 16px; 
+  flex-wrap: wrap; 
+  gap: 10px; 
+}
+
+.left-action { 
+  display: flex; 
+  gap: 8px; 
+  flex-wrap: wrap; 
+  align-items: center; 
+}
 
 .table-responsive {
   width: 100%;
@@ -234,94 +305,46 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   background: #ffffff;
 }
 
-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
-th { background: #c2e0e5 !important; color: #00383e !important; font-size: 12px; font-weight: 600; text-transform: uppercase; padding: 12px 10px; border-bottom: 2px solid #a3cdd4 !important; }
-td { padding: 11px 10px; border-bottom: 1px solid #e3eff2 !important; text-align: center; color: #1f2d2f; }
-tr:nth-child(even) td { background-color: #f8fafb; }
-
-.status { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; white-space: nowrap; }
-.status-hadir { background: #d1e7dd; color: #0f5132; }
-.status-terlambat { background: #fff3cd; color: #664d03; }
-.status-terlambat-berat { background: #ffe69c; color: #856404; }
-.status-terlambat-ekstrem { background: #f8d7da; color: #842029; }
-.status-sakit { background: #cff4fc; color: #055160; }
-.status-izin { background: #e2e3e5; color: #41464b; }
-.status-alpa { background: #f8d7da; color: #842029; }
-.status-libur { background: #edf6f8; color: #006D77; }
-.status-htp { background: #fef3c7; color: #92400e; }
-.status-kosong { background: #fee2e2; color: #991b1b; }
-.status-kosong-cell { background: #fff1f1 !important; }
-.status-prakerin { background: #e0e7ff; color: #3730a3; }
-
-.table-footer { display: flex; justify-content: center; align-items: center; margin-top: 20px; }
-#pagination button { background: #edf6f8 !important; color: #004f56 !important; border: 1px solid #bcd6db !important; margin: 2px; padding: 6px 12px !important; border-radius: 8px !important; font-size: 13px !important; height: auto !important; }
-#pagination button.active { background: #006D77 !important; color: #ffffff !important; font-weight: 600 !important; }
-
-footer { text-align: center; padding: 20px; font-size: 12px; color: #006D77; margin-top: 20px; }
-
-#loadingOverlay {
-  display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(4px); z-index: 9999; justify-content: center; align-items: center;
-}
-#loadingOverlay.active { display: flex; }
-#loadingOverlay > div { background: white; padding: 24px 30px; border-radius: 14px; text-align: center; }
-
-.spinner { border: 3px solid #e3eff2; border-top: 3px solid #006D77; border-radius: 50%; width: 30px; height: 30px; animation: spin 0.8s linear infinite; margin: 0 auto; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity .25s ease; }
-.modal-overlay.active { opacity: 1; pointer-events: auto; }
-.modal-box { background: white; padding: 20px; border-radius: 14px; width: 320px; text-align: center; }
-
-#toastContainer { position: fixed; top: 20px; right: 20px; z-index: 9999; }
-.toast { background: white; padding: 12px 16px; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); font-size: 13px; }
-.toast.success { border-left: 4px solid #22c55e; }
-.toast.error { border-left: 4px solid #ef4444; }
-.toast.info { border-left: 4px solid #3b82f6; }
-
-/* Container Utama Cell Status */
-.status-cell-wrapper {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+table { 
+  width: 100%; 
+  border-collapse: separate; 
+  border-spacing: 0; 
+  font-size: 13px; 
 }
 
-/* 💡 Interactive Chip (Badge + Action dadi Siji) */
-/* 💡 Interactive Chip Modern */
-.status-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 20px; /* Bentuk kapsul membulat */
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1px solid transparent;
-  user-select: none;
-  
-  /* 💡 Batasi lebar agar tidak melebar memenuhi sel tabel */
-  width: fit-content;
-  white-space: nowrap;
+th { 
+  background: #c2e0e5 !important; 
+  color: #00383e !important; 
+  font-size: 12px; 
+  font-weight: 600; 
+  text-transform: uppercase; 
+  padding: 12px 10px; 
+  border-bottom: 2px solid #a3cdd4 !important; 
 }
 
-.status-chip:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  filter: brightness(0.95);
+/* Standardisasi Isi Sel Tabel */
+#tbodySiswa td {
+  padding: 11px 10px;
+  border-bottom: 1px solid #e3eff2 !important;
+  text-align: center;
+  vertical-align: middle;
+  font-size: 13px !important;
+  font-weight: 500 !important; /* Standar konsisten (tidak tebal) */
+  color: #2b2d42 !important;
 }
 
-.status-chip svg {
-  opacity: 0.7;
-  transition: opacity 0.2s;
+#tbodySiswa td:nth-child(1) {
+  font-weight: 600 !important; /* Khusus Nama Siswa semi-bold */
 }
 
-.status-chip:hover svg {
-  opacity: 1;
+tr:nth-child(even) td { 
+  background-color: #f8fafb; 
 }
 
-/* 💡 1. Lebarkan Kolom Status di Tabel (Kunci Lebar 220px) */
+/* ==========================================================================
+   7. INTERACTIVE STATUS CHIPS & EDIT DROPDOWN (KUNCI DIMENSI & TIPOGRAFI)
+   ========================================================================== */
+/* 💡 Kunci Lebar Kolom Ke-5 (Status Masuk) */
 #tbodySiswa td:nth-child(5) {
   width: 220px;
   max-width: 220px;
@@ -331,24 +354,23 @@ footer { text-align: center; padding: 20px; font-size: 12px; color: #006D77; mar
   box-sizing: border-box;
 }
 
-/* 💡 2. Dimensi Lebar Baru (208px) & Font Weight Normal/Medium (500) */
+/* 💡 Base Dimensi Identik & Hilangkan Bold Berlebih */
 .status-chip,
 .inline-select {
-  width: 208px !important;       /* Lebar lega agar teks panjang & ikon muat sempurna */
+  width: 208px !important;
   height: 32px !important;
-  border-radius: 8px !important; /* Radius 8px yang modern */
+  border-radius: 8px !important;
   font-size: 12.5px !important;
-  font-weight: 500 !important;   /* 👈 Mengubah bold jadi normal/medium (tidak tebal) */
   box-sizing: border-box !important;
   margin: 0 auto !important;
 }
 
-/* 💡 3. Style Chip Status */
+/* Base Interactive Chip Component */
 .status-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;                      /* Jarak antar teks dan ikon pensil */
+  gap: 8px;
   padding: 0 12px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -357,67 +379,228 @@ footer { text-align: center; padding: 20px; font-size: 12px; color: #006D77; mar
   white-space: nowrap;
 }
 
+/* Kunci Teks Di Dalam Chip Agar Mengikuti Medium (500) */
+#tbodySiswa .status-chip,
+#tbodySiswa .status-chip span,
 .status-chip span {
-  font-weight: 500 !important;   /* Memastikan teks di dalam span tidak bold */
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  line-height: 1;
 }
 
-/* 💡 4. Kunci Ikon Pensil Agar Tetap Muncul Konsisten */
+.status-chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  filter: brightness(0.95);
+}
+
+/* Kunci Ikon Pensil Agar Tetap Tampak di Status Panjang */
 .status-chip svg {
   flex-shrink: 0 !important;
   width: 13px;
   height: 13px;
-  opacity: 0.65;
+  opacity: 0.7;
+  transition: opacity 0.2s;
 }
 
-/* 💡 5. Style Dropdown Select Saat Mode Edit */
+.status-chip:hover svg {
+  opacity: 1;
+}
+
+/* Dropdown Inline Edit Style */
 .inline-select {
   display: inline-block;
   padding: 0 10px 0 14px;
   border: 1.5px solid #006D77;
   outline: none;
-  background-color: #fff;
+  background-color: #ffffff;
   color: #2b2d42;
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 109, 119, 0.15);
   text-align: center;
   text-align-last: center;
-}
-
-/* 💡 1. Standardisasi Seluruh Teks di Tabel */
-#tbodySiswa td {
-  font-size: 13px !important;
   font-weight: 500 !important;
-  color: #2b2d42 !important;
-  vertical-align: middle;
 }
 
-/* 💡 2. Pengecualian Khusus Kolom Nama Siswa (Opsional: Tetap 13px tapi Semi-Bold) */
-#tbodySiswa td:nth-child(1) {
-  font-weight: 600 !important;
+/* 💡 PALET WARNA BADGE STATUS PRESENSI */
+.status-hadir { 
+  background: #d1e7dd !important; 
+  color: #0f5132 !important; 
 }
 
-/* 💡 3. Standardisasi Ukuran Teks Chip & Dropdown Status */
-.status-chip,
-.inline-select {
-  width: 190px !important;
-  height: 32px !important;
-  border-radius: 8px !important;
-  font-size: 12.5px !important; /* Pas untuk teks panjang seperti "Sangat Terlambat Sekali" */
-  font-weight: 600 !important;
-  box-sizing: border-box !important;
-  margin: 0 auto !important;
+.status-terlambat { 
+  background: #fff3cd !important; 
+  color: #664d03 !important; 
 }
 
-/* 💡 4. Ratakan Tampilan Teks Kapsul Status */
-.status-chip span {
-  font-size: 12.5px !important;
-  font-weight: 600 !important;
-  line-height: 1;
+.status-terlambat-berat { 
+  background: #ffe69c !important; 
+  color: #856404 !important; 
 }
 
-/* 💡 5. Hilangkan Teks Bold Berlebih pada Status Kosong/Belum Presensi */
-.status-kosong-cell, 
-.status-kosong-text {
-  font-weight: 500 !important;
-  color: #6c757d !important;
+.status-terlambat-ekstrem { 
+  background: #f8d7da !important; 
+  color: #842029 !important; 
 }
+
+.status-sakit { 
+  background: #cff4fc !important; 
+  color: #055160 !important; 
+}
+
+.status-izin { 
+  background: #e2e3e5 !important; 
+  color: #41464b !important; 
+}
+
+.status-alpa { 
+  background: #f8d7da !important; 
+  color: #842029 !important; 
+}
+
+.status-libur { 
+  background: #edf6f8 !important; 
+  color: #006D77 !important; 
+}
+
+.status-htp { 
+  background: #fef3c7 !important; 
+  color: #92400e !important; 
+}
+
+.status-prakerin { 
+  background: #e0e7ff !important; 
+  color: #3730a3 !important; 
+}
+
+/* 💡 WARNA WARNING UNTUK BELUM PRESENSI / KOSONG */
+.status-kosong,
+.status-kosong-cell {
+  background: #fff3cd !important;
+  color: #856404 !important;
+  border: 1px solid #ffeeba !important;
+}
+
+.status-kosong svg {
+  stroke: #856404 !important;
+}
+
+/* ==========================================================================
+   8. PAGINATION & FOOTER
+   ========================================================================== */
+.table-footer { 
+  display: flex; 
+  justify-content: center; 
+  align-items: center; 
+  margin-top: 20px; 
+}
+
+#pagination button { 
+  background: #edf6f8 !important; 
+  color: #004f56 !important; 
+  border: 1px solid #bcd6db !important; 
+  margin: 2px; 
+  padding: 6px 12px !important; 
+  border-radius: 8px !important; 
+  font-size: 13px !important; 
+  height: auto !important; 
+}
+
+#pagination button.active { 
+  background: #006D77 !important; 
+  color: #ffffff !important; 
+  font-weight: 600 !important; 
+}
+
+footer { 
+  text-align: center; 
+  padding: 20px; 
+  font-size: 12px; 
+  color: #006D77; 
+  margin-top: 20px; 
+}
+
+/* ==========================================================================
+   9. MODALS, TOASTS & OVERLAYS
+   ========================================================================== */
+#loadingOverlay {
+  display: none; 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0, 0, 0, 0.4); 
+  backdrop-filter: blur(4px); 
+  z-index: 9999; 
+  justify-content: center; 
+  align-items: center;
+}
+
+#loadingOverlay.active { 
+  display: flex; 
+}
+
+#loadingOverlay > div { 
+  background: #ffffff; 
+  padding: 24px 30px; 
+  border-radius: 14px; 
+  text-align: center; 
+}
+
+.spinner { 
+  border: 3px solid #e3eff2; 
+  border-top: 3px solid #006D77; 
+  border-radius: 50%; 
+  width: 30px; 
+  height: 30px; 
+  animation: spin 0.8s linear infinite; 
+  margin: 0 auto; 
+}
+
+@keyframes spin { 
+  to { transform: rotate(360deg); } 
+}
+
+.modal-overlay { 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0, 0, 0, 0.4); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 9999; 
+  opacity: 0; 
+  pointer-events: none; 
+  transition: opacity 0.25s ease; 
+}
+
+.modal-overlay.active { 
+  opacity: 1; 
+  pointer-events: auto; 
+}
+
+.modal-box { 
+  background: #ffffff; 
+  padding: 20px; 
+  border-radius: 14px; 
+  width: 320px; 
+  text-align: center; 
+}
+
+#toastContainer { 
+  position: fixed; 
+  top: 20px; 
+  right: 20px; 
+  z-index: 9999; 
+}
+
+.toast { 
+  background: #ffffff; 
+  padding: 12px 16px; 
+  border-radius: 10px; 
+  margin-bottom: 10px; 
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); 
+  font-size: 13px; 
+}
+
+.toast.success { border-left: 4px solid #22c55e; }
+.toast.error   { border-left: 4px solid #ef4444; }
+.toast.info    { border-left: 4px solid #3b82f6; }
