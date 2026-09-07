@@ -274,28 +274,30 @@ function applyFilter() {
     statusTd.dataset.rowIndex = s.rowIndex;
     statusTd.dataset.statusMasuk = value;
 
+    // Mode Tampil: Single Chip
     if (value) {
       statusTd.innerHTML = `
-        <span id="statusText-${index}" class="status ${getStatusClass(value)}">
-          ${value || "Belum diisi"}
-        </span>
-        <button type="button" class="button-small" onclick="editStatus(${index}, '${value}', ${s.rowIndex})" title="Edit Status">${SVG_PENCIL}</button>
+        <div class="status-chip ${getStatusClass(value)}" onclick="editStatus(${index}, '${value}', ${s.rowIndex})" title="Klik untuk ubah status">
+          <span>${value}</span>
+          ${SVG_PENCIL}
+        </div>
       `;
     } else {
-      statusTd.classList.add("status-kosong-cell");
+      // Mode Kosong: Directly Dropdown
       statusTd.innerHTML = getDropdownHTML(index, "", s.rowIndex);
-
-      const select = statusTd.querySelector("select[name=statusMasuk]");
+      const select = statusTd.querySelector("select");
+      select.classList.add("inline-select");
+      
       select.addEventListener("change", () => {
-        statusTd.classList.remove("status-kosong-cell");
         const newValue = select.value;
+        if (!newValue) return;
+        
         statusTd.innerHTML = `
-          <span id="statusText-${index}" class="status ${getStatusClass(newValue)}">
-            ${newValue || "-- Pilih Status --"}
-          </span>
-          <button type="button" class="button-small" onclick="editStatus(${index}, '${newValue}', ${s.rowIndex})" title="Edit Status">${SVG_PENCIL}</button>
+          <div class="status-chip ${getStatusClass(newValue)}" onclick="editStatus(${index}, '${newValue}', ${s.rowIndex})" title="Klik untuk ubah status">
+            <span>${newValue}</span>
+            ${SVG_PENCIL}
+          </div>
         `;
-        statusTd.dataset.statusMasuk = newValue;
         processStatusChange(s.rowIndex, newValue, s.tanggal);
       });
     }
@@ -346,39 +348,52 @@ function renderPagination(total) {
   container.appendChild(nextBtn);
 }
 
+// Mode Edit: Dropdown Otomatis tanpa Tombol [X]
 function editStatus(index, originalValue, rowIndex) {
   const td = document.getElementById(`status-${index}`);
-  td.dataset.rowIndex = rowIndex;
+  
   td.innerHTML = `
-    ${getDropdownHTML(index, originalValue, rowIndex)}
-    <button type="button" class="button-small" onclick="cancelEdit(${index}, '${originalValue}', ${rowIndex})" title="Batal">${SVG_CLOSE}</button>
+    <select id="statusSelect-${index}" class="inline-select" onblur="cancelEdit(${index}, '${originalValue}', ${rowIndex})">
+      ${getDropdownOptionsHTML(originalValue)}
+    </select>
   `;
 
-  const select = td.querySelector("select[name=statusMasuk]");
+  const select = document.getElementById(`statusSelect-${index}`);
+  select.focus();
+
   select.addEventListener("change", () => {
     const newValue = select.value;
     const targetSiswa = dataSiswa.find(s => Number(s.rowIndex) === Number(rowIndex));
     const tgl = targetSiswa ? targetSiswa.tanggal : "";
 
     td.innerHTML = `
-      <span id="statusText-${index}" class="status ${getStatusClass(newValue)}">
-        ${newValue || "-- Pilih Status --"}
-      </span>
-      <button type="button" class="button-small" onclick="editStatus(${index}, '${newValue}', ${rowIndex})" title="Edit Status">${SVG_PENCIL}</button>
+      <div class="status-chip ${getStatusClass(newValue)}" onclick="editStatus(${index}, '${newValue}', ${rowIndex})" title="Klik untuk ubah status">
+        <span>${newValue || "Belum diisi"}</span>
+        ${SVG_PENCIL}
+      </div>
     `;
-    td.dataset.statusMasuk = newValue;
     processStatusChange(rowIndex, newValue, tgl);
   });
 }
 
 function cancelEdit(index, originalValue, rowIndex) {
   const td = document.getElementById(`status-${index}`);
-  td.innerHTML = `
-    <span id="statusText-${index}" class="status ${getStatusClass(originalValue)}">
-      ${originalValue || "-- Pilih Status --"}
-    </span>
-    <button type="button" class="button-small" onclick="editStatus(${index}, '${originalValue}', ${rowIndex})" title="Edit Status">${SVG_PENCIL}</button>
-  `;
+  // Hanya cancel jika select tidak sedang berganti nilai
+  setTimeout(() => {
+    if (document.activeElement?.id !== `statusSelect-${index}`) {
+      td.innerHTML = `
+        <div class="status-chip ${getStatusClass(originalValue)}" onclick="editStatus(${index}, '${originalValue}', ${rowIndex})" title="Klik untuk ubah status">
+          <span>${originalValue || "Belum diisi"}</span>
+          ${SVG_PENCIL}
+        </div>
+      `;
+    }
+  }, 150);
+}
+
+function getDropdownOptionsHTML(selected) {
+  const opsiStatus = ["", "Tepat Waktu", "Terlambat", "Sangat Terlambat", "Sangat Terlambat Sekali", "Sakit", "Izin", "Alpa", "Hadir Tidak Presensi", "Libur"];
+  return opsiStatus.map(o => `<option value="${o}" ${o === selected ? "selected" : ""}>${o || "-- Pilih Status --"}</option>`).join('');
 }
 
 let syncTimer = null; // Timer untuk Debounce
