@@ -422,76 +422,78 @@ tr:nth-child(even) td {
   font-weight: 500 !important;
 }
 
-/* 💡 PALET WARNA BADGE STATUS PRESENSI (VIBRANT / LEBIH HIDUP) */
+/* 💡 PALET WARNA STATUS PRESENSI (VIBRANT & TEKS HITAM PEKAT) */
 .status-hadir { 
-  background: #a3e4d7 !important; 
-  color: #0e6251 !important; 
-  border: 1px solid #76d7c4 !important;
+  background: #52be80 !important; /* Hijau lebih matang & hidup */
+  color: #000000 !important; 
+  border: 1px solid #27ae60 !important;
 }
 
 .status-terlambat { 
-  background: #f9e79f !important; 
-  color: #7d6608 !important; 
-  border: 1px solid #f7dc6f !important;
-}
-
-.status-terlambat-berat { 
-  background: #f5b041 !important; 
-  color: #6e2c00 !important; 
-  border: 1px solid #eb984e !important;
-}
-
-.status-terlambat-ekstrem { 
-  background: #f1948a !important; 
-  color: #641e16 !important; 
-  border: 1px solid #e74c3c !important;
-}
-
-.status-sakit { 
-  background: #85c1e9 !important; 
-  color: #1b4f72 !important; 
-  border: 1px solid #5499c7 !important;
-}
-
-.status-izin { 
-  background: #d7dbdd !important; 
-  color: #2c3e50 !important; 
-  border: 1px solid #bdc3c7 !important;
-}
-
-.status-alpa { 
-  background: #ec7063 !important; 
-  color: #ffffff !important; 
-  border: 1px solid #c0392b !important;
-}
-
-.status-libur { 
-  background: #a2d9ce !important; 
-  color: #117864 !important; 
-  border: 1px solid #48c9b0 !important;
-}
-
-.status-htp { 
-  background: #f8c471 !important; 
-  color: #7e5109 !important; 
+  background: #f7dc6f !important; /* Kuning yang lebih pekat & tidak pucat */
+  color: #000000 !important; 
   border: 1px solid #f39c12 !important;
 }
 
+.status-terlambat-berat { 
+  background: #f39c12 !important; 
+  color: #000000 !important; 
+  border: 1px solid #d68910 !important;
+}
+
+.status-terlambat-ekstrem { 
+  background: #ec7063 !important; 
+  color: #000000 !important; 
+  border: 1px solid #cb4335 !important;
+}
+
+.status-sakit { 
+  background: #5499c7 !important; 
+  color: #000000 !important; 
+  border: 1px solid #2980b9 !important;
+}
+
+.status-izin { 
+  background: #bdc3c7 !important; 
+  color: #000000 !important; 
+  border: 1px solid #95a5a6 !important;
+}
+
+.status-alpa { 
+  background: #e74c3c !important; 
+  color: #000000 !important; 
+  border: 1px solid #b03a2e !important;
+}
+
+.status-libur { 
+  background: #48c9b0 !important; 
+  color: #000000 !important; 
+  border: 1px solid #16a085 !important;
+}
+
+.status-htp { 
+  background: #f5b041 !important; 
+  color: #000000 !important; 
+  border: 1px solid #d35400 !important;
+}
+
 .status-prakerin { 
-  background: #a9cce3 !important; 
-  color: #154360 !important; 
+  background: #7fb3d5 !important; 
+  color: #000000 !important; 
   border: 1px solid #5499c7 !important;
 }
 
-/* 💡 BEDAKAN TOTAL: Warna Khusus untuk "Belum Presensi" / Kosong */
+/* 💡 KODE KHUSUS "BELUM PRESENSI" / KOSONG */
 .status-kosong,
 .status-kosong-cell {
-  background: #ffb703 !important; /* Oranye Kuning Amber Sangat Terang & Hidup */
-  color: #000000 !important;         /* Teks Hitam Pekat agar kontras maksimal */
+  background: #ffb703 !important; 
+  color: #000000 !important; 
   border: 1px solid #fb8500 !important;
   font-weight: 600 !important;
 }
 
+/* 💡 KUNCI SEMUA IKON PENSIL JADI HITAM IKUT TEKS */
+.status-chip svg,
 .status-kosong svg {
   stroke: #000000 !important;
 }
