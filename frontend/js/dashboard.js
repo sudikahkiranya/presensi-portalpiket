@@ -1,4 +1,4 @@
-// ⚠️ MASUKKAN URL DEPLOYMENT APPS SCRIPT LENGKAP KAMU DI SINI
+// ⚠️ URL DEPLOYMENT APPS SCRIPT WEB APP
 const API_URL = "https://script.google.com/macros/s/AKfycbxR0bwVJCXQY5DQKawqOBQO6vNwU8UMFLJ3AuBytSRgQR3TW9rJZ0r58JGkL2u_HxYMhw/exec";
 
 window.dataSiswa = [];
@@ -21,11 +21,12 @@ function showLoading(text = "Memproses...") {
   const el = document.getElementById("loadingOverlay");
   const label = document.getElementById("loadingText");
   if (label) label.textContent = text;
-  el.classList.add("active");
+  if (el) el.classList.add("active");
 }
 
 function hideLoading() {
-  document.getElementById("loadingOverlay").classList.remove("active");
+  const el = document.getElementById("loadingOverlay");
+  if (el) el.classList.remove("active");
 }
 
 function initFormPiket() {
@@ -53,6 +54,9 @@ function initFormPiket() {
   } else {
     fetchData();
   }
+
+  // Jalankan Auto Polling background
+  startAutoPolling();
 }
 
 function refreshData() {
@@ -97,7 +101,7 @@ async function fetchData(selectedDate) {
 function renderTable(data) {
   dataSiswa = data;
   populateFilterKelas(data);
-  populateFilterStatus(data); // 💡 Populate status secara dinamis
+  populateFilterStatus(data);
   
   document.getElementById("filterKelas").value = lastFilter.kelas || "";
   document.getElementById("filterTingkat").value = lastFilter.tingkat || "";
@@ -108,7 +112,7 @@ function renderTable(data) {
 }
 
 /**
- * POPULATE DROPDOWN KELAS DINAMIS
+ * 💡 POPULATE DROPDOWN KELAS DINAMIS (URUTAN TINGKAT X -> XI -> XII)
  */
 function populateFilterKelas(data) {
   const filterKelas = document.getElementById("filterKelas");
@@ -121,26 +125,34 @@ function populateFilterKelas(data) {
     }
   });
 
-  // Bobot urutan tingkat (X = 1, XI = 2, XII = 3)
-  const getWeight = (label) => {
-    if (label.includes(" X-") || label.endsWith(" X")) return 1;
-    if (label.includes(" XI-") || label.endsWith(" XI")) return 2;
-    if (label.includes(" XII-") || label.endsWith(" XII")) return 3;
-    return 99;
+  const parseLabel = (label) => {
+    const parts = label.split(" "); 
+    const jurusan = parts[0] || "";
+    const sisa = parts[1] || ""; 
+    const [tingkat, sub] = sisa.split("-"); 
+
+    let weight = 99;
+    if (tingkat === "X") weight = 1;
+    else if (tingkat === "XI") weight = 2;
+    else if (tingkat === "XII") weight = 3;
+
+    return { jurusan, weight, sub: sub || "" };
   };
 
-  // Sort berdasarkan Jurusan dulu, lalu Urutan Tingkat (X -> XI -> XII)
   const sortedKeys = [...kelasMap.keys()].sort((a, b) => {
     const labelA = kelasMap.get(a);
     const labelB = kelasMap.get(b);
-    
-    const weightA = getWeight(labelA);
-    const weightB = getWeight(labelB);
 
-    if (weightA !== weightB) {
-      return weightA - weightB; // Urutkan X -> XI -> XII
+    const pA = parseLabel(labelA);
+    const pB = parseLabel(labelB);
+
+    if (pA.jurusan !== pB.jurusan) {
+      return pA.jurusan.localeCompare(pB.jurusan);
     }
-    return labelA.localeCompare(labelB); // Urutkan nama sub-kelas/jurusan
+    if (pA.weight !== pB.weight) {
+      return pA.weight - pB.weight;
+    }
+    return pA.sub.localeCompare(pB.sub);
   });
 
   sortedKeys.forEach(idRombel => {
@@ -158,17 +170,14 @@ function populateFilterStatus(data) {
   const filterStatus = document.getElementById("filterStatus");
   const currentVal = filterStatus.value;
   
-  // Ambil semua status unique yang ada di data
   const statusSet = new Set(data.map(s => s.statusMasuk).filter(Boolean));
   
-  // Urutan standar sebagai acuan jika ada di data
   const defaultOrder = [
     "Tepat Waktu", "Terlambat", "Sangat Terlambat", 
     "Sangat Terlambat Sekali", "Sakit", "Izin", 
     "Alpa", "Hadir Tidak Presensi", "Libur"
   ];
 
-  // Gabungkan status dari data dengan urutan standar
   const sortedStatus = [...statusSet].sort((a, b) => {
     let idxA = defaultOrder.indexOf(a);
     let idxB = defaultOrder.indexOf(b);
@@ -193,10 +202,9 @@ function populateFilterStatus(data) {
 }
 
 /**
- * 💡 DROPDOWN EDIT STATUS DALAM TABEL (DINAMIS & LENGKAP)
+ * 💡 DROPDOWN EDIT STATUS DALAM TABEL (LENGKAP)
  */
 function getDropdownHTML(index, selected, rowIndex) {
-  // Opsi pilihan status saat petugas/admin mengubah status siswa
   const opsiStatus = [
     "", 
     "Tepat Waktu", 
@@ -216,18 +224,6 @@ function getDropdownHTML(index, selected, rowIndex) {
     </select>
     <input type="hidden" name="rowIndex" value="${rowIndex}">
   `;
-}
-
-function populateFilterKelas(data) {
-  const kelasSet = new Set(data.map(s => s.kelas).filter(Boolean));
-  const filterKelas = document.getElementById("filterKelas");
-  filterKelas.innerHTML = `<option value="">Semua</option>`;
-  [...kelasSet].sort().forEach(kelas => {
-    const opt = document.createElement("option");
-    opt.value = kelas;
-    opt.textContent = kelas;
-    filterKelas.appendChild(opt);
-  });
 }
 
 function applyFilter() {
@@ -265,7 +261,7 @@ function applyFilter() {
   pageData.forEach((s, idx) => {
     const tr = document.createElement("tr");
     const namaTd = document.createElement("td"); namaTd.textContent = s.nama || "-";
-    const kelasTd = document.createElement("td"); kelasTd.textContent = formatNamaKelas(s.kelas, s.tingkat); // Mengubah AKN-A26 + X jadi "AKN X-A"
+    const kelasTd = document.createElement("td"); kelasTd.textContent = formatNamaKelas(s.kelas, s.tingkat);
     const tingkatTd = document.createElement("td"); tingkatTd.textContent = s.tingkat || "-";
     const jamMasukTd = document.createElement("td"); jamMasukTd.textContent = s.jamMasuk || "-";
     const jamPulangTd = document.createElement("td"); jamPulangTd.textContent = s.jamPulang || "-";
@@ -300,7 +296,7 @@ function applyFilter() {
           <button type="button" class="button-small" onclick="editStatus(${index}, '${newValue}', ${s.rowIndex})" title="Edit Status">${SVG_PENCIL}</button>
         `;
         statusTd.dataset.statusMasuk = newValue;
-        processStatusChange(s.rowIndex, newValue);
+        processStatusChange(s.rowIndex, newValue, s.tanggal);
       });
     }
 
@@ -361,6 +357,9 @@ function editStatus(index, originalValue, rowIndex) {
   const select = td.querySelector("select[name=statusMasuk]");
   select.addEventListener("change", () => {
     const newValue = select.value;
+    const targetSiswa = dataSiswa.find(s => Number(s.rowIndex) === Number(rowIndex));
+    const tgl = targetSiswa ? targetSiswa.tanggal : "";
+
     td.innerHTML = `
       <span id="statusText-${index}" class="status ${getStatusClass(newValue)}">
         ${newValue || "-- Pilih Status --"}
@@ -368,7 +367,7 @@ function editStatus(index, originalValue, rowIndex) {
       <button type="button" class="button-small" onclick="editStatus(${index}, '${newValue}', ${rowIndex})" title="Edit Status">${SVG_PENCIL}</button>
     `;
     td.dataset.statusMasuk = newValue;
-    processStatusChange(rowIndex, newValue);
+    processStatusChange(rowIndex, newValue, tgl);
   });
 }
 
@@ -382,22 +381,12 @@ function cancelEdit(index, originalValue, rowIndex) {
   `;
 }
 
-function getDropdownHTML(index, selected, rowIndex) {
-  const opsi = ["", "Sakit", "Izin", "Alpa", "Libur"];
-  return `
-    <select name="statusMasuk" id="statusSelect-${index}">
-      ${opsi.map(o => `<option value="${o}" ${o === selected ? "selected" : ""}>${o || "-- Pilih Status --"}</option>`).join('')}
-    </select>
-    <input type="hidden" name="rowIndex" value="${rowIndex}">
-  `;
-}
-
 let syncTimer = null; // Timer untuk Debounce
 
 /**
- * 💡 Fungsi Utama: Catat Perubahan + Trigger Debounced Auto-Sync
+ * 💡 FUNGSI UTAMA: Catat Perubahan + Trigger Debounced Auto-Sync
  */
-function processStatusChange(rowIndex, newValue) {
+function processStatusChange(rowIndex, newValue, tanggal) {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   const piketID = user ? user.nama : "Petugas";
   const timestamp = new Date().toISOString();
@@ -413,11 +402,13 @@ function processStatusChange(rowIndex, newValue) {
   if (existingIdx > -1) {
     queue[existingIdx].statusMasuk = newValue;
     queue[existingIdx].timestamp = timestamp;
+    if (tanggal) queue[existingIdx].tanggal = tanggal;
   } else {
     queue.push({
       rowIndex: parseInt(rowIndex, 10),
       statusMasuk: newValue,
       piketID: piketID,
+      tanggal: tanggal || (targetSiswa ? targetSiswa.tanggal : ""),
       timestamp: timestamp
     });
   }
@@ -436,16 +427,14 @@ function processStatusChange(rowIndex, newValue) {
  * ⚡ Eksekutor Auto-Sync ke Server
  */
 async function triggerAutoSync() {
-  // Jika offline, batalkan auto-sync (data tetap aman di LocalStorage)
   if (!navigator.onLine) {
-    showToast("Offline: Perubahan tersimpan lokal", "info", 2000);
+    showToast("Offline: Perubahan tersimpan di perangkat", "info", 2000);
     return;
   }
 
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   if (queue.length === 0) return;
 
-  // Ubah status tombol jadi indikator Syncing
   const saveBtn = document.querySelector("#absenForm button[type='submit']");
   if (saveBtn) {
     saveBtn.disabled = true;
@@ -462,19 +451,18 @@ async function triggerAutoSync() {
     const result = await response.json();
 
     if (result.success) {
-      // Clear queue setelah berhasil tersimpan di Google Sheets
       localStorage.setItem("piket_pending_updates", "[]");
       updatePendingBadge();
       showToast("Data tersimpan otomatis ke server", "success", 2000);
     }
   } catch (err) {
-    console.warn("[Auto-Sync Background] Server sibuk atau jaringan terputus. Data aman di LocalStorage.");
+    console.warn("[Auto-Sync Background] Server sibuk/koneksi terputus. Data tersimpan di LocalStorage.");
     updatePendingBadge();
   }
 }
 
 /**
- * 🌐 EVENT LISTENERS: Auto-Sync Saat Koneksi Internet Kembali
+ * 🌐 EVENT LISTENERS: Auto-Sync Saat Online
  */
 window.addEventListener("online", () => {
   showToast("Koneksi terhubung kembali. Menyingkronkan data...", "info");
@@ -487,7 +475,7 @@ window.addEventListener("offline", () => {
 
 function updatePendingBadge() {
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
-  let pendingCount = queue.filter(item => item.sent === false).length;
+  let pendingCount = queue.length;
   const saveBtn = document.querySelector("#absenForm button[type='submit']");
   if (!saveBtn) return;
 
@@ -507,20 +495,19 @@ function updatePendingBadge() {
 async function handleSubmit(e) {
   if (e) e.preventDefault();
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
-  let pendingItems = queue.filter(item => item.sent === false);
 
-  if (pendingItems.length === 0) {
+  if (queue.length === 0) {
     showToast("Tidak ada perubahan data yang perlu disinkronkan.", "info");
     return;
   }
 
-  showLoading(`Menyinkronkan ${pendingItems.length} data ke server...`);
+  showLoading(`Menyinkronkan ${queue.length} data ke server...`);
 
   try {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "simpanStatusMasuk", payload: pendingItems })
+      body: JSON.stringify({ action: "simpanStatusMasuk", payload: queue })
     });
     const resText = await response.text();
     const result = JSON.parse(resText);
@@ -538,6 +525,58 @@ async function handleSubmit(e) {
     showToast("Gagal terhubung ke server API", "error");
   }
 }
+
+/**
+ * 🔄 AUTO POLLING BACKGROUND (SETIAP 30 DETIK)
+ */
+let pollingTimer = null;
+const POLLING_INTERVAL = 30000;
+
+function startAutoPolling() {
+  stopAutoPolling();
+  pollingTimer = setInterval(() => {
+    let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
+    if (navigator.onLine && queue.length === 0) {
+      silentFetchData();
+    }
+  }, POLLING_INTERVAL);
+}
+
+function stopAutoPolling() {
+  if (pollingTimer) clearInterval(pollingTimer);
+}
+
+async function silentFetchData() {
+  const user = JSON.parse(localStorage.getItem("piket_user"));
+  const dateVal = document.getElementById("selectedDate")?.value || new Date().toISOString().split("T")[0];
+
+  try {
+    let url = `${API_URL}?action=getSiswaHariIni`;
+    if (user && user.role === "Admin" && dateVal) {
+      url = `${API_URL}?action=getSiswaByTanggal&tanggal=${dateVal}`;
+    }
+
+    const response = await fetch(url);
+    const newData = await response.json();
+
+    if (Array.isArray(newData) && newData.length > 0) {
+      dataSiswa = newData;
+      applyFilter.keepPage = true; 
+      applyFilter();
+    }
+  } catch (err) {
+    console.warn("[Auto-Polling] Gagal menarik data background.");
+  }
+}
+
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    stopAutoPolling();
+  } else {
+    silentFetchData();
+    startAutoPolling();
+  }
+});
 
 function setPetugasPiket(nama) {
   document.getElementById('petugasPiket').textContent = `👤 ${nama || "-"}`;
@@ -566,6 +605,7 @@ function getStatusClass(status) {
 
 function showToast(message, type = "info", duration = 3000) {
   const container = document.getElementById("toastContainer");
+  if (!container) return;
   const toast = document.createElement("div");
   toast.className = `toast ${type}`;
   toast.textContent = message;
@@ -584,7 +624,6 @@ function closeConfirm() { document.getElementById("confirmModal").classList.remo
 
 document.addEventListener('DOMContentLoaded', initFormPiket);
 
-// HANDLER NATIVE UNTUK TOMBOL BARU
 function tarikDataPresensi() {
   showLoading("Memperbarui data presensi...");
   setTimeout(() => {
@@ -604,10 +643,6 @@ function cetakRekap() {
   }, 1200);
 }
 
-/**
- * Konversi Dinamis gabungan id_rombel & tingkat
- * Contoh: idRombel="AKN-A26", tingkat="X" -> Output: "AKN X-A"
- */
 function formatNamaKelas(idRombel, tingkat) {
   if (!idRombel || typeof idRombel !== "string") return "-";
 
@@ -621,60 +656,4 @@ function formatNamaKelas(idRombel, tingkat) {
   }
 
   return idRombel;
-}
-
-// 💡 Update pada Populating Dropdown Filter Kelas
-function populateFilterKelas(data) {
-  const filterKelas = document.getElementById("filterKelas");
-  filterKelas.innerHTML = `<option value="">Semua</option>`;
-  
-  const kelasMap = new Map();
-  data.forEach(s => {
-    if (s.kelas && !kelasMap.has(s.kelas)) {
-      kelasMap.set(s.kelas, formatNamaKelas(s.kelas, s.tingkat));
-    }
-  });
-
-  // Helper untuk memecah label "AKN X-A" menjadi komponen [jurusan, bobotTingkat, subKelas]
-  const parseLabel = (label) => {
-    const parts = label.split(" "); // ["AKN", "X-A"]
-    const jurusan = parts[0] || "";
-    const sisa = parts[1] || ""; // "X-A"
-    const [tingkat, sub] = sisa.split("-"); // ["X", "A"]
-
-    let weight = 99;
-    if (tingkat === "X") weight = 1;
-    else if (tingkat === "XI") weight = 2;
-    else if (tingkat === "XII") weight = 3;
-
-    return { jurusan, weight, sub };
-  };
-
-  const sortedKeys = [...kelasMap.keys()].sort((a, b) => {
-    const labelA = kelasMap.get(a);
-    const labelB = kelasMap.get(b);
-
-    const pA = parseLabel(labelA);
-    const pB = parseLabel(labelB);
-
-    // 1. Urutkan berdasarkan Jurusan (AKN, DKV, FAR, dst.)
-    if (pA.jurusan !== pB.jurusan) {
-      return pA.jurusan.localeCompare(pB.jurusan);
-    }
-
-    // 2. Urutkan berdasarkan Tingkat (X -> XI -> XII)
-    if (pA.weight !== pB.weight) {
-      return pA.weight - pB.weight;
-    }
-
-    // 3. Urutkan berdasarkan Abjad Sub-Kelas (A -> B)
-    return pA.sub.localeCompare(pB.sub);
-  });
-
-  sortedKeys.forEach(idRombel => {
-    const opt = document.createElement("option");
-    opt.value = idRombel; 
-    opt.textContent = kelasMap.get(idRombel); 
-    filterKelas.appendChild(opt);
-  });
 }
