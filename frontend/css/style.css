@@ -422,80 +422,80 @@ tr:nth-child(even) td {
   font-weight: 500 !important;
 }
 
-/* 💡 PALET WARNA STATUS PRESENSI (VIBRANT & TEKS HITAM PEKAT) */
+/* ==========================================================================
+   ELEGANT SOFT-VIBRANT STATUS PALETTE (UI Modern & Clean)
+   ========================================================================== */
+
+/* 🟢 Tepat Waktu: Hijau Mint Segar */
 .status-hadir { 
-  background: #52be80 !important; /* Hijau lebih matang & hidup */
-  color: #000000 !important; 
-  border: 1px solid #27ae60 !important;
+  background: #d1e7dd !important; 
+  color: #0f5132 !important; 
+  border: 1px solid #badbcc !important;
 }
 
+/* 🟡 Terlambat: Kuning Emas Hangat (Tidak Pucat) */
 .status-terlambat { 
-  background: #f7dc6f !important; /* Kuning yang lebih pekat & tidak pucat */
-  color: #000000 !important; 
-  border: 1px solid #f39c12 !important;
+  background: #ffecb5 !important; 
+  color: #664d03 !important; 
+  border: 1px solid #ffe8a1 !important;
 }
 
+/* 🟠 Terlambat Berat: Oranye Soft */
 .status-terlambat-berat { 
-  background: #f39c12 !important; 
-  color: #000000 !important; 
-  border: 1px solid #d68910 !important;
+  background: #ffe5d0 !important; 
+  color: #8c4700 !important; 
+  border: 1px solid #fed2b0 !important;
 }
 
-.status-terlambat-ekstrem { 
-  background: #ec7063 !important; 
-  color: #000000 !important; 
-  border: 1px solid #cb4335 !important;
-}
-
-.status-sakit { 
-  background: #5499c7 !important; 
-  color: #000000 !important; 
-  border: 1px solid #2980b9 !important;
-}
-
-.status-izin { 
-  background: #bdc3c7 !important; 
-  color: #000000 !important; 
-  border: 1px solid #95a5a6 !important;
-}
-
+/* 🔴 Sangat Terlambat / Alpa: Merah Bata Soft Elegan */
+.status-terlambat-ekstrem,
 .status-alpa { 
-  background: #e74c3c !important; 
-  color: #000000 !important; 
-  border: 1px solid #b03a2e !important;
+  background: #f8d7da !important; 
+  color: #842029 !important; 
+  border: 1px solid #f5c2c7 !important;
 }
 
-.status-libur { 
-  background: #48c9b0 !important; 
-  color: #000000 !important; 
-  border: 1px solid #16a085 !important;
+/* 🔵 Sakit: Biru Calm */
+.status-sakit { 
+  background: #cff4fc !important; 
+  color: #055160 !important; 
+  border: 1px solid #b6effb !important;
+}
+
+/* ⚫ Izin / Netral: Abu Modern */
+.status-izin { 
+  background: #e2e3e5 !important; 
+  color: #41464b !important; 
+  border: 1px solid #d3d6d8 !important;
+}
+
+/* 🟦 Libur / Prakerin: Indigo Soft */
+.status-libur,
+.status-prakerin { 
+  background: #cfe2ff !important; 
+  color: #084298 !important; 
+  border: 1px solid #b6d4fe !important;
 }
 
 .status-htp { 
-  background: #f5b041 !important; 
-  color: #000000 !important; 
-  border: 1px solid #d35400 !important;
+  background: #fff3cd !important; 
+  color: #664d03 !important; 
+  border: 1px solid #ffeeba !important;
 }
 
-.status-prakerin { 
-  background: #7fb3d5 !important; 
-  color: #000000 !important; 
-  border: 1px solid #5499c7 !important;
-}
-
-/* 💡 KODE KHUSUS "BELUM PRESENSI" / KOSONG */
+/* 🟡 "Belum Presensi" / Kosong: Amber Kuning Madu (Pembeda Jelas) */
 .status-kosong,
 .status-kosong-cell {
-  background: #ffb703 !important; 
-  color: #000000 !important; 
-  border: 1px solid #fb8500 !important;
+  background: #ffc107 !important; 
+  color: #332701 !important; 
+  border: 1px solid #ffca2c !important;
   font-weight: 600 !important;
 }
 
-/* 💡 KUNCI SEMUA IKON PENSIL JADI HITAM IKUT TEKS */
+/* 💡 KUNCI WARNA IKON PENSIL MENYESUAIKAN TEKS */
 .status-chip svg,
 .status-kosong svg {
-  stroke: #000000 !important;
+  stroke: currentColor !important;
 }
 
 /* ==========================================================================
