@@ -486,9 +486,9 @@ tr:nth-child(even) td {
 /* 🟡 "Belum Presensi" / Kosong: Amber Kuning Madu (Pembeda Jelas) */
 .status-kosong,
 .status-kosong-cell {
-  background: #ffc107 !important; 
-  color: #332701 !important; 
-  border: 1px solid #ffca2c !important;
+  background: #e9ecef !important; 
+  color: #495057 !important; 
+  border: 1px solid #ced4da !important;
   font-weight: 600 !important;
 }
 
