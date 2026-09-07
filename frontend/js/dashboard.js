@@ -605,7 +605,7 @@ function setRoleUser(role) {
 }
 
 function getStatusClass(status) {
-  if (!status) return "status-kosong";
+  if (!status || status.trim() === "" || status === "Belum Presensi") return "status-kosong";
   const s = status.toLowerCase();
   if (s.includes("tepat waktu")) return "status-hadir";
   if (s.includes("sangat terlambat sekali")) return "status-terlambat-ekstrem";
@@ -617,7 +617,7 @@ function getStatusClass(status) {
   if (s.includes("alpa")) return "status-alpa";
   if (s.includes("libur")) return "status-libur";
   if (s.includes("prakerin") || s.includes("pkl")) return "status-prakerin";
-  return "";
+  return "status-kosong"; // Default fallback jika ada string lain yang tidak dikenal
 }
 
 function showToast(message, type = "info", duration = 3000) {
