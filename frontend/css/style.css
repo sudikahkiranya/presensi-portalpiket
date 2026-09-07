@@ -473,16 +473,16 @@ tr:nth-child(even) td {
   color: #3730a3 !important; 
 }
 
-/* 💡 WARNA WARNING UNTUK BELUM PRESENSI / KOSONG */
+/* 💡 WARNA WARNING MERAH UNTUK BELUM PRESENSI / KOSONG */
 .status-kosong,
 .status-kosong-cell {
-  background: #fff3cd !important;
-  color: #856404 !important;
-  border: 1px solid #ffeeba !important;
+  background: #f8d7da !important;
+  color: #842029 !important;
+  border: 1px solid #f5c2c7 !important;
 }
 
 .status-kosong svg {
-  stroke: #856404 !important;
+  stroke: #842029 !important;
 }
 
 /* ==========================================================================
