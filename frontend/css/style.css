@@ -483,17 +483,17 @@ tr:nth-child(even) td {
   border: 1px solid #5499c7 !important;
 }
 
-/* 💡 WARNA WARNING MERAH PEKAT UNTUK BELUM PRESENSI / KOSONG */
+/* 💡 BEDAKAN TOTAL: Warna Khusus untuk "Belum Presensi" / Kosong */
 .status-kosong,
 .status-kosong-cell {
-  background: #f1948a !important;
-  color: #511510 !important;
-  border: 1px solid #e74c3c !important;
+  background: #ffb703 !important; /* Oranye Kuning Amber Sangat Terang & Hidup */
+  color: #000000 !important;         /* Teks Hitam Pekat agar kontras maksimal */
+  border: 1px solid #fb8500 !important;
   font-weight: 600 !important;
 }
 
 .status-kosong svg {
-  stroke: #511510 !important;
+  stroke: #000000 !important;
 }
 
 /* ==========================================================================
