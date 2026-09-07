@@ -321,34 +321,34 @@ footer { text-align: center; padding: 20px; font-size: 12px; color: #006D77; mar
   opacity: 1;
 }
 
-/* 💡 1. Kunci Kolom Tabel Status (Center Align & Fixed Size) */
+/* 💡 1. Lebarkan Kolom Status di Tabel (Kunci Lebar 220px) */
 #tbodySiswa td:nth-child(5) {
-  width: 210px;
-  max-width: 210px;
-  min-width: 210px;
+  width: 220px;
+  max-width: 220px;
+  min-width: 220px;
   text-align: center;
   vertical-align: middle;
   box-sizing: border-box;
 }
 
-/* 💡 2. Base Dimensi Identik untuk Chip & Select (Border Radius 8px) */
+/* 💡 2. Dimensi Lebar Baru (208px) & Font Weight Normal/Medium (500) */
 .status-chip,
 .inline-select {
-  width: 190px !important;
+  width: 208px !important;       /* Lebar lega agar teks panjang & ikon muat sempurna */
   height: 32px !important;
-  border-radius: 8px !important; /* 👈 Kelengkungan moderat/pas */
-  font-size: 13px !important;
-  font-weight: 600 !important;
+  border-radius: 8px !important; /* Radius 8px yang modern */
+  font-size: 12.5px !important;
+  font-weight: 500 !important;   /* 👈 Mengubah bold jadi normal/medium (tidak tebal) */
   box-sizing: border-box !important;
   margin: 0 auto !important;
 }
 
-/* Style Khusus Interactive Chip */
+/* 💡 3. Style Chip Status */
 .status-chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;                      /* Jarak antar teks dan ikon pensil */
   padding: 0 12px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -357,13 +357,19 @@ footer { text-align: center; padding: 20px; font-size: 12px; color: #006D77; mar
   white-space: nowrap;
 }
 
-.status-chip:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  filter: brightness(0.95);
+.status-chip span {
+  font-weight: 500 !important;   /* Memastikan teks di dalam span tidak bold */
 }
 
-/* Style Khusus Dropdown Select */
+/* 💡 4. Kunci Ikon Pensil Agar Tetap Muncul Konsisten */
+.status-chip svg {
+  flex-shrink: 0 !important;
+  width: 13px;
+  height: 13px;
+  opacity: 0.65;
+}
+
+/* 💡 5. Style Dropdown Select Saat Mode Edit */
 .inline-select {
   display: inline-block;
   padding: 0 10px 0 14px;
