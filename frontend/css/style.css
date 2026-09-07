@@ -422,29 +422,31 @@ tr:nth-child(even) td {
   font-weight: 500 !important;
 }
 
-/* 🟢 1. Hadir / Tepat Waktu: Hijau Mint */
+/* 🟢 1. Hadir / Tepat Waktu */
 .status-hadir { 
   background: #d1e7dd !important; 
   color: #0f5132 !important; 
   border: 1px solid #badbcc !important;
 }
 
-/* 🟡 2. Terlambat Biasa: Kuning Emas */
+/* 🟡 2. Terlambat (Biasa) */
 .status-terlambat { 
   background: #ffecb5 !important; 
   color: #664d03 !important; 
   border: 1px solid #ffe8a1 !important;
 }
 
-/* 🟠 3. Terlambat Berat / HTP: Oranye Hangat */
+/* 🟠 3. Terlambat Berat & Sangat Terlambat */
 .status-terlambat-berat,
-.status-htp { 
+.status-terlambat, /* (opsional pengaman) */
+.status-htp,
+.status-terlambat-ekstrem:not(.sangat-parah) { 
   background: #ffe5d0 !important; 
   color: #8c4700 !important; 
   border: 1px solid #fed2b0 !important;
 }
 
-/* 🔴 4. Sangat Terlambat Sekali & Alpa: Merah Bata / Rose */
+/* 🔴 4. Sangat Terlambat Sekali & Alpa (Merah Tegas) */
 .status-terlambat-ekstrem,
 .status-alpa { 
   background: #f8d7da !important; 
@@ -452,36 +454,32 @@ tr:nth-child(even) td {
   border: 1px solid #f5c2c7 !important;
 }
 
-/* 🔵 5. Sakit, Izin, Libur, Prakerin */
+/* 🔵 5. Sakit */
 .status-sakit { 
   background: #cff4fc !important; 
   color: #055160 !important; 
   border: 1px solid #b6effb !important;
 }
 
-.status-izin { 
+/* ⚫ 6. Izin, Libur, Prakerin (Netral Soft) */
+.status-izin,
+.status-libur,
+.status-prakerin { 
   background: #e2e3e5 !important; 
   color: #41464b !important; 
   border: 1px solid #d3d6d8 !important;
 }
 
-.status-libur,
-.status-prakerin { 
-  background: #cfe2ff !important; 
-  color: #084298 !important; 
-  border: 1px solid #b6d4fe !important;
-}
-
-/* 🟣 6. "Belum Presensi" / Kosong: Ungu Muda Elegan (Biar Jauh dari Kuning & Merah) */
+/* 🔘 7. "Belum Presensi" / Kosong: Abu-abu Gelap Elegan (Netral Kosong) */
 .status-kosong,
 .status-kosong-cell {
-  background: #e0aaff !important; 
-  color: #3c096c !important; 
-  border: 1px solid #c77dff !important;
+  background: #ced4da !important; 
+  color: #212529 !important; 
+  border: 1px solid #adb5bd !important;
   font-weight: 600 !important;
 }
 
-/* KUNCI WARNA IKON PENSIL MENYESUAIKAN TEKS */
+/* IKON PENSIL MENYESUAIKAN TEKS */
 .status-chip svg,
 .status-kosong svg {
   stroke: currentColor !important;
