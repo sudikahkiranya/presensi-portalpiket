@@ -23,7 +23,7 @@ body.login-body {
   background: white;
   padding: 40px 30px;
   margin: 20px;
-  border-radius: 10px;
+  border-radius: 20px;
   border: 1px solid #e3eff2;
   box-shadow: 0 10px 25px rgba(0,0,0,0.08);
   text-align: center;
@@ -331,12 +331,12 @@ footer { text-align: center; padding: 20px; font-size: 12px; color: #006D77; mar
   box-sizing: border-box;
 }
 
-/* 💡 2. Base Dimensi Identik untuk Chip & Select */
+/* 💡 2. Base Dimensi Identik untuk Chip & Select (Border Radius 8px) */
 .status-chip,
 .inline-select {
   width: 190px !important;
   height: 32px !important;
-  border-radius: 20px !important; /* Bentuk pill kapsul yang persis sama */
+  border-radius: 8px !important; /* 👈 Kelengkungan moderat/pas */
   font-size: 13px !important;
   font-weight: 600 !important;
   box-sizing: border-box !important;
@@ -374,5 +374,5 @@ footer { text-align: center; padding: 20px; font-size: 12px; color: #006D77; mar
   cursor: pointer;
   box-shadow: 0 2px 6px rgba(0, 109, 119, 0.15);
   text-align: center;
-  text-align-last: center; /* Memaksa teks di dalam select berada di tengah */
+  text-align-last: center;
 }
