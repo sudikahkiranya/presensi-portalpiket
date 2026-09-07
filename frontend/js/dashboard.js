@@ -267,6 +267,7 @@ function applyFilter() {
     const jamPulangTd = document.createElement("td"); jamPulangTd.textContent = s.jamPulang || "-";
 
     const statusTd = document.createElement("td");
+    statusTd.style.textAlign = "center"; // 💡 Posisikan chip tepat di tengah sel
     const index = startIndex + idx;
     statusTd.id = `status-${index}`;
     const value = s.statusMasuk || "";
