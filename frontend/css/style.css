@@ -376,3 +376,42 @@ footer { text-align: center; padding: 20px; font-size: 12px; color: #006D77; mar
   text-align: center;
   text-align-last: center;
 }
+
+/* 💡 1. Standardisasi Seluruh Teks di Tabel */
+#tbodySiswa td {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #2b2d42 !important;
+  vertical-align: middle;
+}
+
+/* 💡 2. Pengecualian Khusus Kolom Nama Siswa (Opsional: Tetap 13px tapi Semi-Bold) */
+#tbodySiswa td:nth-child(1) {
+  font-weight: 600 !important;
+}
+
+/* 💡 3. Standardisasi Ukuran Teks Chip & Dropdown Status */
+.status-chip,
+.inline-select {
+  width: 190px !important;
+  height: 32px !important;
+  border-radius: 8px !important;
+  font-size: 12.5px !important; /* Pas untuk teks panjang seperti "Sangat Terlambat Sekali" */
+  font-weight: 600 !important;
+  box-sizing: border-box !important;
+  margin: 0 auto !important;
+}
+
+/* 💡 4. Ratakan Tampilan Teks Kapsul Status */
+.status-chip span {
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  line-height: 1;
+}
+
+/* 💡 5. Hilangkan Teks Bold Berlebih pada Status Kosong/Belum Presensi */
+.status-kosong-cell, 
+.status-kosong-text {
+  font-weight: 500 !important;
+  color: #6c757d !important;
+}
