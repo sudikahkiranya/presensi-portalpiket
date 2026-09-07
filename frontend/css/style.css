@@ -422,78 +422,78 @@ tr:nth-child(even) td {
   font-weight: 500 !important;
 }
 
-/* 💡 PALET WARNA BADGE STATUS PRESENSI (VIBRANT / LEBIH HIDUP) */
+/* 💡 PALET WARNA STATUS PRESENSI (WARNA NORMAL / PADAT & KONTRAS) */
 .status-hadir { 
-  background: #a3e4d7 !important; 
-  color: #0e6251 !important; 
-  border: 1px solid #76d7c4 !important;
+  background: #2ecc71 !important; 
+  color: #ffffff !important; 
+  border: 1px solid #27ae60 !important;
 }
 
 .status-terlambat { 
-  background: #f9e79f !important; 
+  background: #f1c40f !important; 
   color: #7d6608 !important; 
-  border: 1px solid #f7dc6f !important;
+  border: 1px solid #d4ac0d !important;
 }
 
 .status-terlambat-berat { 
-  background: #f5b041 !important; 
-  color: #6e2c00 !important; 
-  border: 1px solid #eb984e !important;
+  background: #e67e22 !important; 
+  color: #ffffff !important; 
+  border: 1px solid #d35400 !important;
 }
 
 .status-terlambat-ekstrem { 
-  background: #f1948a !important; 
-  color: #641e16 !important; 
-  border: 1px solid #e74c3c !important;
-}
-
-.status-sakit { 
-  background: #85c1e9 !important; 
-  color: #1b4f72 !important; 
-  border: 1px solid #5499c7 !important;
-}
-
-.status-izin { 
-  background: #d7dbdd !important; 
-  color: #2c3e50 !important; 
-  border: 1px solid #bdc3c7 !important;
-}
-
-.status-alpa { 
-  background: #ec7063 !important; 
+  background: #e74c3c !important; 
   color: #ffffff !important; 
   border: 1px solid #c0392b !important;
 }
 
+.status-sakit { 
+  background: #3498db !important; 
+  color: #ffffff !important; 
+  border: 1px solid #2980b9 !important;
+}
+
+.status-izin { 
+  background: #95a5a6 !important; 
+  color: #ffffff !important; 
+  border: 1px solid #7f8c8d !important;
+}
+
+.status-alpa { 
+  background: #c0392b !important; 
+  color: #ffffff !important; 
+  border: 1px solid #962d22 !important;
+}
+
 .status-libur { 
-  background: #a2d9ce !important; 
-  color: #117864 !important; 
-  border: 1px solid #48c9b0 !important;
+  background: #1abc9c !important; 
+  color: #ffffff !important; 
+  border: 1px solid #16a085 !important;
 }
 
 .status-htp { 
-  background: #f8c471 !important; 
-  color: #7e5109 !important; 
-  border: 1px solid #f39c12 !important;
+  background: #f39c12 !important; 
+  color: #ffffff !important; 
+  border: 1px solid #d68910 !important;
 }
 
 .status-prakerin { 
-  background: #a9cce3 !important; 
-  color: #154360 !important; 
-  border: 1px solid #5499c7 !important;
+  background: #2980b9 !important; 
+  color: #ffffff !important; 
+  border: 1px solid #1f618d !important;
 }
 
-/* 💡 BEDAKAN TOTAL: Warna Khusus untuk "Belum Presensi" / Kosong */
+/* 💡 WARNA "BELUM PRESENSI" / KOSONG (ORANYE TERANG TEGAS) */
 .status-kosong,
 .status-kosong-cell {
-  background: #ffb703 !important; /* Oranye Kuning Amber Sangat Terang & Hidup */
-  color: #000000 !important;         /* Teks Hitam Pekat agar kontras maksimal */
-  border: 1px solid #fb8500 !important;
+  background: #ff7f00 !important; 
+  color: #ffffff !important; 
+  border: 1px solid #e67e22 !important;
   font-weight: 600 !important;
 }
 
 .status-kosong svg {
-  stroke: #000000 !important;
+  stroke: #ffffff !important;
 }
 
 /* ==========================================================================
