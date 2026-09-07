@@ -422,32 +422,29 @@ tr:nth-child(even) td {
   font-weight: 500 !important;
 }
 
-/* ==========================================================================
-   ELEGANT SOFT-VIBRANT STATUS PALETTE (UI Modern & Clean)
-   ========================================================================== */
-
-/* 🟢 Tepat Waktu: Hijau Mint Segar */
+/* 🟢 1. Hadir / Tepat Waktu: Hijau Mint */
 .status-hadir { 
   background: #d1e7dd !important; 
   color: #0f5132 !important; 
   border: 1px solid #badbcc !important;
 }
 
-/* 🟡 Terlambat: Kuning Emas Hangat (Tidak Pucat) */
+/* 🟡 2. Terlambat Biasa: Kuning Emas */
 .status-terlambat { 
   background: #ffecb5 !important; 
   color: #664d03 !important; 
   border: 1px solid #ffe8a1 !important;
 }
 
-/* 🟠 Terlambat Berat: Oranye Soft */
-.status-terlambat-berat { 
+/* 🟠 3. Terlambat Berat / HTP: Oranye Hangat */
+.status-terlambat-berat,
+.status-htp { 
   background: #ffe5d0 !important; 
   color: #8c4700 !important; 
   border: 1px solid #fed2b0 !important;
 }
 
-/* 🔴 Sangat Terlambat / Alpa: Merah Bata Soft Elegan */
+/* 🔴 4. Sangat Terlambat Sekali & Alpa: Merah Bata / Rose */
 .status-terlambat-ekstrem,
 .status-alpa { 
   background: #f8d7da !important; 
@@ -455,21 +452,19 @@ tr:nth-child(even) td {
   border: 1px solid #f5c2c7 !important;
 }
 
-/* 🔵 Sakit: Biru Calm */
+/* 🔵 5. Sakit, Izin, Libur, Prakerin */
 .status-sakit { 
   background: #cff4fc !important; 
   color: #055160 !important; 
   border: 1px solid #b6effb !important;
 }
 
-/* ⚫ Izin / Netral: Abu Modern */
 .status-izin { 
   background: #e2e3e5 !important; 
   color: #41464b !important; 
   border: 1px solid #d3d6d8 !important;
 }
 
-/* 🟦 Libur / Prakerin: Indigo Soft */
 .status-libur,
 .status-prakerin { 
   background: #cfe2ff !important; 
@@ -477,22 +472,16 @@ tr:nth-child(even) td {
   border: 1px solid #b6d4fe !important;
 }
 
-.status-htp { 
-  background: #fff3cd !important; 
-  color: #664d03 !important; 
-  border: 1px solid #ffeeba !important;
-}
-
-/* 🟡 "Belum Presensi" / Kosong: Amber Kuning Madu (Pembeda Jelas) */
+/* 🟣 6. "Belum Presensi" / Kosong: Ungu Muda Elegan (Biar Jauh dari Kuning & Merah) */
 .status-kosong,
 .status-kosong-cell {
-  background: #ffe8a1 !important; 
-  color: #664d03 !important; 
-  border: 1px solid #ffd86b !important;
+  background: #e0aaff !important; 
+  color: #3c096c !important; 
+  border: 1px solid #c77dff !important;
   font-weight: 600 !important;
 }
 
-/* 💡 KUNCI WARNA IKON PENSIL MENYESUAIKAN TEKS */
+/* KUNCI WARNA IKON PENSIL MENYESUAIKAN TEKS */
 .status-chip svg,
 .status-kosong svg {
   stroke: currentColor !important;
