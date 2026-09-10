@@ -17,6 +17,19 @@ Object.defineProperty(window, 'isDirty', {
 var SVG_PENCIL = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
 var SVG_CLOSE = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
+const masterStatusList = [
+  { value: '', label: '-- Pilih Status --', class: 'status-kosong' },
+  { value: 'Tepat Waktu', label: 'Tepat Waktu', class: 'status-hadir' },
+  { value: 'Terlambat', label: 'Terlambat', class: 'status-terlambat' },
+  { value: 'Sangat Terlambat', label: 'Sangat Terlambat', class: 'status-terlambat-berat' },
+  { value: 'Sangat Terlambat Sekali', label: 'Sangat Terlambat Sekali', class: 'status-terlambat-ekstrem' },
+  { value: 'Sakit', label: 'Sakit', class: 'status-sakit' },
+  { value: 'Izin', label: 'Izin', class: 'status-izin' },
+  { value: 'Alpa', label: 'Alpa', class: 'status-alpa' },
+  { value: 'Hadir Tidak Presensi', label: 'Hadir Tidak Presensi', class: 'status-htp' },
+  { value: 'Libur', label: 'Libur', class: 'status-libur' }
+];
+
 function showLoading(text = "Memproses...") {
   const el = document.getElementById("loadingOverlay");
   const label = document.getElementById("loadingText");
@@ -167,38 +180,21 @@ function populateFilterKelas(data) {
  * 💡 POPULATE DROPDOWN STATUS MASUK DINAMIS
  */
 function populateFilterStatus(data) {
-  const filterStatus = document.getElementById("filterStatus");
-  const currentVal = filterStatus.value;
+  const container = document.getElementById("filterStatus");
+  const currentVal = container.getAttribute("data-value") || "";
   
   const statusSet = new Set(data.map(s => s.statusMasuk).filter(Boolean));
-  
-  const defaultOrder = [
-    "Tepat Waktu", "Terlambat", "Sangat Terlambat", 
-    "Sangat Terlambat Sekali", "Sakit", "Izin", 
-    "Alpa", "Hadir Tidak Presensi", "Libur"
-  ];
+  let dynamicOptions = [{ value: "", label: "Semua", class: "" }, { value: "Kosong", label: "Kosong", class: "" }];
 
-  const sortedStatus = [...statusSet].sort((a, b) => {
-    let idxA = defaultOrder.indexOf(a);
-    let idxB = defaultOrder.indexOf(b);
-    if (idxA === -1) idxA = 99;
-    if (idxB === -1) idxB = 99;
-    return idxA - idxB;
+  statusSet.forEach(st => {
+    const match = masterStatusList.find(m => m.value === st);
+    dynamicOptions.push(match ? match : { value: st, label: st, class: "" });
   });
 
-  filterStatus.innerHTML = `
-    <option value="">Semua</option>
-    <option value="Kosong">Kosong</option>
-  `;
-
-  sortedStatus.forEach(st => {
-    const opt = document.createElement("option");
-    opt.value = st;
-    opt.textContent = st;
-    filterStatus.appendChild(opt);
+  createCustomDropdown(container, dynamicOptions, currentVal, function(val) {
+    lastFilter.status = val;
+    applyFilter();
   });
-
-  filterStatus.value = currentVal;
 }
 
 /**
@@ -227,9 +223,9 @@ function getDropdownHTML(index, selected, rowIndex) {
 }
 
 function applyFilter() {
-  const kelas = document.getElementById("filterKelas").value;
+  const kelas = document.getElementById("filterKelas").getAttribute("data-value") || "";
   const tingkat = document.getElementById("filterTingkat").value;
-  const status = document.getElementById("filterStatus").value;
+  const status = document.getElementById("filterStatus").getAttribute("data-value") || "";
   const nama = document.getElementById("filterNama")?.value.toLowerCase() || "";
   const tbody = document.getElementById("tbodySiswa");
   tbody.innerHTML = "";
@@ -276,33 +272,13 @@ function applyFilter() {
     statusTd.dataset.rowIndex = s.rowIndex;
     statusTd.dataset.statusMasuk = value;
 
-    // Mode Tampil: Single Chip
-    if (value) {
-      statusTd.innerHTML = `
-        <div class="status-chip ${getStatusClass(value)}" onclick="editStatus(${index}, '${value}', ${s.rowIndex})" title="Klik untuk ubah status">
-          <span>${value}</span>
-          ${SVG_PENCIL}
-        </div>
-      `;
-    } else {
-      // Mode Kosong: Directly Dropdown
-      statusTd.innerHTML = getDropdownHTML(index, "", s.rowIndex);
-      const select = statusTd.querySelector("select");
-      select.classList.add("inline-select");
-      
-      select.addEventListener("change", () => {
-        const newValue = select.value;
-        if (!newValue) return;
-        
-        statusTd.innerHTML = `
-          <div class="status-chip ${getStatusClass(newValue)}" onclick="editStatus(${index}, '${newValue}', ${s.rowIndex})" title="Klik untuk ubah status">
-            <span>${newValue}</span>
-            ${SVG_PENCIL}
-          </div>
-        `;
-        processStatusChange(s.rowIndex, newValue, s.tanggal);
-      });
-    }
+    // 💡 Terapkan Custom Dropdown Reusable untuk setiap baris status siswa
+    const dropdownWrapper = document.createElement("div");
+    createCustomDropdown(dropdownWrapper, masterStatusList, value, function(newValue) {
+      processStatusChange(s.rowIndex, newValue, s.tanggal);
+    });
+    
+    statusTd.appendChild(dropdownWrapper);
 
     tr.appendChild(namaTd);
     tr.appendChild(kelasTd);
@@ -674,3 +650,65 @@ function formatNamaKelas(idRombel, tingkat) {
 
   return idRombel;
 }
+
+function createCustomDropdown(containerElement, optionsArray, selectedValue, onSelectCallback) {
+  containerElement.className = "custom-dropdown";
+  containerElement.innerHTML = `
+    <div class="dropdown-selected">
+      <span class="dropdown-text"></span>
+      <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+    </div>
+    <div class="dropdown-menu"></div>
+  `;
+
+  const textSpan = containerElement.querySelector('.dropdown-text');
+  const menuContainer = containerElement.querySelector('.dropdown-menu');
+
+  // Cari label awal
+  const currentObj = optionsArray.find(opt => opt.value === selectedValue) || optionsArray[0];
+  textSpan.innerText = currentObj.label;
+  containerElement.setAttribute('data-value', currentObj.value);
+
+  // Render list opsi secara dinamis
+  optionsArray.forEach(item => {
+    const div = document.createElement('div');
+    div.className = `dropdown-item ${item.class || ''}`;
+    div.setAttribute('data-value', item.value);
+    div.innerText = item.label;
+    menuContainer.appendChild(div);
+  });
+
+  // Event buka/tutup
+  const selectedBox = containerElement.querySelector('.dropdown-selected');
+  selectedBox.onclick = (e) => {
+    e.stopPropagation();
+    document.querySelectorAll('.custom-dropdown').forEach(el => {
+      if (el !== containerElement) el.classList.remove('open');
+    });
+    containerElement.classList.toggle('open');
+  };
+
+  // Event pilih item
+  menuContainer.onclick = (e) => {
+    const itemDiv = e.target.closest('.dropdown-item');
+    if (!itemDiv) return;
+
+    const val = itemDiv.getAttribute('data-value');
+    const lbl = itemDiv.innerText;
+
+    textSpan.innerText = lbl;
+    containerElement.setAttribute('data-value', val);
+    containerElement.classList.remove('open');
+
+    if (typeof onSelectCallback === 'function') {
+      onSelectCallback(val, lbl);
+    }
+  };
+}
+
+// Tutup dropdown kalau klik di luar area
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.custom-dropdown')) {
+    document.querySelectorAll('.custom-dropdown').forEach(el => el.classList.remove('open'));
+  }
+});
