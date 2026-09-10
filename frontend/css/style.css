@@ -671,3 +671,25 @@ footer {
 .custom-dropdown.open .dropdown-selected svg {
   transform: rotate(180deg);
 }
+
+/* Styling untuk kotak pencarian Nama Siswa agar senada */
+.filter-input-text {
+  width: 100%;
+  min-width: 180px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 16px; /* Biar lonjong melengkung kayak custom dropdown */
+  border: 1px solid #ced4da;
+  background: #ffffff;
+  font-size: 12.5px;
+  font-family: 'Poppins', sans-serif;
+  color: #2b2d42;
+  box-sizing: border-box;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.filter-input-text:focus {
+  border-color: #006D77;
+  box-shadow: 0 0 0 3px rgba(0, 109, 119, 0.15);
+}

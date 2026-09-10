@@ -127,25 +127,22 @@ try {
 
 function renderTable(data) {
   dataSiswa = data;
-  populateFilterKelas(data);
-  populateFilterStatus(data);
   
-  document.getElementById("filterKelas").value = lastFilter.kelas || "";
-  document.getElementById("filterTingkat").value = lastFilter.tingkat || "";
-  document.getElementById("filterStatus").value = lastFilter.status || "";
+  // 💡 Ganti fungsi populate lama dengan initFilters
+  initFilters(dataSiswa);
+  
+  // Catatan: Pengaturan nilai filter (lastFilter) sekarang otomatis 
+  // di-handle di dalam custom dropdown, jadi baris .value lama bisa dibuang.
   
   applyFilter();
   hideLoading();
 }
 
-/**
- * 💡 POPULATE DROPDOWN KELAS DINAMIS (URUTAN TINGKAT X -> XI -> XII)
- */
-function populateFilterKelas(data) {
-  const filterKelas = document.getElementById("filterKelas");
-  filterKelas.innerHTML = `<option value="">Semua</option>`;
-  
+function initFilters(data) {
+  // 1. Filter Kelas (Menggunakan logic map & sorting rombel yang lama)
+  const kelasContainer = document.getElementById("filterKelas");
   const kelasMap = new Map();
+  
   data.forEach(s => {
     if (s.kelas && !kelasMap.has(s.kelas)) {
       kelasMap.set(s.kelas, formatNamaKelas(s.kelas, s.tingkat));
@@ -182,66 +179,15 @@ function populateFilterKelas(data) {
     return pA.sub.localeCompare(pB.sub);
   });
 
-  sortedKeys.forEach(idRombel => {
-    const opt = document.createElement("option");
-    opt.value = idRombel; 
-    opt.textContent = kelasMap.get(idRombel); 
-    filterKelas.appendChild(opt);
-  });
-}
-
-/**
- * 💡 POPULATE DROPDOWN STATUS MASUK DINAMIS
- */
-function populateFilterStatus(data) {
-  const container = document.getElementById("filterStatus");
-  const currentVal = container.getAttribute("data-value") || "";
-  
-  const statusSet = new Set(data.map(s => s.statusMasuk).filter(Boolean));
-  let dynamicOptions = [{ value: "", label: "Semua", class: "" }, { value: "Kosong", label: "Kosong", class: "" }];
-
-  statusSet.forEach(st => {
-    const match = masterStatusList.find(m => m.value === st);
-    dynamicOptions.push(match ? match : { value: st, label: st, class: "" });
-  });
-
-  createCustomDropdown(container, dynamicOptions, currentVal, function(val) {
-    lastFilter.status = val;
-    applyFilter();
-  });
-}
-
-/**
- * 💡 DROPDOWN EDIT STATUS DALAM TABEL (LENGKAP)
- */
-function getDropdownHTML(index, selected, rowIndex) {
-  const opsiStatus = [
-    "", 
-    "Tepat Waktu", 
-    "Terlambat", 
-    "Sangat Terlambat", 
-    "Sangat Terlambat Sekali", 
-    "Sakit", 
-    "Izin", 
-    "Alpa", 
-    "Hadir Tidak Presensi", 
-    "Libur"
+  // Susun array opsi untuk custom dropdown kelas
+  const kelasOptions = [
+    { value: "", label: "Semua" },
+    ...sortedKeys.map(idRombel => ({
+      value: idRombel, // Tetap simpan idRombel sebagai value filter
+      label: kelasMap.get(idRombel) // Tampilkan nama rombel yang cantik
+    }))
   ];
 
-  return `
-    <select name="statusMasuk" id="statusSelect-${index}">
-      ${opsiStatus.map(o => `<option value="${o}" ${o === selected ? "selected" : ""}>${o || "-- Pilih Status --"}</option>`).join('')}
-    </select>
-    <input type="hidden" name="rowIndex" value="${rowIndex}">
-  `;
-}
-
-function initFilters(data) {
-  // 1. Filter Kelas
-  const kelasContainer = document.getElementById("filterKelas");
-  const uniqueKelas = [...new Set(data.map(s => s.kelas).filter(Boolean))].sort();
-  const kelasOptions = [{ value: "", label: "Semua" }, ...uniqueKelas.map(k => ({ value: k, label: formatNamaKelas(k, '') }))];
-  
   createCustomDropdown(kelasContainer, kelasOptions, "", function(val) {
     applyFilter();
   });
@@ -285,14 +231,14 @@ function applyFilter() {
   applyFilter.keepPage = false;
 
   const filtered = dataSiswa
-    .filter(s => (!kelas || s.kelas === kelas))
-    .filter(s => (!tingkat || s.tingkat === tingkat))
-    .filter(s => {
-      if (!status) return true;
-      if (status === "Kosong") return !s.statusMasuk;
-      return s.statusMasuk === status;
-    })
-    .filter(s => !nama || (s.nama && s.nama.toLowerCase().includes(nama)));
+      .filter(s => (!kelas || s.kelas === kelas))
+      .filter(s => (!tingkat || String(s.tingkat).trim().toLowerCase() === String(tingkat).trim().toLowerCase()))
+      .filter(s => {
+        if (!status) return true;
+        if (status === "Kosong") return !s.statusMasuk;
+        return s.statusMasuk === status;
+      })
+      .filter(s => !nama || (s.nama && s.nama.toLowerCase().includes(nama)));
 
   const startIndex = (currentPage - 1) * rowsPerPage;
   const pageData = filtered.slice(startIndex, startIndex + rowsPerPage);
