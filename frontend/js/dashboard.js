@@ -55,6 +55,9 @@ function initFormPiket() {
   setRoleUser(user.role);
   updatePendingBadge();
 
+  // 💡 Render dropdown kosong dulu biar box-nya langsung nampil dari awal
+  initFilters([]); 
+
   if (user.role === "Admin") {
     const adminFilter = document.getElementById("adminFilter");
     if (adminFilter) adminFilter.style.display = "block";
@@ -65,14 +68,11 @@ function initFormPiket() {
       const local = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
       dateInput.value = local.toISOString().split("T")[0];
     }
-    
-    // Pastikan fetchData menerima callback atau jalankan initFilters di dalam fetchData setelah dataSiswa terisi
     fetchData(dateInput.value);
   } else {
     fetchData();
   }
 
-  // Jalankan Auto Polling background
   startAutoPolling();
 }
 
@@ -269,13 +269,48 @@ function applyFilter() {
     statusTd.dataset.rowIndex = s.rowIndex;
     statusTd.dataset.statusMasuk = value;
 
-    // 💡 Terapkan Custom Dropdown Reusable untuk setiap baris status siswa
-    const dropdownWrapper = document.createElement("div");
-    createCustomDropdown(dropdownWrapper, masterStatusList, value, function(newValue) {
-      processStatusChange(s.rowIndex, newValue, s.tanggal);
-    });
-    
-    statusTd.appendChild(dropdownWrapper);
+    // 💡 Render Badge Status + Tombol Edit (Ikon Pensil)
+    const matchStatus = masterStatusList.find(m => m.value === value);
+    const badgeClass = matchStatus ? matchStatus.class : "badge-default";
+
+    const wrapper = document.createElement("div");
+    wrapper.style.display = "flex";
+    wrapper.style.alignItems = "center";
+    wrapper.style.justifyContent = "center";
+    wrapper.style.gap = "6px";
+
+    const badge = document.createElement("span");
+    badge.className = `status-badge ${badgeClass}`;
+    badge.textContent = value || "-- Belum Diatur --";
+    badge.style.padding = "4px 10px";
+    badge.style.borderRadius = "12px";
+    badge.style.fontSize = "12px";
+    badge.style.fontWeight = "500";
+
+    const editBtn = document.createElement("button");
+    editBtn.innerHTML = `<i class="fas fa-pencil-alt"></i>`;
+    editBtn.className = "btn-icon-edit";
+    editBtn.title = "Ubah Status";
+    editBtn.style.border = "none";
+    editBtn.style.background = "transparent";
+    editBtn.style.cursor = "pointer";
+    editBtn.style.color = "#006D77";
+
+    // Ketika ikon pensil diklik, ubah badge menjadi custom dropdown
+    editBtn.onclick = function() {
+      statusTd.innerHTML = "";
+      const dropdownWrapper = document.createElement("div");
+      
+      createCustomDropdown(dropdownWrapper, masterStatusList, value, function(newValue) {
+        processStatusChange(s.rowIndex, newValue, s.tanggal);
+      });
+      
+      statusTd.appendChild(dropdownWrapper);
+    };
+
+    wrapper.appendChild(badge);
+    wrapper.appendChild(editBtn);
+    statusTd.appendChild(wrapper);
 
     tr.appendChild(namaTd);
     tr.appendChild(kelasTd);
@@ -637,8 +672,11 @@ function formatNamaKelas(idRombel, tingkat) {
   if (!idRombel || typeof idRombel !== "string") return "-";
 
   const parts = idRombel.trim().split("-");
-  const jurusan = parts[0] || "";
-  const subKelas = parts[1] ? parts[1].replace(/[0-9]/g, "") : ""; 
+  const jurusan = parts[0] || ""; // Contoh: "AKN"
+  const subPart = parts[1] || ""; // Contoh: "A24"
+  
+  // Ambil huruf depannya saja sebagai sub kelas (misal "A24" jadi "A")
+  const subKelas = subPart.replace(/[0-9]/g, "").trim(); 
   const tkt = tingkat || "";
 
   if (jurusan && tkt && subKelas) {

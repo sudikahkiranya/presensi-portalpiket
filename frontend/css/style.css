@@ -676,12 +676,12 @@ footer {
 .filter-input-text {
   width: 100%;
   min-width: 180px;
-  height: 32px;
-  padding: 0 12px;
-  border-radius: 16px; /* Biar lonjong melengkung kayak custom dropdown */
+  height: 38px; /* Sesuaikan tinggi biar pas sama dropdown */
+  padding: 0 14px;
+  border-radius: 20px; /* Bikin lengkungannya jadi full pill/lonjong */
   border: 1px solid #ced4da;
   background: #ffffff;
-  font-size: 12.5px;
+  font-size: 13px;
   font-family: 'Poppins', sans-serif;
   color: #2b2d42;
   box-sizing: border-box;
