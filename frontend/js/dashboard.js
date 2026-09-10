@@ -219,6 +219,39 @@ function initFilters(data) {
   });
 }
 
+function renderStatusBadge(statusTd, s, value) {
+  const matchStatus = masterStatusList.find(m => m.value === value);
+  const badgeClass = matchStatus ? matchStatus.class : "badge-default";
+
+  const wrapper = document.createElement("div");
+  wrapper.style.cssText = "display: flex; align-items: center; justify-content: center; gap: 6px;";
+
+  const badgeBtn = document.createElement("button");
+  badgeBtn.className = `status-badge-btn ${badgeClass}`;
+  badgeBtn.title = "Klik untuk ubah status";
+  badgeBtn.style.cssText = "display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 6px 14px; border-radius: 16px; font-size: 12.5px; font-weight: 500; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;";
+
+  badgeBtn.innerHTML = `
+    <span>${value || "-- Belum Diatur --"}</span>
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+    </svg>
+  `;
+
+  badgeBtn.onclick = function() {
+    statusTd.innerHTML = "";
+    const dropdownWrapper = document.createElement("div");
+    createCustomDropdown(dropdownWrapper, masterStatusList, value, function(newValue) {
+      processStatusChange(s.rowIndex, newValue, s.tanggal);
+    });
+    statusTd.appendChild(dropdownWrapper);
+  };
+
+  wrapper.appendChild(badgeBtn);
+  statusTd.appendChild(wrapper);
+}
+
 function applyFilter() {
   const kelas = document.getElementById("filterKelas").getAttribute("data-value") || "";
   const tingkat = document.getElementById("filterTingkat").getAttribute("data-value") || "";
@@ -262,55 +295,13 @@ function applyFilter() {
     const statusTd = document.createElement("td");
     statusTd.style.textAlign = "center";
     statusTd.style.verticalAlign = "middle";
-    const index = startIndex + idx;
-    statusTd.id = `status-${index}`;
     const value = s.statusMasuk || "";
 
     statusTd.dataset.rowIndex = s.rowIndex;
     statusTd.dataset.statusMasuk = value;
 
-    // 💡 Render Badge Status + Tombol Edit (Ikon Pensil)
-    const matchStatus = masterStatusList.find(m => m.value === value);
-    const badgeClass = matchStatus ? matchStatus.class : "badge-default";
-
-    const wrapper = document.createElement("div");
-    wrapper.style.display = "flex";
-    wrapper.style.alignItems = "center";
-    wrapper.style.justifyContent = "center";
-    wrapper.style.gap = "6px";
-
-    const badge = document.createElement("span");
-    badge.className = `status-badge ${badgeClass}`;
-    badge.textContent = value || "-- Belum Diatur --";
-    badge.style.padding = "4px 10px";
-    badge.style.borderRadius = "12px";
-    badge.style.fontSize = "12px";
-    badge.style.fontWeight = "500";
-
-    const editBtn = document.createElement("button");
-    editBtn.innerHTML = `<i class="fas fa-pencil-alt"></i>`;
-    editBtn.className = "btn-icon-edit";
-    editBtn.title = "Ubah Status";
-    editBtn.style.border = "none";
-    editBtn.style.background = "transparent";
-    editBtn.style.cursor = "pointer";
-    editBtn.style.color = "#006D77";
-
-    // Ketika ikon pensil diklik, ubah badge menjadi custom dropdown
-    editBtn.onclick = function() {
-      statusTd.innerHTML = "";
-      const dropdownWrapper = document.createElement("div");
-      
-      createCustomDropdown(dropdownWrapper, masterStatusList, value, function(newValue) {
-        processStatusChange(s.rowIndex, newValue, s.tanggal);
-      });
-      
-      statusTd.appendChild(dropdownWrapper);
-    };
-
-    wrapper.appendChild(badge);
-    wrapper.appendChild(editBtn);
-    statusTd.appendChild(wrapper);
+    // Panggil fungsi render status biar rapi
+    renderStatusBadge(statusTd, s, value);
 
     tr.appendChild(namaTd);
     tr.appendChild(kelasTd);
