@@ -87,23 +87,14 @@
     <div class="card">
       
       <!-- FILTER WRAPPER -->
-      <div class="filter-wrapper">
-        <div class="filter-group">
-          <div class="filter-item">
-            <label for="filterKelas">Kelas:</label>
-            <select id="filterKelas" onchange="applyFilter()"></select>
-          </div>
-
-          <div class="filter-item">
-            <label for="filterTingkat">Tingkat:</label>
-            <select id="filterTingkat" onchange="applyFilter()">
-              <option value="">Semua</option>
-              <option value="X">X</option>
-              <option value="XI">XI</option>
-              <option value="XII">XII</option>
-            </select>
-          </div>
-
+<div class="filter-item">
+  <label for="filterKelas">Kelas:</label>
+  <div id="filterKelas" data-value=""></div>
+</div>
+<div class="filter-item">
+  <label for="filterTingkat">Tingkat:</label>
+  <div id="filterTingkat" data-value=""></div>
+</div>
 <div class="filter-item">
   <label for="filterStatus">Status Masuk:</label>
   <div id="filterStatus" data-value=""></div>

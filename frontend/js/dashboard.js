@@ -17,6 +17,7 @@ Object.defineProperty(window, 'isDirty', {
 var SVG_PENCIL = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
 var SVG_CLOSE = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
+// Master untuk dalam baris tabel (pakai warna)
 const masterStatusList = [
   { value: '', label: '-- Pilih Status --', class: 'status-kosong' },
   { value: 'Tepat Waktu', label: 'Tepat Waktu', class: 'status-hadir' },
@@ -27,7 +28,8 @@ const masterStatusList = [
   { value: 'Izin', label: 'Izin', class: 'status-izin' },
   { value: 'Alpa', label: 'Alpa', class: 'status-alpa' },
   { value: 'Hadir Tidak Presensi', label: 'Hadir Tidak Presensi', class: 'status-htp' },
-  { value: 'Libur', label: 'Libur', class: 'status-libur' }
+  { value: 'Libur', label: 'Libur', class: 'status-libur' },
+  { value: 'Prakerin', label: 'Prakerin', class: 'status-prakerin' }
 ];
 
 function showLoading(text = "Memproses...") {
@@ -222,9 +224,46 @@ function getDropdownHTML(index, selected, rowIndex) {
   `;
 }
 
+function initFilters(data) {
+  // 1. Filter Kelas
+  const kelasContainer = document.getElementById("filterKelas");
+  const uniqueKelas = [...new Set(data.map(s => s.kelas).filter(Boolean))].sort();
+  const kelasOptions = [{ value: "", label: "Semua" }, ...uniqueKelas.map(k => ({ value: k, label: formatNamaKelas(k, '') }))];
+  
+  createCustomDropdown(kelasContainer, kelasOptions, "", function(val) {
+    applyFilter();
+  });
+
+  // 2. Filter Tingkat
+  const tingkatContainer = document.getElementById("filterTingkat");
+  const uniqueTingkat = [...new Set(data.map(s => s.tingkat).filter(Boolean))].sort();
+  const tingkatOptions = [{ value: "", label: "Semua" }, ...uniqueTingkat.map(t => ({ value: t, label: t }))];
+  
+  createCustomDropdown(tingkatContainer, tingkatOptions, "", function(val) {
+    applyFilter();
+  });
+
+  // 3. Filter Status (Polos tanpa class warna)
+  const statusContainer = document.getElementById("filterStatus");
+  const statusOptions = [
+    { value: "", label: "Semua" },
+    { value: "Kosong", label: "Kosong" },
+    { value: "Belum Presensi", label: "Belum Presensi" },
+    { value: "Alpa", label: "Alpa" },
+    { value: "Tepat Waktu", label: "Tepat Waktu" },
+    { value: "Terlambat", label: "Terlambat" },
+    { value: "Prakerin", label: "Prakerin" },
+    { value: "Sangat Terlambat", label: "Sangat Terlambat" }
+  ];
+
+  createCustomDropdown(statusContainer, statusOptions, "", function(val) {
+    applyFilter();
+  });
+}
+
 function applyFilter() {
   const kelas = document.getElementById("filterKelas").getAttribute("data-value") || "";
-  const tingkat = document.getElementById("filterTingkat").value;
+  const tingkat = document.getElementById("filterTingkat").getAttribute("data-value") || "";
   const status = document.getElementById("filterStatus").getAttribute("data-value") || "";
   const nama = document.getElementById("filterNama")?.value.toLowerCase() || "";
   const tbody = document.getElementById("tbodySiswa");
