@@ -65,6 +65,8 @@ function initFormPiket() {
       const local = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
       dateInput.value = local.toISOString().split("T")[0];
     }
+    
+    // Pastikan fetchData menerima callback atau jalankan initFilters di dalam fetchData setelah dataSiswa terisi
     fetchData(dateInput.value);
   } else {
     fetchData();
@@ -97,7 +99,7 @@ async function fetchData(selectedDate) {
     });
   }
 
-  try {
+try {
     let url = `${API_URL}?action=getSiswaHariIni`;
     if (user && user.role === "Admin" && dateVal) {
       url = `${API_URL}?action=getSiswaByTanggal&tanggal=${dateVal}`;
@@ -105,7 +107,17 @@ async function fetchData(selectedDate) {
 
     const response = await fetch(url);
     const data = await response.json();
-    renderTable(Array.isArray(data) ? data : []);
+    
+    // 💡 Simpan ke variabel global dataSiswa (pastikan variabel ini ada di file lu)
+    dataSiswa = Array.isArray(data) ? data : [];
+    
+    // 💡 Inisialisasi custom dropdown filter atas berdasarkan data yang baru ditarik
+    initFilters(dataSiswa);
+    
+    // 💡 Jalankan filter/render tampilan awal
+    applyFilter();
+    
+    hideLoading(); // Jangan lupa sembunyikan loading di sini
   } catch (err) {
     console.error(err);
     showToast("Gagal terhubung ke server Backend API", "error");
