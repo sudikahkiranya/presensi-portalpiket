@@ -322,19 +322,18 @@ th {
   border-bottom: 2px solid #a3cdd4 !important; 
 }
 
-/* Standardisasi Isi Sel Tabel */
 #tbodySiswa td {
   padding: 11px 10px;
   border-bottom: 1px solid #e3eff2 !important;
   text-align: center;
   vertical-align: middle;
   font-size: 13px !important;
-  font-weight: 500 !important; /* Standar konsisten (tidak tebal) */
+  font-weight: 500 !important;
   color: #2b2d42 !important;
 }
 
 #tbodySiswa td:nth-child(1) {
-  font-weight: 600 !important; /* Khusus Nama Siswa semi-bold */
+  font-weight: 600 !important;
 }
 
 tr:nth-child(even) td { 
@@ -342,9 +341,8 @@ tr:nth-child(even) td {
 }
 
 /* ==========================================================================
-   7. INTERACTIVE STATUS CHIPS & EDIT DROPDOWN (KUNCI DIMENSI & TIPOGRAFI)
+   7. INTERACTIVE STATUS CHIPS & CUSTOM DROPDOWN
    ========================================================================== */
-/* 💡 Kunci Lebar Kolom Ke-5 (Status Masuk) */
 #tbodySiswa td:nth-child(5) {
   width: 220px;
   max-width: 220px;
@@ -354,7 +352,6 @@ tr:nth-child(even) td {
   box-sizing: border-box;
 }
 
-/* 💡 Base Dimensi Identik & Hilangkan Bold Berlebih (Tambahkan status-kosong & cell) */
 .status-chip,
 .inline-select,
 .status-kosong,
@@ -371,7 +368,6 @@ tr:nth-child(even) td {
   gap: 8px !important;
 }
 
-/* Base Interactive Chip Component */
 .status-chip {
   display: inline-flex;
   align-items: center;
@@ -385,7 +381,6 @@ tr:nth-child(even) td {
   white-space: nowrap;
 }
 
-/* Kunci Teks Di Dalam Chip Agar Mengikuti Medium (500) */
 #tbodySiswa .status-chip,
 #tbodySiswa .status-chip span,
 .status-chip span {
@@ -400,7 +395,6 @@ tr:nth-child(even) td {
   filter: brightness(0.95);
 }
 
-/* Kunci Ikon Pensil Agar Tetap Tampak di Status Panjang */
 .status-chip svg {
   flex-shrink: 0 !important;
   width: 13px;
@@ -413,7 +407,6 @@ tr:nth-child(even) td {
   opacity: 1;
 }
 
-/* Dropdown Inline Edit Style */
 .inline-select {
   display: inline-block;
   padding: 0 10px 0 14px;
@@ -429,31 +422,26 @@ tr:nth-child(even) td {
 }
 
 /* ==========================================================================
-   ELEGANT SOFT-VIBRANT STATUS PALETTE (UI Modern & Clean)
+   STATUS COLOR PALETTE
    ========================================================================== */
-
-/* 🟢 Tepat Waktu: Hijau Mint Segar */
 .status-hadir { 
   background: #d1e7dd !important; 
   color: #0f5132 !important; 
   border: 1px solid #badbcc !important;
 }
 
-/* 🟡 Terlambat: Kuning Emas Hangat (Tidak Pucat) */
 .status-terlambat { 
   background: #ffecb5 !important; 
   color: #664d03 !important; 
   border: 1px solid #ffe8a1 !important;
 }
 
-/* 🟠 Terlambat Berat: Oranye Soft */
 .status-terlambat-berat { 
   background: #ffe5d0 !important; 
   color: #8c4700 !important; 
   border: 1px solid #fed2b0 !important;
 }
 
-/* 🔴 Sangat Terlambat / Alpa: Merah Bata Soft Elegan */
 .status-terlambat-ekstrem,
 .status-alpa { 
   background: #f8d7da !important; 
@@ -461,21 +449,18 @@ tr:nth-child(even) td {
   border: 1px solid #f5c2c7 !important;
 }
 
-/* 🔵 Sakit: Biru Calm */
 .status-sakit { 
   background: #cff4fc !important; 
   color: #055160 !important; 
   border: 1px solid #b6effb !important;
 }
 
-/* ⚫ Izin / Netral: Abu Modern */
 .status-izin { 
   background: #e2e3e5 !important; 
   color: #41464b !important; 
   border: 1px solid #d3d6d8 !important;
 }
 
-/* 🟦 Libur / Prakerin: Indigo Soft */
 .status-libur,
 .status-prakerin { 
   background: #cfe2ff !important; 
@@ -489,7 +474,6 @@ tr:nth-child(even) td {
   border: 1px solid #ffeeba !important;
 }
 
-/* 🟡 "Belum Presensi" / Kosong: Amber Kuning Madu (Pembeda Jelas) */
 .status-kosong,
 .status-kosong-cell {
   background: #ffe8a1 !important; 
@@ -498,7 +482,6 @@ tr:nth-child(even) td {
   font-weight: 600 !important;
 }
 
-/* 💡 KUNCI WARNA IKON PENSIL MENYESUAIKAN TEKS */
 .status-chip svg,
 .status-kosong svg {
   stroke: currentColor !important;
@@ -540,7 +523,7 @@ footer {
 }
 
 /* ==========================================================================
-   9. MODALS, TOASTS & OVERLAYS
+   9. MODALS, TOASTS & CUSTOM DROPDOWN COMPONENT
    ========================================================================== */
 #loadingOverlay {
   display: none; 
@@ -624,13 +607,7 @@ footer {
 .toast.error   { border-left: 4px solid #ef4444; }
 .toast.info    { border-left: 4px solid #3b82f6; }
 
-/* 💡 Paksa teks di dalam dropdown filter atas & dropdown tabel jadi rata tengah */
-.inline-select option,
-#filterStatus option {
-  text-align: center !important;
-  text-align-last: center !important;
-}
-
+/* Custom Dropdown Styling (Universal) */
 .custom-dropdown {
   position: relative;
   width: 100%;
@@ -643,7 +620,7 @@ footer {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  background: #f8f9fa;
+  background: #ffffff;
   border: 1px solid #ced4da;
 }
 
@@ -664,6 +641,8 @@ footer {
   top: calc(100% + 4px);
   left: 0;
   width: 100%;
+  max-height: 250px; /* Ditambahkan agar bisa di-scroll jika opsi terlalu panjang */
+  overflow-y: auto;
   background: #ffffff;
   border: 1px solid #ced4da;
   border-radius: 12px;
@@ -671,7 +650,6 @@ footer {
   display: none;
   flex-direction: column;
   z-index: 999;
-  overflow: hidden;
 }
 
 .custom-dropdown.open .dropdown-menu {
@@ -680,7 +658,7 @@ footer {
 
 .dropdown-item {
   padding: 8px 12px;
-  text-align: center !important;
+  text-align: left !important;
   font-size: 12.5px;
   color: #2b2d42;
   transition: background 0.15s ease;
