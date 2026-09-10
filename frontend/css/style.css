@@ -623,3 +623,10 @@ footer {
 .toast.success { border-left: 4px solid #22c55e; }
 .toast.error   { border-left: 4px solid #ef4444; }
 .toast.info    { border-left: 4px solid #3b82f6; }
+
+/* 💡 Paksa teks di dalam dropdown filter atas & dropdown tabel jadi rata tengah */
+.inline-select option,
+#filterStatus option {
+  text-align: center !important;
+  text-align-last: center !important;
+}
