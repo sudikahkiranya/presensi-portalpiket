@@ -239,22 +239,22 @@ function renderStatusBadge(statusTd, s, value) {
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
   
-  // 💡 Ukuran Standar Pil Status Badge (Presisi & Tidak Terlalu Lengkung)
-  const BADGE_STYLE = `
+  // 💡 Lebar otomatis pas mengikuti konten (width: max-content), teks 1 baris
+  const BASE_STYLE = `
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    width: 110px;
-    height: 30px;
-    padding: 4px 10px;
+    width: max-content;
+    white-space: nowrap;
+    padding: 6px 14px;
     border-radius: 12px;
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 500;
     box-sizing: border-box;
   `;
 
-  badgeBtn.style.cssText = BADGE_STYLE + "border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;";
+  badgeBtn.style.cssText = BASE_STYLE + "border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;";
 
   badgeBtn.innerHTML = `
     <span>${value || "-- Belum Diatur --"}</span>
@@ -270,6 +270,9 @@ function renderStatusBadge(statusTd, s, value) {
     statusTd.innerHTML = "";
     const dropdownWrapper = document.createElement("div");
     
+    // 💡 Reset wrapper luar agar tidak menghasilkan border / background ganda
+    dropdownWrapper.style.cssText = "position: relative; display: inline-block; background: transparent; border: none; padding: 0; margin: 0;";
+
     createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
       if (newValue && newValue !== value) {
         processStatusChange(s.rowIndex, newValue, s.tanggal);
@@ -283,18 +286,18 @@ function renderStatusBadge(statusTd, s, value) {
     
     statusTd.appendChild(dropdownWrapper);
 
-    // 💡 Samakan bentuk & ukuran pil dropdown dengan BADGE_STYLE
+    // 💡 Styling pil utama dropdown (samakan bentuk & ukuran persis dengan badge)
     const selectedBox = dropdownWrapper.querySelector('.dropdown-selected');
     if (selectedBox) {
-      selectedBox.style.cssText = BADGE_STYLE + `
+      selectedBox.style.cssText = BASE_STYLE + `
         border: 1px solid #c5d3e8;
         background-color: #ffffff;
         cursor: pointer;
-        position: relative;
+        color: #333;
       `;
     }
 
-    // 💡 Styling menu dropdown melayang di bawah pil
+    // 💡 Menu melayang di bawah pil
     const menuContainer = dropdownWrapper.querySelector('.dropdown-menu');
     if (menuContainer) {
       menuContainer.style.cssText = `
@@ -302,10 +305,14 @@ function renderStatusBadge(statusTd, s, value) {
         overflow-y: visible;
         text-align: center;
         border-radius: 12px;
-        width: 130px;
+        min-width: 100%;
+        width: max-content;
         left: 50%;
         transform: translateX(-50%);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        z-index: 99;
       `;
       
       menuContainer.querySelectorAll('.dropdown-item').forEach(item => {
@@ -316,14 +323,15 @@ function renderStatusBadge(statusTd, s, value) {
           justify-content: center;
           display: flex;
           font-size: 12px;
-          padding: 6px 8px;
+          padding: 8px 12px;
+          white-space: nowrap;
         `;
       });
     }
 
     dropdownWrapper.classList.add('open');
 
-    // Handler cancel tanpa delay
+    // Handler cancel tanpa delay saat klik di luar
     const cancelHandler = function(event) {
       if (!dropdownWrapper.contains(event.target)) {
         document.removeEventListener('click', cancelHandler);
