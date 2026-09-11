@@ -248,7 +248,7 @@ function renderStatusBadge(statusTd, s, value) {
     </svg>
   `;
 
-  // Begitu badge diklik, langsung berubah jadi custom dropdown polos (menggunakan manualStatusList)
+  // Begitu diklik, langsung buat dropdown DAN langsung simulasi klik/buka list isinya
   badgeBtn.onclick = function() {
     statusTd.innerHTML = "";
     const dropdownWrapper = document.createElement("div");
@@ -258,6 +258,12 @@ function renderStatusBadge(statusTd, s, value) {
     });
     
     statusTd.appendChild(dropdownWrapper);
+
+    // 💡 Trik: Cari elemen kotak "-- Pilih Status --" yang baru ter-render di dalam wrapper, lalu langsung trigger klik-nya
+    const targetBox = dropdownWrapper.querySelector(".custom-dropdown-selected, [role='combobox'], div > div"); 
+    if (targetBox) {
+      targetBox.click();
+    }
   };
 
   wrapper.appendChild(badgeBtn);
