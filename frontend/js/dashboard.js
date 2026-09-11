@@ -252,12 +252,11 @@ function renderStatusBadge(statusTd, s, value) {
   statusTd.appendChild(wrapper);
 }
 
-// Daftar status manual (bersih dari status hasil scan otomatis & tanpa warna-warni)
 const manualStatusList = [
+  { value: "", label: "-- Pilih Status --" },
   { value: "Alpa", label: "Alpa" },
   { value: "Sakit", label: "Sakit" },
   { value: "Izin", label: "Izin" }
-  // Tambahkan status manual lain di sini jika diperlukan
 ];
 
 function applyFilter() {
@@ -308,7 +307,7 @@ function applyFilter() {
     statusTd.dataset.rowIndex = s.rowIndex;
     statusTd.dataset.statusMasuk = value;
 
-    // Langsung render custom dropdown polos saat baris dimuat (klik langsung buka opsi tanpa transisi tombol badge)
+    // Langsung render custom dropdown polos khusus opsi manual (tanpa warna & tanpa scroll)
     const dropdownWrapper = document.createElement("div");
     createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
       processStatusChange(s.rowIndex, newValue, s.tanggal);
