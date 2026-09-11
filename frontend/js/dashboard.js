@@ -227,8 +227,7 @@ const manualStatusList = [
   { value: "Izin", label: "Izin" }
 ];
 
-// Fungsi render badge berwarna di tabel, yang pas diklik langsung berubah jadi dropdown polos
-// Fungsi render badge berwarna di tabel
+// Fungsi render status badge (UI/UX Fixed)
 function renderStatusBadge(statusTd, s, value) {
   const matchStatus = masterStatusList.find(m => m.value === value);
   const badgeClass = matchStatus ? matchStatus.class : "badge-default";
@@ -239,7 +238,9 @@ function renderStatusBadge(statusTd, s, value) {
   const badgeBtn = document.createElement("button");
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
-  badgeBtn.style.cssText = "display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 6px 14px; border-radius: 16px; font-size: 12.5px; font-weight: 500; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;";
+  
+  // 💡 Samakan min-height & padding badge agar identik presisi dengan kotak dropdown
+  badgeBtn.style.cssText = "display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 6px 14px; min-height: 32px; border-radius: 16px; font-size: 12.5px; font-weight: 500; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;";
 
   badgeBtn.innerHTML = `
     <span>${value || "-- Belum Diatur --"}</span>
@@ -250,7 +251,6 @@ function renderStatusBadge(statusTd, s, value) {
   `;
 
   badgeBtn.onclick = function(e) {
-    // 💡 1. Hentikan bubbling agar tidak langsung ditutup oleh document listener
     e.stopPropagation();
 
     statusTd.innerHTML = "";
@@ -262,20 +262,33 @@ function renderStatusBadge(statusTd, s, value) {
     
     statusTd.appendChild(dropdownWrapper);
 
-    // 💡 2. Hilangkan scroll, batasan tinggi, dan hilangkan warna bawaan item
+    // 💡 Fix 1 & 2: Samakan dimensi + Ratakan tengah (Align Center)
+    const selectedBox = dropdownWrapper.querySelector('.dropdown-selected');
+    if (selectedBox) {
+      selectedBox.style.padding = "6px 14px";
+      selectedBox.style.minHeight = "32px";
+      selectedBox.style.display = "flex";
+      selectedBox.style.justifyContent = "center";
+      selectedBox.style.alignItems = "center";
+      selectedBox.style.textAlign = "center";
+      selectedBox.style.borderRadius = "16px";
+    }
+
     const menuContainer = dropdownWrapper.querySelector('.dropdown-menu');
     if (menuContainer) {
       menuContainer.style.maxHeight = "none";
       menuContainer.style.overflowY = "visible";
+      menuContainer.style.textAlign = "center"; // Rata tengah isi opsi
       
-      // Bersihkan warna background & garis dari item opsi
       menuContainer.querySelectorAll('.dropdown-item').forEach(item => {
         item.style.backgroundColor = "transparent";
         item.style.color = "#333";
+        item.style.textAlign = "center"; // Rata tengah setiap item
+        item.style.justifyContent = "center";
+        item.style.display = "flex";
       });
     }
 
-    // 💡 3. Buka dropdown secara instan
     dropdownWrapper.classList.add('open');
   };
 
