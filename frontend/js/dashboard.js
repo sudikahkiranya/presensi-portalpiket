@@ -220,12 +220,11 @@ function initFilters(data) {
 }
 
 function renderStatusBadge(statusTd, s, value) {
+  statusTd.innerHTML = "";
   const matchStatus = masterStatusList.find(m => m.value === value);
   const badgeClass = matchStatus ? matchStatus.class : "badge-default";
 
-  const wrapper = document.createElement("div");
-  wrapper.style.cssText = "display: flex; align-items: center; justify-content: center; gap: 6px;";
-
+  // Tampilan awal berupa badge berwarna yang ada ikon pensilnya
   const badgeBtn = document.createElement("button");
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
@@ -239,17 +238,19 @@ function renderStatusBadge(statusTd, s, value) {
     </svg>
   `;
 
+  // 💡 Pas badge-nya diklik, baru berubah langsung jadi custom dropdown polos (tanpa warna, tanpa scroll, khusus opsi manual)
   badgeBtn.onclick = function() {
     statusTd.innerHTML = "";
     const dropdownWrapper = document.createElement("div");
-    createCustomDropdown(dropdownWrapper, masterStatusList, value, function(newValue) {
+    
+    createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
       processStatusChange(s.rowIndex, newValue, s.tanggal);
     });
+    
     statusTd.appendChild(dropdownWrapper);
   };
 
-  wrapper.appendChild(badgeBtn);
-  statusTd.appendChild(wrapper);
+  statusTd.appendChild(badgeBtn);
 }
 
 const manualStatusList = [
