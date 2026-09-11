@@ -233,16 +233,32 @@ function renderStatusBadge(statusTd, s, value) {
   const badgeClass = matchStatus ? matchStatus.class : "badge-default";
 
   const wrapper = document.createElement("div");
-  wrapper.style.cssText = "display: flex; align-items: center; justify-content: center; gap: 6px;";
+  wrapper.style.cssText = "display: flex; align-items: center; justify-content: center;";
 
   const badgeBtn = document.createElement("button");
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
-  badgeBtn.style.cssText = "display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 6px 14px; min-height: 32px; border-radius: 16px; font-size: 12.5px; font-weight: 500; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;";
+  
+  // 💡 Ukuran Standar Pil Status Badge (Presisi & Tidak Terlalu Lengkung)
+  const BADGE_STYLE = `
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 110px;
+    height: 30px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    box-sizing: border-box;
+  `;
+
+  badgeBtn.style.cssText = BADGE_STYLE + "border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;";
 
   badgeBtn.innerHTML = `
     <span>${value || "-- Belum Diatur --"}</span>
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
     </svg>
@@ -257,11 +273,9 @@ function renderStatusBadge(statusTd, s, value) {
     createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
       if (newValue && newValue !== value) {
         processStatusChange(s.rowIndex, newValue, s.tanggal);
-        // ⚡ Update UI instan ke badge warna baru
         statusTd.innerHTML = "";
         renderStatusBadge(statusTd, s, newValue);
       } else {
-        // Jika pilih opsi kosong / sama, kembalikan ke badge semula
         statusTd.innerHTML = "";
         renderStatusBadge(statusTd, s, value);
       }
@@ -269,22 +283,47 @@ function renderStatusBadge(statusTd, s, value) {
     
     statusTd.appendChild(dropdownWrapper);
 
+    // 💡 Samakan bentuk & ukuran pil dropdown dengan BADGE_STYLE
     const selectedBox = dropdownWrapper.querySelector('.dropdown-selected');
     if (selectedBox) {
-      selectedBox.style.cssText = "padding: 6px 14px; min-height: 32px; display: flex; justify-content: center; align-items: center; text-align: center; border-radius: 16px;";
+      selectedBox.style.cssText = BADGE_STYLE + `
+        border: 1px solid #c5d3e8;
+        background-color: #ffffff;
+        cursor: pointer;
+        position: relative;
+      `;
     }
 
+    // 💡 Styling menu dropdown melayang di bawah pil
     const menuContainer = dropdownWrapper.querySelector('.dropdown-menu');
     if (menuContainer) {
-      menuContainer.style.cssText = "max-height: none; overflow-y: visible; text-align: center;";
+      menuContainer.style.cssText = `
+        max-height: none;
+        overflow-y: visible;
+        text-align: center;
+        border-radius: 12px;
+        width: 130px;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      `;
+      
       menuContainer.querySelectorAll('.dropdown-item').forEach(item => {
-        item.style.cssText = "background-color: transparent; color: #333; text-align: center; justify-content: center; display: flex;";
+        item.style.cssText = `
+          background-color: transparent;
+          color: #333;
+          text-align: center;
+          justify-content: center;
+          display: flex;
+          font-size: 12px;
+          padding: 6px 8px;
+        `;
       });
     }
 
     dropdownWrapper.classList.add('open');
 
-    // ⚡ FIX CANCEL: Listener klik luar khusus untuk kembalikan tampilan badge tanpa delay
+    // Handler cancel tanpa delay
     const cancelHandler = function(event) {
       if (!dropdownWrapper.contains(event.target)) {
         document.removeEventListener('click', cancelHandler);
@@ -501,7 +540,7 @@ async function triggerAutoSync() {
   const saveBtn = document.querySelector("#absenForm button[type='submit']");
   if (saveBtn) {
     saveBtn.disabled = true;
-    saveBtn.innerHTML = `Syncing (${queue.length})...`;
+    saveBtn.innerHTML = `Syncing (${queue.length})`;
   }
 
   try {
