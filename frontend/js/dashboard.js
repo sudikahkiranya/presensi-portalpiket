@@ -239,7 +239,6 @@ function renderStatusBadge(statusTd, s, value) {
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
   
-  // 💡 Lebar otomatis pas mengikuti konten (width: max-content), teks 1 baris
   const BASE_STYLE = `
     display: inline-flex;
     align-items: center;
@@ -267,13 +266,15 @@ function renderStatusBadge(statusTd, s, value) {
   badgeBtn.onclick = function(e) {
     e.stopPropagation();
 
+    // 💡 1. Tutup semua dropdown aktif lain di halaman sebelum membuka yang baru
+    document.dispatchEvent(new CustomEvent('closeAllStatusDropdowns'));
+
     statusTd.innerHTML = "";
     const dropdownWrapper = document.createElement("div");
-    
-    // 💡 Reset wrapper luar agar tidak menghasilkan border / background ganda
     dropdownWrapper.style.cssText = "position: relative; display: inline-block; background: transparent; border: none; padding: 0; margin: 0;";
 
     createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
+      cleanupListeners();
       if (newValue && newValue !== value) {
         processStatusChange(s.rowIndex, newValue, s.tanggal);
         statusTd.innerHTML = "";
@@ -286,7 +287,6 @@ function renderStatusBadge(statusTd, s, value) {
     
     statusTd.appendChild(dropdownWrapper);
 
-    // 💡 Styling pil utama dropdown (samakan bentuk & ukuran persis dengan badge)
     const selectedBox = dropdownWrapper.querySelector('.dropdown-selected');
     if (selectedBox) {
       selectedBox.style.cssText = BASE_STYLE + `
@@ -297,7 +297,6 @@ function renderStatusBadge(statusTd, s, value) {
       `;
     }
 
-    // 💡 Menu melayang di bawah pil
     const menuContainer = dropdownWrapper.querySelector('.dropdown-menu');
     if (menuContainer) {
       menuContainer.style.cssText = `
@@ -313,6 +312,7 @@ function renderStatusBadge(statusTd, s, value) {
         border: 1px solid #e2e8f0;
         background: #ffffff;
         z-index: 99;
+        padding: 4px 0;
       `;
       
       menuContainer.querySelectorAll('.dropdown-item').forEach(item => {
@@ -325,23 +325,52 @@ function renderStatusBadge(statusTd, s, value) {
           font-size: 12px;
           padding: 8px 12px;
           white-space: nowrap;
+          cursor: pointer;
+          transition: background-color 0.15s ease, color 0.15s ease;
         `;
+
+        // 💡 2. Tambah efek Hover JS secara dinamis
+        item.onmouseenter = function() {
+          this.style.backgroundColor = "#f1f5f9";
+          this.style.color = "#1e293b";
+        };
+        item.onmouseleave = function() {
+          this.style.backgroundColor = "transparent";
+          this.style.color = "#333";
+        };
       });
     }
 
     dropdownWrapper.classList.add('open');
 
-    // Handler cancel tanpa delay saat klik di luar
-    const cancelHandler = function(event) {
+    // Fungsi helper untuk reset tampilan kembali ke badge
+    const resetToBadge = function() {
+      cleanupListeners();
+      statusTd.innerHTML = "";
+      renderStatusBadge(statusTd, s, s.statusMasuk || value);
+    };
+
+    // Handler klik area luar
+    const clickOutsideHandler = function(event) {
       if (!dropdownWrapper.contains(event.target)) {
-        document.removeEventListener('click', cancelHandler);
-        statusTd.innerHTML = "";
-        renderStatusBadge(statusTd, s, s.statusMasuk || value);
+        resetToBadge();
       }
     };
-    
+
+    // Handler penutupan otomatis jika dropdown baris lain dibuka
+    const closeOtherHandler = function() {
+      resetToBadge();
+    };
+
+    const cleanupListeners = function() {
+      document.removeEventListener('click', clickOutsideHandler);
+      document.removeEventListener('closeAllStatusDropdowns', closeOtherHandler);
+    };
+
+    document.addEventListener('closeAllStatusDropdowns', closeOtherHandler);
+
     setTimeout(() => {
-      document.addEventListener('click', cancelHandler);
+      document.addEventListener('click', clickOutsideHandler);
     }, 10);
   };
 
