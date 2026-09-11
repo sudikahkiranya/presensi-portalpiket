@@ -220,11 +220,12 @@ function initFilters(data) {
 }
 
 function renderStatusBadge(statusTd, s, value) {
-  statusTd.innerHTML = "";
   const matchStatus = masterStatusList.find(m => m.value === value);
   const badgeClass = matchStatus ? matchStatus.class : "badge-default";
 
-  // Tampilan awal berupa badge berwarna yang ada ikon pensilnya
+  const wrapper = document.createElement("div");
+  wrapper.style.cssText = "display: flex; align-items: center; justify-content: center; gap: 6px;";
+
   const badgeBtn = document.createElement("button");
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
@@ -238,27 +239,18 @@ function renderStatusBadge(statusTd, s, value) {
     </svg>
   `;
 
-  // 💡 Pas badge-nya diklik, baru berubah langsung jadi custom dropdown polos (tanpa warna, tanpa scroll, khusus opsi manual)
   badgeBtn.onclick = function() {
     statusTd.innerHTML = "";
     const dropdownWrapper = document.createElement("div");
-    
-    createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
+    createCustomDropdown(dropdownWrapper, masterStatusList, value, function(newValue) {
       processStatusChange(s.rowIndex, newValue, s.tanggal);
     });
-    
     statusTd.appendChild(dropdownWrapper);
   };
 
-  statusTd.appendChild(badgeBtn);
+  wrapper.appendChild(badgeBtn);
+  statusTd.appendChild(wrapper);
 }
-
-const manualStatusList = [
-  { value: "", label: "-- Pilih Status --" },
-  { value: "Alpa", label: "Alpa" },
-  { value: "Sakit", label: "Sakit" },
-  { value: "Izin", label: "Izin" }
-];
 
 function applyFilter() {
   const kelas = document.getElementById("filterKelas").getAttribute("data-value") || "";
@@ -308,13 +300,8 @@ function applyFilter() {
     statusTd.dataset.rowIndex = s.rowIndex;
     statusTd.dataset.statusMasuk = value;
 
-    // Langsung render custom dropdown polos khusus opsi manual (tanpa warna & tanpa scroll)
-    const dropdownWrapper = document.createElement("div");
-    createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
-      processStatusChange(s.rowIndex, newValue, s.tanggal);
-    });
-    
-    statusTd.appendChild(dropdownWrapper);
+    // Panggil fungsi render status biar rapi
+    renderStatusBadge(statusTd, s, value);
 
     tr.appendChild(namaTd);
     tr.appendChild(kelasTd);
