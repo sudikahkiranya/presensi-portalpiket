@@ -239,16 +239,26 @@ function renderStatusBadge(statusTd, s, value) {
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
   
-  // Style Asli Badge Bawaan Lo
-  const BADGE_PADDING = "6px 14px";
-  const BADGE_RADIUS = "16px";
-  const BADGE_FONT_SIZE = "12.5px";
+  // 💡 Ukuran Standar Pil Status Badge (Presisi & Tidak Terlalu Lengkung)
+  const BADGE_STYLE = `
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 110px;
+    height: 30px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    box-sizing: border-box;
+  `;
 
-  badgeBtn.style.cssText = `display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: ${BADGE_PADDING}; border-radius: ${BADGE_RADIUS}; font-size: ${BADGE_FONT_SIZE}; font-weight: 500; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;`;
+  badgeBtn.style.cssText = BADGE_STYLE + "border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;";
 
   badgeBtn.innerHTML = `
     <span>${value || "-- Belum Diatur --"}</span>
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
     </svg>
@@ -259,7 +269,6 @@ function renderStatusBadge(statusTd, s, value) {
 
     statusTd.innerHTML = "";
     const dropdownWrapper = document.createElement("div");
-    dropdownWrapper.style.cssText = "display: inline-block; position: relative;";
     
     createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
       if (newValue && newValue !== value) {
@@ -274,52 +283,40 @@ function renderStatusBadge(statusTd, s, value) {
     
     statusTd.appendChild(dropdownWrapper);
 
-    // 💡 Paksa pil dropdown persis ngikutin style badge asli
+    // 💡 Samakan bentuk & ukuran pil dropdown dengan BADGE_STYLE
     const selectedBox = dropdownWrapper.querySelector('.dropdown-selected');
     if (selectedBox) {
-      selectedBox.style.cssText = `
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 6px !important;
-        padding: ${BADGE_PADDING} !important;
-        border-radius: ${BADGE_RADIUS} !important;
-        font-size: ${BADGE_FONT_SIZE} !important;
-        font-weight: 500 !important;
-        border: 1px solid #c5d3e8 !important;
-        background-color: #ffffff !important;
-        cursor: pointer !important;
-        box-sizing: border-box !important;
-        white-space: nowrap !important;
+      selectedBox.style.cssText = BADGE_STYLE + `
+        border: 1px solid #c5d3e8;
+        background-color: #ffffff;
+        cursor: pointer;
+        position: relative;
       `;
     }
 
-    // 💡 Menu melayang menyesuaikan lebar konten tanpa merusak bentuk pil
+    // 💡 Styling menu dropdown melayang di bawah pil
     const menuContainer = dropdownWrapper.querySelector('.dropdown-menu');
     if (menuContainer) {
       menuContainer.style.cssText = `
-        max-height: none !important;
-        overflow-y: visible !important;
-        text-align: center !important;
-        border-radius: 12px !important;
-        min-width: 100% !important;
-        width: max-content !important;
-        left: 50% !important;
-        transform: translateX(-50%) !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
-        background: #ffffff !important;
-        z-index: 99 !important;
+        max-height: none;
+        overflow-y: visible;
+        text-align: center;
+        border-radius: 12px;
+        width: 130px;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       `;
       
       menuContainer.querySelectorAll('.dropdown-item').forEach(item => {
         item.style.cssText = `
-          background-color: transparent !important;
-          color: #333 !important;
-          text-align: center !important;
-          justify-content: center !important;
-          display: flex !important;
-          font-size: ${BADGE_FONT_SIZE} !important;
-          padding: 6px 12px !important;
+          background-color: transparent;
+          color: #333;
+          text-align: center;
+          justify-content: center;
+          display: flex;
+          font-size: 12px;
+          padding: 6px 8px;
         `;
       });
     }
