@@ -219,6 +219,15 @@ function initFilters(data) {
   });
 }
 
+// Daftar status khusus manual (tanpa status otomatis scan)
+const manualStatusList = [
+  { value: "", label: "-- Pilih Status --" },
+  { value: "Alpa", label: "Alpa" },
+  { value: "Sakit", label: "Sakit" },
+  { value: "Izin", label: "Izin" }
+];
+
+// Fungsi render badge berwarna di tabel, yang pas diklik langsung berubah jadi dropdown polos
 function renderStatusBadge(statusTd, s, value) {
   const matchStatus = masterStatusList.find(m => m.value === value);
   const badgeClass = matchStatus ? matchStatus.class : "badge-default";
@@ -239,12 +248,15 @@ function renderStatusBadge(statusTd, s, value) {
     </svg>
   `;
 
+  // Begitu badge diklik, langsung berubah jadi custom dropdown polos (menggunakan manualStatusList)
   badgeBtn.onclick = function() {
     statusTd.innerHTML = "";
     const dropdownWrapper = document.createElement("div");
-    createCustomDropdown(dropdownWrapper, masterStatusList, value, function(newValue) {
+    
+    createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
       processStatusChange(s.rowIndex, newValue, s.tanggal);
     });
+    
     statusTd.appendChild(dropdownWrapper);
   };
 
@@ -300,7 +312,7 @@ function applyFilter() {
     statusTd.dataset.rowIndex = s.rowIndex;
     statusTd.dataset.statusMasuk = value;
 
-    // Panggil fungsi render status biar rapi
+    // Panggil fungsi render status badge berwarna
     renderStatusBadge(statusTd, s, value);
 
     tr.appendChild(namaTd);
