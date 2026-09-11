@@ -239,16 +239,29 @@ function renderStatusBadge(statusTd, s, value) {
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
   
-  // Style Asli Badge Bawaan Lo
-  const BADGE_PADDING = "6px 14px";
-  const BADGE_RADIUS = "16px";
-  const BADGE_FONT_SIZE = "12.5px";
+  // 💡 STANDAR UKURAN UNIFORM (Lebar & Tinggi Dikunci Presisi)
+  const BADGE_STYLE = `
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    width: 140px !important;
+    height: 32px !important;
+    padding: 0 10px !important;
+    border-radius: 20px !important;
+    font-size: 12px !important;
+    font-weight: 500 !important;
+    box-sizing: border-box !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+  `;
 
-  badgeBtn.style.cssText = `display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: ${BADGE_PADDING}; border-radius: ${BADGE_RADIUS}; font-size: ${BADGE_FONT_SIZE}; font-weight: 500; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;`;
+  badgeBtn.style.cssText = BADGE_STYLE + "border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;";
 
   badgeBtn.innerHTML = `
-    <span>${value || "-- Belum Diatur --"}</span>
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
+    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${value || "-- Belum Diatur --"}</span>
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7; flex-shrink: 0;">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
     </svg>
@@ -274,27 +287,18 @@ function renderStatusBadge(statusTd, s, value) {
     
     statusTd.appendChild(dropdownWrapper);
 
-    // 💡 Paksa pil dropdown persis ngikutin style badge asli
+    // 💡 Pill Dropdown Mengadopsi Ukuran Ukuran Kunci yang Sama (140px x 32px)
     const selectedBox = dropdownWrapper.querySelector('.dropdown-selected');
     if (selectedBox) {
-      selectedBox.style.cssText = `
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        gap: 6px !important;
-        padding: ${BADGE_PADDING} !important;
-        border-radius: ${BADGE_RADIUS} !important;
-        font-size: ${BADGE_FONT_SIZE} !important;
-        font-weight: 500 !important;
+      selectedBox.style.cssText = BADGE_STYLE + `
         border: 1px solid #c5d3e8 !important;
         background-color: #ffffff !important;
+        color: #333 !important;
         cursor: pointer !important;
-        box-sizing: border-box !important;
-        white-space: nowrap !important;
       `;
     }
 
-    // 💡 Menu melayang menyesuaikan lebar konten tanpa merusak bentuk pil
+    // 💡 Menu Dropdown Tampil Presisi Mengikuti Lebar Pill
     const menuContainer = dropdownWrapper.querySelector('.dropdown-menu');
     if (menuContainer) {
       menuContainer.style.cssText = `
@@ -302,11 +306,10 @@ function renderStatusBadge(statusTd, s, value) {
         overflow-y: visible !important;
         text-align: center !important;
         border-radius: 12px !important;
-        min-width: 100% !important;
-        width: max-content !important;
+        width: 140px !important;
         left: 50% !important;
         transform: translateX(-50%) !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
         background: #ffffff !important;
         z-index: 99 !important;
       `;
@@ -318,15 +321,15 @@ function renderStatusBadge(statusTd, s, value) {
           text-align: center !important;
           justify-content: center !important;
           display: flex !important;
-          font-size: ${BADGE_FONT_SIZE} !important;
-          padding: 6px 12px !important;
+          font-size: 12px !important;
+          padding: 8px 10px !important;
         `;
       });
     }
 
     dropdownWrapper.classList.add('open');
 
-    // Handler cancel tanpa delay
+    // Handler cancel instan
     const cancelHandler = function(event) {
       if (!dropdownWrapper.contains(event.target)) {
         document.removeEventListener('click', cancelHandler);
