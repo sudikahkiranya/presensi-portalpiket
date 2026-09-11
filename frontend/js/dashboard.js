@@ -449,9 +449,6 @@ function getDropdownOptionsHTML(selected) {
 
 let syncTimer = null; // Timer untuk Debounce
 
-/**
- * 💡 FUNGSI UTAMA: Catat Perubahan + Trigger Debounced Auto-Sync
- */
 function processStatusChange(rowIndex, newValue, tanggal) {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   const piketID = user ? user.nama : "Petugas";
