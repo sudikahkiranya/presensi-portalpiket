@@ -222,6 +222,7 @@ function initFilters(data) {
 // Daftar status khusus manual (tanpa status otomatis scan)
 const manualStatusList = [
   { value: "", label: "-- Pilih Status --" },
+  { value: "Hadir Tidak Presensi", label: "Hadir Tidak Presensi" },
   { value: "Alpa", label: "Alpa" },
   { value: "Sakit", label: "Sakit" },
   { value: "Izin", label: "Izin" }
