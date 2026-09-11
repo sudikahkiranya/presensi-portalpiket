@@ -227,7 +227,7 @@ const manualStatusList = [
   { value: "Izin", label: "Izin" }
 ];
 
-// Fungsi render status badge (UI/UX Fixed)
+// Fungsi render badge dengan handler cancel instant & auto update UI saat berubah
 function renderStatusBadge(statusTd, s, value) {
   const matchStatus = masterStatusList.find(m => m.value === value);
   const badgeClass = matchStatus ? matchStatus.class : "badge-default";
@@ -238,8 +238,6 @@ function renderStatusBadge(statusTd, s, value) {
   const badgeBtn = document.createElement("button");
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
-  
-  // 💡 Samakan min-height & padding badge agar identik presisi dengan kotak dropdown
   badgeBtn.style.cssText = "display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 6px 14px; min-height: 32px; border-radius: 16px; font-size: 12.5px; font-weight: 500; border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;";
 
   badgeBtn.innerHTML = `
@@ -257,39 +255,47 @@ function renderStatusBadge(statusTd, s, value) {
     const dropdownWrapper = document.createElement("div");
     
     createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
-      processStatusChange(s.rowIndex, newValue, s.tanggal);
+      if (newValue && newValue !== value) {
+        processStatusChange(s.rowIndex, newValue, s.tanggal);
+        // ⚡ Update UI instan ke badge warna baru
+        statusTd.innerHTML = "";
+        renderStatusBadge(statusTd, s, newValue);
+      } else {
+        // Jika pilih opsi kosong / sama, kembalikan ke badge semula
+        statusTd.innerHTML = "";
+        renderStatusBadge(statusTd, s, value);
+      }
     });
     
     statusTd.appendChild(dropdownWrapper);
 
-    // 💡 Fix 1 & 2: Samakan dimensi + Ratakan tengah (Align Center)
     const selectedBox = dropdownWrapper.querySelector('.dropdown-selected');
     if (selectedBox) {
-      selectedBox.style.padding = "6px 14px";
-      selectedBox.style.minHeight = "32px";
-      selectedBox.style.display = "flex";
-      selectedBox.style.justifyContent = "center";
-      selectedBox.style.alignItems = "center";
-      selectedBox.style.textAlign = "center";
-      selectedBox.style.borderRadius = "16px";
+      selectedBox.style.cssText = "padding: 6px 14px; min-height: 32px; display: flex; justify-content: center; align-items: center; text-align: center; border-radius: 16px;";
     }
 
     const menuContainer = dropdownWrapper.querySelector('.dropdown-menu');
     if (menuContainer) {
-      menuContainer.style.maxHeight = "none";
-      menuContainer.style.overflowY = "visible";
-      menuContainer.style.textAlign = "center"; // Rata tengah isi opsi
-      
+      menuContainer.style.cssText = "max-height: none; overflow-y: visible; text-align: center;";
       menuContainer.querySelectorAll('.dropdown-item').forEach(item => {
-        item.style.backgroundColor = "transparent";
-        item.style.color = "#333";
-        item.style.textAlign = "center"; // Rata tengah setiap item
-        item.style.justifyContent = "center";
-        item.style.display = "flex";
+        item.style.cssText = "background-color: transparent; color: #333; text-align: center; justify-content: center; display: flex;";
       });
     }
 
     dropdownWrapper.classList.add('open');
+
+    // ⚡ FIX CANCEL: Listener klik luar khusus untuk kembalikan tampilan badge tanpa delay
+    const cancelHandler = function(event) {
+      if (!dropdownWrapper.contains(event.target)) {
+        document.removeEventListener('click', cancelHandler);
+        statusTd.innerHTML = "";
+        renderStatusBadge(statusTd, s, s.statusMasuk || value);
+      }
+    };
+    
+    setTimeout(() => {
+      document.addEventListener('click', cancelHandler);
+    }, 10);
   };
 
   wrapper.appendChild(badgeBtn);
@@ -451,11 +457,11 @@ function processStatusChange(rowIndex, newValue, tanggal) {
   const piketID = user ? user.nama : "Petugas";
   const timestamp = new Date().toISOString();
 
-  // 1. Update data di memori aplikasi
+  // 1. Update data memori secara realtime
   const targetSiswa = dataSiswa.find(s => Number(s.rowIndex) === Number(rowIndex));
   if (targetSiswa) targetSiswa.statusMasuk = newValue;
 
-  // 2. Simpan / Perbarui Antrean di LocalStorage
+  // 2. Simpan antrean LocalStorage
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   const existingIdx = queue.findIndex(item => Number(item.rowIndex) === Number(rowIndex));
 
@@ -476,7 +482,7 @@ function processStatusChange(rowIndex, newValue, tanggal) {
   localStorage.setItem("piket_pending_updates", JSON.stringify(queue));
   updatePendingBadge();
 
-  // 3. ⚡ DEBOUNCE AUTO-SYNC: Tunggu 1.5 detik setelah editan terakhir
+  // 3. Debounce sync background
   clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
     triggerAutoSync();
