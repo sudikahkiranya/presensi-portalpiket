@@ -55,7 +55,6 @@ function initFormPiket() {
   setRoleUser(user.role);
   updatePendingBadge();
 
-  // 💡 Render dropdown kosong dulu biar box-nya langsung nampil dari awal
   initFilters([]); 
 
   if (user.role === "Admin") {
@@ -108,16 +107,11 @@ try {
     const response = await fetch(url);
     const data = await response.json();
     
-    // 💡 Simpan ke variabel global dataSiswa (pastikan variabel ini ada di file lu)
     dataSiswa = Array.isArray(data) ? data : [];
-    
-    // 💡 Inisialisasi custom dropdown filter atas berdasarkan data yang baru ditarik
     initFilters(dataSiswa);
-    
-    // 💡 Jalankan filter/render tampilan awal
     applyFilter();
     
-    hideLoading(); // Jangan lupa sembunyikan loading di sini
+    hideLoading();
   } catch (err) {
     console.error(err);
     showToast("Gagal terhubung ke server Backend API", "error");
@@ -127,19 +121,12 @@ try {
 
 function renderTable(data) {
   dataSiswa = data;
-  
-  // 💡 Ganti fungsi populate lama dengan initFilters
   initFilters(dataSiswa);
-  
-  // Catatan: Pengaturan nilai filter (lastFilter) sekarang otomatis 
-  // di-handle di dalam custom dropdown, jadi baris .value lama bisa dibuang.
-  
   applyFilter();
   hideLoading();
 }
 
 function initFilters(data) {
-  // 1. Filter Kelas (Menggunakan logic map & sorting rombel yang lama)
   const kelasContainer = document.getElementById("filterKelas");
   const kelasMap = new Map();
   
@@ -179,12 +166,11 @@ function initFilters(data) {
     return pA.sub.localeCompare(pB.sub);
   });
 
-  // Susun array opsi untuk custom dropdown kelas
   const kelasOptions = [
     { value: "", label: "Semua" },
     ...sortedKeys.map(idRombel => ({
-      value: idRombel, // Tetap simpan idRombel sebagai value filter
-      label: kelasMap.get(idRombel) // Tampilkan nama rombel yang cantik
+      value: idRombel,
+      label: kelasMap.get(idRombel)
     }))
   ];
 
@@ -192,7 +178,6 @@ function initFilters(data) {
     applyFilter();
   });
 
-  // 2. Filter Tingkat
   const tingkatContainer = document.getElementById("filterTingkat");
   const uniqueTingkat = [...new Set(data.map(s => s.tingkat).filter(Boolean))].sort();
   const tingkatOptions = [{ value: "", label: "Semua" }, ...uniqueTingkat.map(t => ({ value: t, label: t }))];
@@ -201,7 +186,6 @@ function initFilters(data) {
     applyFilter();
   });
 
-  // 3. Filter Status (Polos tanpa class warna)
   const statusContainer = document.getElementById("filterStatus");
   const statusOptions = [
     { value: "", label: "Semua" },
@@ -227,7 +211,7 @@ const manualStatusList = [
   { value: "Izin", label: "Izin" }
 ];
 
-// Fungsi render badge berwarna di tabel, yang pas diklik langsung berubah jadi dropdown polos
+// Fungsi render badge berwarna di tabel, pas diklik langsung buka dropdown tanpa mampir ke kotak tertutup
 function renderStatusBadge(statusTd, s, value) {
   const matchStatus = masterStatusList.find(m => m.value === value);
   const badgeClass = matchStatus ? matchStatus.class : "badge-default";
@@ -248,21 +232,25 @@ function renderStatusBadge(statusTd, s, value) {
     </svg>
   `;
 
-  // Begitu diklik, langsung buat dropdown DAN langsung simulasi klik/buka list isinya
+  // Begitu badge diklik, langsung ubah jadi custom dropdown dalam kondisi terbuka (open)
   badgeBtn.onclick = function() {
     statusTd.innerHTML = "";
     const dropdownWrapper = document.createElement("div");
     
+    // Buat dropdown menggunakan fungsi pembantu custom dropdown
     createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
       processStatusChange(s.rowIndex, newValue, s.tanggal);
     });
     
     statusTd.appendChild(dropdownWrapper);
 
-    // 💡 Trik: Cari elemen kotak "-- Pilih Status --" yang baru ter-render di dalam wrapper, lalu langsung trigger klik-nya
-    const targetBox = dropdownWrapper.querySelector(".custom-dropdown-selected, [role='combobox'], div > div"); 
-    if (targetBox) {
-      targetBox.click();
+    // Langsung aktifkan kelas 'open' dan set teks terpilih agar langsung nembak buka list opsi
+    dropdownWrapper.classList.add('open');
+    const textSpan = dropdownWrapper.querySelector('.dropdown-text');
+    if(textSpan) {
+      const currentObj = manualStatusList.find(opt => opt.value === value) || manualStatusList[0];
+      textSpan.innerText = currentObj.label;
+      dropdownWrapper.setAttribute('data-value', currentObj.value);
     }
   };
 
@@ -318,7 +306,6 @@ function applyFilter() {
     statusTd.dataset.rowIndex = s.rowIndex;
     statusTd.dataset.statusMasuk = value;
 
-    // Panggil fungsi render status badge berwarna
     renderStatusBadge(statusTd, s, value);
 
     tr.appendChild(namaTd);
@@ -367,69 +354,16 @@ function renderPagination(total) {
   container.appendChild(nextBtn);
 }
 
-// Mode Edit: Dropdown Otomatis tanpa Tombol [X]
-function editStatus(index, originalValue, rowIndex) {
-  const td = document.getElementById(`status-${index}`);
-  
-  td.innerHTML = `
-    <select id="statusSelect-${index}" class="inline-select" onblur="cancelEdit(${index}, '${originalValue}', ${rowIndex})">
-      ${getDropdownOptionsHTML(originalValue)}
-    </select>
-  `;
+let syncTimer = null;
 
-  const select = document.getElementById(`statusSelect-${index}`);
-  select.focus();
-
-  select.addEventListener("change", () => {
-    const newValue = select.value;
-    const targetSiswa = dataSiswa.find(s => Number(s.rowIndex) === Number(rowIndex));
-    const tgl = targetSiswa ? targetSiswa.tanggal : "";
-
-    td.innerHTML = `
-      <div class="status-chip ${getStatusClass(newValue)}" onclick="editStatus(${index}, '${newValue}', ${rowIndex})" title="Klik untuk ubah status">
-        <span>${newValue || "Belum diisi"}</span>
-        ${SVG_PENCIL}
-      </div>
-    `;
-    processStatusChange(rowIndex, newValue, tgl);
-  });
-}
-
-function cancelEdit(index, originalValue, rowIndex) {
-  const td = document.getElementById(`status-${index}`);
-  // Hanya cancel jika select tidak sedang berganti nilai
-  setTimeout(() => {
-    if (document.activeElement?.id !== `statusSelect-${index}`) {
-      td.innerHTML = `
-        <div class="status-chip ${getStatusClass(originalValue)}" onclick="editStatus(${index}, '${originalValue}', ${rowIndex})" title="Klik untuk ubah status">
-          <span>${originalValue || "Belum diisi"}</span>
-          ${SVG_PENCIL}
-        </div>
-      `;
-    }
-  }, 150);
-}
-
-function getDropdownOptionsHTML(selected) {
-  const opsiStatus = ["", "Tepat Waktu", "Terlambat", "Sangat Terlambat", "Sangat Terlambat Sekali", "Sakit", "Izin", "Alpa", "Hadir Tidak Presensi", "Libur"];
-  return opsiStatus.map(o => `<option value="${o}" ${o === selected ? "selected" : ""}>${o || "-- Pilih Status --"}</option>`).join('');
-}
-
-let syncTimer = null; // Timer untuk Debounce
-
-/**
- * 💡 FUNGSI UTAMA: Catat Perubahan + Trigger Debounced Auto-Sync
- */
 function processStatusChange(rowIndex, newValue, tanggal) {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   const piketID = user ? user.nama : "Petugas";
   const timestamp = new Date().toISOString();
 
-  // 1. Update data di memori aplikasi
   const targetSiswa = dataSiswa.find(s => Number(s.rowIndex) === Number(rowIndex));
   if (targetSiswa) targetSiswa.statusMasuk = newValue;
 
-  // 2. Simpan / Perbarui Antrean di LocalStorage
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   const existingIdx = queue.findIndex(item => Number(item.rowIndex) === Number(rowIndex));
 
@@ -450,16 +384,12 @@ function processStatusChange(rowIndex, newValue, tanggal) {
   localStorage.setItem("piket_pending_updates", JSON.stringify(queue));
   updatePendingBadge();
 
-  // 3. ⚡ DEBOUNCE AUTO-SYNC: Tunggu 1.5 detik setelah editan terakhir
   clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
     triggerAutoSync();
   }, 1500); 
 }
 
-/**
- * ⚡ Eksekutor Auto-Sync ke Server
- */
 async function triggerAutoSync() {
   if (!navigator.onLine) {
     showToast("Offline: Perubahan tersimpan di perangkat", "info", 2000);
@@ -495,9 +425,6 @@ async function triggerAutoSync() {
   }
 }
 
-/**
- * 🌐 EVENT LISTENERS: Auto-Sync Saat Online
- */
 window.addEventListener("online", () => {
   showToast("Koneksi terhubung kembali. Menyingkronkan data...", "info");
   triggerAutoSync();
@@ -560,9 +487,6 @@ async function handleSubmit(e) {
   }
 }
 
-/**
- * 🔄 AUTO POLLING BACKGROUND (SETIAP 30 DETIK)
- */
 let pollingTimer = null;
 const POLLING_INTERVAL = 30000;
 
@@ -621,22 +545,6 @@ function setRoleUser(role) {
   document.getElementById("roleUser").textContent = roleLabel[role] || "⚪ -";
 }
 
-function getStatusClass(status) {
-  if (!status || status.trim() === "" || status === "Belum Presensi") return "status-kosong";
-  const s = status.toLowerCase();
-  if (s.includes("tepat waktu")) return "status-hadir";
-  if (s.includes("sangat terlambat sekali")) return "status-terlambat-ekstrem";
-  if (s.includes("sangat terlambat")) return "status-terlambat-berat";
-  if (s.includes("terlambat")) return "status-terlambat";
-  if (s.includes("hadir tidak presensi")) return "status-htp";
-  if (s.includes("sakit")) return "status-sakit";
-  if (s.includes("izin")) return "status-izin";
-  if (s.includes("alpa")) return "status-alpa";
-  if (s.includes("libur")) return "status-libur";
-  if (s.includes("prakerin") || s.includes("pkl")) return "status-prakerin";
-  return "status-kosong"; // Default fallback jika ada string lain yang tidak dikenal
-}
-
 function showToast(message, type = "info", duration = 3000) {
   const container = document.getElementById("toastContainer");
   if (!container) return;
@@ -681,10 +589,9 @@ function formatNamaKelas(idRombel, tingkat) {
   if (!idRombel || typeof idRombel !== "string") return "-";
 
   const parts = idRombel.trim().split("-");
-  const jurusan = parts[0] || ""; // Contoh: "AKN"
-  const subPart = parts[1] || ""; // Contoh: "A24"
+  const jurusan = parts[0] || ""; 
+  const subPart = parts[1] || ""; 
   
-  // Ambil huruf depannya saja sebagai sub kelas (misal "A24" jadi "A")
   const subKelas = subPart.replace(/[0-9]/g, "").trim(); 
   const tkt = tingkat || "";
 
@@ -708,12 +615,10 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
   const textSpan = containerElement.querySelector('.dropdown-text');
   const menuContainer = containerElement.querySelector('.dropdown-menu');
 
-  // Cari label awal
   const currentObj = optionsArray.find(opt => opt.value === selectedValue) || optionsArray[0];
   textSpan.innerText = currentObj.label;
   containerElement.setAttribute('data-value', currentObj.value);
 
-  // Render list opsi secara dinamis
   optionsArray.forEach(item => {
     const div = document.createElement('div');
     div.className = `dropdown-item ${item.class || ''}`;
@@ -722,7 +627,6 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
     menuContainer.appendChild(div);
   });
 
-  // Event buka/tutup
   const selectedBox = containerElement.querySelector('.dropdown-selected');
   selectedBox.onclick = (e) => {
     e.stopPropagation();
@@ -732,7 +636,6 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
     containerElement.classList.toggle('open');
   };
 
-  // Event pilih item
   menuContainer.onclick = (e) => {
     const itemDiv = e.target.closest('.dropdown-item');
     if (!itemDiv) return;
@@ -750,7 +653,6 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
   };
 }
 
-// Tutup dropdown kalau klik di luar area
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.custom-dropdown')) {
     document.querySelectorAll('.custom-dropdown').forEach(el => el.classList.remove('open'));
