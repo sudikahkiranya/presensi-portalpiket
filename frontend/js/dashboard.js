@@ -239,12 +239,14 @@ function renderStatusBadge(statusTd, s, value) {
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
   
+  // 💡 Samakan height (32px) & padding (6px 14px) persis seperti pil dropdown
   const BASE_STYLE = `
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
     width: max-content;
+    height: 32px;
     white-space: nowrap;
     padding: 6px 14px;
     border-radius: 12px;
@@ -266,7 +268,7 @@ function renderStatusBadge(statusTd, s, value) {
   badgeBtn.onclick = function(e) {
     e.stopPropagation();
 
-    // 💡 1. Tutup semua dropdown aktif lain di halaman sebelum membuka yang baru
+    // Tutup dropdown aktif lain
     document.dispatchEvent(new CustomEvent('closeAllStatusDropdowns'));
 
     statusTd.innerHTML = "";
@@ -329,7 +331,6 @@ function renderStatusBadge(statusTd, s, value) {
           transition: background-color 0.15s ease, color 0.15s ease;
         `;
 
-        // 💡 2. Tambah efek Hover JS secara dinamis
         item.onmouseenter = function() {
           this.style.backgroundColor = "#f1f5f9";
           this.style.color = "#1e293b";
@@ -343,21 +344,18 @@ function renderStatusBadge(statusTd, s, value) {
 
     dropdownWrapper.classList.add('open');
 
-    // Fungsi helper untuk reset tampilan kembali ke badge
     const resetToBadge = function() {
       cleanupListeners();
       statusTd.innerHTML = "";
       renderStatusBadge(statusTd, s, s.statusMasuk || value);
     };
 
-    // Handler klik area luar
     const clickOutsideHandler = function(event) {
       if (!dropdownWrapper.contains(event.target)) {
         resetToBadge();
       }
     };
 
-    // Handler penutupan otomatis jika dropdown baris lain dibuka
     const closeOtherHandler = function() {
       resetToBadge();
     };
