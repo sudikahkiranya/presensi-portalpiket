@@ -162,15 +162,17 @@ main {
    4. FORM INPUTS & BUTTONS
    ========================================================================== */
 select, input[type="date"], input[type="text"] {
-  padding: 8px 10px;
-  border-radius: 8px;
-  border: 1px solid #9bc4cc;
+  padding: 0 14px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid #cfe3e7;
   font-size: 13px;
   font-family: 'Poppins', sans-serif;
   background: #ffffff;
   color: #1f2d2f;
   outline: none;
   box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
 select:focus, input[type="date"]:focus, input[type="text"]:focus {
@@ -692,7 +694,7 @@ footer {
   min-width: 180px;
   height: 38px;
   padding: 0 14px;
-  border-radius: 12px;
+  border-radius: 12px !important; /* Memastikan kelengkungan sama persis (12px) */
   border: 1px solid #cfe3e7;
   background: #ffffff;
   font-size: 13px;
@@ -703,7 +705,8 @@ footer {
   transition: all 0.2s ease;
 }
 
-.filter-input-text:focus {
+.filter-input-text:focus,
+input[type="text"]:focus {
   border-color: #006D77;
   box-shadow: 0 0 0 3px rgba(0, 109, 119, 0.15);
 }
