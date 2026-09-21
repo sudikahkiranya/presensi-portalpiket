@@ -634,8 +634,7 @@ async function tarikDataPresensi() {
   }
 }
 
-async function cetakRekap() {
-  // 1. Ambil data user dari localStorage sesuai key milikmu ("piket_user")
+  async function cetakRekap() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   if (!user) {
     showToast("Silakan login terlebih dahulu", "error");
@@ -643,65 +642,55 @@ async function cetakRekap() {
   }
 
   const namaPetugas = user.nama || user.username || "Petugas Piket";
-  const role = user.role || "User";
+  const dateVal = document.getElementById("selectedDate")?.value || new Date().toISOString().split("T")[0];
 
-  // 2. Penentuan Tanggal berdasarkan Role
-  let tanggalSelected = null;
-  if (role === "Admin") {
-    const dateInput = document.getElementById("selectedDate");
-    if (!dateInput || !dateInput.value) {
-      showToast("Silakan pilih tanggal terlebih dahulu!", "warning");
-      return;
-    }
-    tanggalSelected = dateInput.value; // Format: YYYY-MM-DD
-  } else {
-    // Jika bukan Admin (Petugas Piket biasa), gunakan tanggal hari ini
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, "0");
-    const day = String(today.getDate()).padStart(2, "0");
-    tanggalSelected = `${year}-${month}-${day}`;
-  }
+  // 1. Tentukan tanggal berdasarkan role (Admin pakai tanggal terpilih, selain Admin pakai hari ini)
+  const tanggalSelected = (user.role === "Admin") 
+    ? dateVal 
+    : new Date().toISOString().split("T")[0];
 
-  // Tampilkan loading
-  showLoading("Memeriksa kelengkapan data presensi...");
+  showLoading("Memeriksa kelengkapan data...");
 
   try {
-    // 3. Cek apakah masih ada status presensi yang belum diisi (masih kosong)
-    const jumlahKosong = await runGoogleScript("cekStatusKosongHariIni", tanggalSelected);
+    // 2. Cek status kosong terlebih dahulu
+    const urlCek = `${API_URL}?action=cekStatusKosongHariIni&tanggal=${tanggalSelected}`;
+    const resCek = await fetch(urlCek);
+    const dataCek = await resCek.json();
 
-    if (jumlahKosong > 0) {
+    if (!dataCek.success) {
+      throw new Error(dataCek.message || "Gagal memeriksa data presensi.");
+    }
+
+    // Jika masih ada baris status masuk yang belum terisi (> 0)
+    if (dataCek.result > 0) {
       hideLoading();
-      showToast(`Masih ada ${jumlahKosong} data status masuk yang belum diisi!`, "error");
+      showToast(`Masih ada ${dataCek.result} data status masuk yang belum diisi!`, "error");
       return;
     }
 
-    // 4. Proses pembuatan PDF jika data sudah lengkap
-    showLoading("Membuat berkas PDF Rekap...");
-    const pdfUrl = await runGoogleScript("buatRekapPresensiHarian", namaPetugas, tanggalSelected);
+    // 3. Proses pembuatan PDF jika data sudah lengkap
+    showLoading("Membuat berkas PDF rekap...");
+    const urlRekap = `${API_URL}?action=buatRekapPresensiHarian&namaPetugas=${encodeURIComponent(namaPetugas)}&tanggal=${tanggalSelected}`;
+    const resRekap = await fetch(urlRekap);
+    const dataRekap = await resRekap.json();
+
+    if (!dataRekap.success) {
+      throw new Error(dataRekap.message || "Gagal membuat rekap PDF.");
+    }
 
     hideLoading();
-    showToast("Rekap PDF berhasil dibuat!", "success");
+    showToast("Berhasil membuat rekap PDF!", "success");
 
-    // 5. Buka berkas PDF di tab baru
-    if (pdfUrl) {
-      window.open(pdfUrl, "_blank");
+    // 4. Buka PDF di tab baru jika URL tersedia
+    if (dataRekap.result) {
+      window.open(dataRekap.result, "_blank");
     }
 
   } catch (err) {
+    console.error(err);
+    showToast(`Gagal: ${err.message}`, "error");
     hideLoading();
-    showToast("Gagal membuat rekap: " + err.message, "error");
   }
-}
-
-// Helper wrapper promise agar penanganan google.script.run lebih rapi menggunakan async/await
-function runGoogleScript(functionName, ...args) {
-  return new Promise((resolve, reject) => {
-    google.script.run
-      .withSuccessHandler((res) => resolve(res))
-      .withFailureHandler((err) => reject(err))
-      [functionName](...args);
-  });
 }
 
 function formatNamaKelas(idRombel, tingkat) {
