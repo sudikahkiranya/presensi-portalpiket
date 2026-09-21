@@ -635,44 +635,73 @@ async function tarikDataPresensi() {
 }
 
 async function cetakRekap() {
+  // 1. Ambil data user dari localStorage sesuai key milikmu ("piket_user")
   const user = JSON.parse(localStorage.getItem("piket_user"));
   if (!user) {
-    showToast("Silakan login terlebih dahulu.", "error");
+    showToast("Silakan login terlebih dahulu", "error");
     return;
   }
 
-  const selectedDate = document.getElementById("selectedDate")?.value || new Date().toISOString().split("T")[0];
-  const namaPetugas = user.nama || "Petugas Piket";
+  const namaPetugas = user.nama || user.username || "Petugas Piket";
+  const role = user.role || "User";
 
-  showLoading("Mengolah data & membuat PDF Rekap...");
+  // 2. Penentuan Tanggal berdasarkan Role
+  let tanggalSelected = null;
+  if (role === "Admin") {
+    const dateInput = document.getElementById("selectedDate");
+    if (!dateInput || !dateInput.value) {
+      showToast("Silakan pilih tanggal terlebih dahulu!", "warning");
+      return;
+    }
+    tanggalSelected = dateInput.value; // Format: YYYY-MM-DD
+  } else {
+    // Jika bukan Admin (Petugas Piket biasa), gunakan tanggal hari ini
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    tanggalSelected = `${year}-${month}-${day}`;
+  }
+
+  // Tampilkan loading
+  showLoading("Memeriksa kelengkapan data presensi...");
 
   try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({
-        action: "cetakRekapPdf",
-        tanggal: selectedDate,
-        namaPetugas: namaPetugas
-      })
-    });
+    // 3. Cek apakah masih ada status presensi yang belum diisi (masih kosong)
+    const jumlahKosong = await runGoogleScript("cekStatusKosongHariIni", tanggalSelected);
 
-    const result = await response.json();
-    hideLoading();
-
-    if (result.success && result.pdfUrl) {
-      showToast("PDF Berhasil dibuat! Membuka file...", "success", 3000);
-      
-      // Buka PDF di tab baru untuk di-download/print
-      window.open(result.pdfUrl, "_blank");
-    } else {
-      showToast("Gagal: " + (result.message || "Terjadi kesalahan"), "error", 4000);
+    if (jumlahKosong > 0) {
+      hideLoading();
+      showToast(`Masih ada ${jumlahKosong} data status masuk yang belum diisi!`, "error");
+      return;
     }
-  } catch (err) {
-    console.error(err);
+
+    // 4. Proses pembuatan PDF jika data sudah lengkap
+    showLoading("Membuat berkas PDF Rekap...");
+    const pdfUrl = await runGoogleScript("buatRekapPresensiHarian", namaPetugas, tanggalSelected);
+
     hideLoading();
-    showToast("Terjadi kesalahan koneksi saat membuat PDF.", "error");
+    showToast("Rekap PDF berhasil dibuat!", "success");
+
+    // 5. Buka berkas PDF di tab baru
+    if (pdfUrl) {
+      window.open(pdfUrl, "_blank");
+    }
+
+  } catch (err) {
+    hideLoading();
+    showToast("Gagal membuat rekap: " + err.message, "error");
   }
+}
+
+// Helper wrapper promise agar penanganan google.script.run lebih rapi menggunakan async/await
+function runGoogleScript(functionName, ...args) {
+  return new Promise((resolve, reject) => {
+    google.script.run
+      .withSuccessHandler((res) => resolve(res))
+      .withFailureHandler((err) => reject(err))
+      [functionName](...args);
+  });
 }
 
 function formatNamaKelas(idRombel, tingkat) {
