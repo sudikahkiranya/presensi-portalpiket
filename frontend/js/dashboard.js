@@ -763,27 +763,30 @@ function closeConfirm() { document.getElementById("confirmModal").classList.remo
 document.addEventListener('DOMContentLoaded', initFormPiket);
 
 async function tarikDataPresensi() {
-  showLoading("Menarik & menyinkronkan data dari Pool...");
+  showLoading("Menarik & memproses data presensi dari Pool...");
   
   try {
-    // 1. Pemicu pipeline ETL di Apps Script Master Utama -> Pool Daily
+    // 1. Tembak pemicu ke Master TA
     const response = await fetch(`${API_URL}?action=tarikDataEngine`);
     const result = await response.json();
 
     if (result.success) {
-      showToast(result.message || "Data presensi berhasil diperbarui", "success");
-      
-      // 2. Ambil tanggal aktif dan muat ulang tabel (fetchData akan menangani hideLoading)
+      // 2. Ambil data terbaru & tunggu sampai render tabel selesai
       const selectedDate = document.getElementById("selectedDate")?.value;
-      await fetchData(selectedDate);
+      await fetchData(selectedDate); // fetchData() akan memanggil hideLoading() di akhirnya
+
+      // 3. TAMPILKAN TOAST SETELAH LOADING & BLUR BENAR-BENAR HILANG
+      showToast(result.message || "Data presensi berhasil diperbarui!", "success");
+
     } else {
+      hideLoading(); // Tutup loading kalau backend return error
       showToast("Gagal Tarik Data: " + result.message, "error");
-      hideLoading(); // Tutup loading jika backend mengembalikan error
     }
+
   } catch (err) {
     console.error(err);
+    hideLoading(); // Tutup loading kalau terjadi error jaringan
     showToast("Terjadi kesalahan jaringan saat tarik data", "error");
-    hideLoading(); // Tutup loading jika koneksi terputus
   }
 }
 
