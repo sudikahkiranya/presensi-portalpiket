@@ -32,6 +32,15 @@ const masterStatusList = [
   { value: 'Prakerin', label: 'Prakerin', class: 'status-prakerin' }
 ];
 
+// Daftar status khusus edit manual
+const manualStatusList = [
+  { value: "", label: "-- Pilih Status --" },
+  { value: "Hadir Tidak Presensi", label: "Hadir Tidak Presensi" },
+  { value: "Alpa", label: "Alpa" },
+  { value: "Sakit", label: "Sakit" },
+  { value: "Izin", label: "Izin" }
+];
+
 function showLoading(text = "Memproses...") {
   const el = document.getElementById("loadingOverlay");
   const label = document.getElementById("loadingText");
@@ -54,9 +63,6 @@ function initFormPiket() {
   setPetugasPiket(user.nama);
   setRoleUser(user.role);
   updatePendingBadge();
-
-  // 💡 Render dropdown kosong dulu biar box-nya langsung nampil dari awal
-  initFilters([]); 
 
   if (user.role === "Admin") {
     const adminFilter = document.getElementById("adminFilter");
@@ -99,7 +105,7 @@ async function fetchData(selectedDate) {
     });
   }
 
-try {
+  try {
     let url = `${API_URL}?action=getSiswaHariIni`;
     if (user && user.role === "Admin" && dateVal) {
       url = `${API_URL}?action=getSiswaByTanggal&tanggal=${dateVal}`;
@@ -108,16 +114,10 @@ try {
     const response = await fetch(url);
     const data = await response.json();
     
-    // 💡 Simpan ke variabel global dataSiswa (pastikan variabel ini ada di file lu)
-    dataSiswa = Array.isArray(data) ? data : [];
-    
-    // 💡 Inisialisasi custom dropdown filter atas berdasarkan data yang baru ditarik
-    initFilters(dataSiswa);
-    
-    // 💡 Jalankan filter/render tampilan awal
+    window.dataSiswa = Array.isArray(data) ? data : [];
+    initFilters(window.dataSiswa);
     applyFilter();
-    
-    hideLoading(); // Jangan lupa sembunyikan loading di sini
+    hideLoading();
   } catch (err) {
     console.error(err);
     showToast("Gagal terhubung ke server Backend API", "error");
@@ -125,21 +125,7 @@ try {
   }
 }
 
-function renderTable(data) {
-  dataSiswa = data;
-  
-  // 💡 Ganti fungsi populate lama dengan initFilters
-  initFilters(dataSiswa);
-  
-  // Catatan: Pengaturan nilai filter (lastFilter) sekarang otomatis 
-  // di-handle di dalam custom dropdown, jadi baris .value lama bisa dibuang.
-  
-  applyFilter();
-  hideLoading();
-}
-
 function initFilters(data) {
-  // 1. Filter Kelas (Menggunakan logic map & sorting rombel yang lama)
   const kelasContainer = document.getElementById("filterKelas");
   const kelasMap = new Map();
   
@@ -166,42 +152,30 @@ function initFilters(data) {
   const sortedKeys = [...kelasMap.keys()].sort((a, b) => {
     const labelA = kelasMap.get(a);
     const labelB = kelasMap.get(b);
-
     const pA = parseLabel(labelA);
     const pB = parseLabel(labelB);
 
-    if (pA.jurusan !== pB.jurusan) {
-      return pA.jurusan.localeCompare(pB.jurusan);
-    }
-    if (pA.weight !== pB.weight) {
-      return pA.weight - pB.weight;
-    }
+    if (pA.jurusan !== pB.jurusan) return pA.jurusan.localeCompare(pB.jurusan);
+    if (pA.weight !== pB.weight) return pA.weight - pB.weight;
     return pA.sub.localeCompare(pB.sub);
   });
 
-  // Susun array opsi untuk custom dropdown kelas
   const kelasOptions = [
     { value: "", label: "Semua" },
     ...sortedKeys.map(idRombel => ({
-      value: idRombel, // Tetap simpan idRombel sebagai value filter
-      label: kelasMap.get(idRombel) // Tampilkan nama rombel yang cantik
+      value: idRombel,
+      label: kelasMap.get(idRombel)
     }))
   ];
 
-  createCustomDropdown(kelasContainer, kelasOptions, "", function(val) {
-    applyFilter();
-  });
+  if (kelasContainer) createCustomDropdown(kelasContainer, kelasOptions, "", () => applyFilter());
 
-  // 2. Filter Tingkat
   const tingkatContainer = document.getElementById("filterTingkat");
   const uniqueTingkat = [...new Set(data.map(s => s.tingkat).filter(Boolean))].sort();
   const tingkatOptions = [{ value: "", label: "Semua" }, ...uniqueTingkat.map(t => ({ value: t, label: t }))];
   
-  createCustomDropdown(tingkatContainer, tingkatOptions, "", function(val) {
-    applyFilter();
-  });
+  if (tingkatContainer) createCustomDropdown(tingkatContainer, tingkatOptions, "", () => applyFilter());
 
-  // 3. Filter Status (Polos tanpa class warna)
   const statusContainer = document.getElementById("filterStatus");
   const statusOptions = [
     { value: "", label: "Semua" },
@@ -214,21 +188,9 @@ function initFilters(data) {
     { value: "Sangat Terlambat", label: "Sangat Terlambat" }
   ];
 
-  createCustomDropdown(statusContainer, statusOptions, "", function(val) {
-    applyFilter();
-  });
+  if (statusContainer) createCustomDropdown(statusContainer, statusOptions, "", () => applyFilter());
 }
 
-// Daftar status khusus manual (tanpa status otomatis scan)
-const manualStatusList = [
-  { value: "", label: "-- Pilih Status --" },
-  { value: "Hadir Tidak Presensi", label: "Hadir Tidak Presensi" },
-  { value: "Alpa", label: "Alpa" },
-  { value: "Sakit", label: "Sakit" },
-  { value: "Izin", label: "Izin" }
-];
-
-// Fungsi render badge dengan handler cancel instant & auto update UI saat berubah
 function renderStatusBadge(statusTd, s, value) {
   const matchStatus = masterStatusList.find(m => m.value === value);
   const badgeClass = matchStatus ? matchStatus.class : "badge-default";
@@ -240,7 +202,6 @@ function renderStatusBadge(statusTd, s, value) {
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
   
-  // 💡 Samakan height (32px) & padding (6px 14px) persis seperti pil dropdown
   const BASE_STYLE = `
     display: inline-flex;
     align-items: center;
@@ -257,7 +218,6 @@ function renderStatusBadge(statusTd, s, value) {
   `;
 
   badgeBtn.style.cssText = BASE_STYLE + "border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;";
-
   badgeBtn.innerHTML = `
     <span>${value || "-- Belum Diatur --"}</span>
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
@@ -268,8 +228,6 @@ function renderStatusBadge(statusTd, s, value) {
 
   badgeBtn.onclick = function(e) {
     e.stopPropagation();
-
-    // Tutup dropdown aktif lain
     document.dispatchEvent(new CustomEvent('closeAllStatusDropdowns'));
 
     statusTd.innerHTML = "";
@@ -292,54 +250,24 @@ function renderStatusBadge(statusTd, s, value) {
 
     const selectedBox = dropdownWrapper.querySelector('.dropdown-selected');
     if (selectedBox) {
-      selectedBox.style.cssText = BASE_STYLE + `
-        border: 1px solid #c5d3e8;
-        background-color: #ffffff;
-        cursor: pointer;
-        color: #333;
-      `;
+      selectedBox.style.cssText = BASE_STYLE + `border: 1px solid #c5d3e8; background-color: #ffffff; cursor: pointer; color: #333;`;
     }
 
     const menuContainer = dropdownWrapper.querySelector('.dropdown-menu');
     if (menuContainer) {
       menuContainer.style.cssText = `
-        max-height: none;
-        overflow-y: visible;
-        text-align: center;
-        border-radius: 12px;
-        min-width: 100%;
-        width: max-content;
-        left: 50%;
-        transform: translateX(-50%);
-        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-        border: 1px solid #e2e8f0;
-        background: #ffffff;
-        z-index: 99;
-        padding: 4px 0;
+        max-height: none; overflow-y: visible; text-align: center; border-radius: 12px;
+        min-width: 100%; width: max-content; left: 50%; transform: translateX(-50%);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.12); border: 1px solid #e2e8f0; background: #ffffff; z-index: 99; padding: 4px 0;
       `;
       
       menuContainer.querySelectorAll('.dropdown-item').forEach(item => {
         item.style.cssText = `
-          background-color: transparent;
-          color: #333;
-          text-align: center;
-          justify-content: center;
-          display: flex;
-          font-size: 12px;
-          padding: 8px 12px;
-          white-space: nowrap;
-          cursor: pointer;
-          transition: background-color 0.15s ease, color 0.15s ease;
+          background-color: transparent; color: #333; text-align: center; justify-content: center;
+          display: flex; font-size: 12px; padding: 8px 12px; white-space: nowrap; cursor: pointer; transition: background-color 0.15s ease;
         `;
-
-        item.onmouseenter = function() {
-          this.style.backgroundColor = "#f1f5f9";
-          this.style.color = "#1e293b";
-        };
-        item.onmouseleave = function() {
-          this.style.backgroundColor = "transparent";
-          this.style.color = "#333";
-        };
+        item.onmouseenter = function() { this.style.backgroundColor = "#f1f5f9"; this.style.color = "#1e293b"; };
+        item.onmouseleave = function() { this.style.backgroundColor = "transparent"; this.style.color = "#333"; };
       });
     }
 
@@ -352,14 +280,10 @@ function renderStatusBadge(statusTd, s, value) {
     };
 
     const clickOutsideHandler = function(event) {
-      if (!dropdownWrapper.contains(event.target)) {
-        resetToBadge();
-      }
+      if (!dropdownWrapper.contains(event.target)) resetToBadge();
     };
 
-    const closeOtherHandler = function() {
-      resetToBadge();
-    };
+    const closeOtherHandler = function() { resetToBadge(); };
 
     const cleanupListeners = function() {
       document.removeEventListener('click', clickOutsideHandler);
@@ -367,10 +291,7 @@ function renderStatusBadge(statusTd, s, value) {
     };
 
     document.addEventListener('closeAllStatusDropdowns', closeOtherHandler);
-
-    setTimeout(() => {
-      document.addEventListener('click', clickOutsideHandler);
-    }, 10);
+    setTimeout(() => document.addEventListener('click', clickOutsideHandler), 10);
   };
 
   wrapper.appendChild(badgeBtn);
@@ -378,17 +299,18 @@ function renderStatusBadge(statusTd, s, value) {
 }
 
 function applyFilter() {
-  const kelas = document.getElementById("filterKelas").getAttribute("data-value") || "";
-  const tingkat = document.getElementById("filterTingkat").getAttribute("data-value") || "";
-  const status = document.getElementById("filterStatus").getAttribute("data-value") || "";
+  const kelas = document.getElementById("filterKelas")?.getAttribute("data-value") || "";
+  const tingkat = document.getElementById("filterTingkat")?.getAttribute("data-value") || "";
+  const status = document.getElementById("filterStatus")?.getAttribute("data-value") || "";
   const nama = document.getElementById("filterNama")?.value.toLowerCase() || "";
   const tbody = document.getElementById("tbodySiswa");
+  if (!tbody) return;
   tbody.innerHTML = "";
 
   if (!applyFilter.keepPage) currentPage = 1;
   applyFilter.keepPage = false;
 
-  const filtered = dataSiswa
+  const filtered = window.dataSiswa
       .filter(s => (!kelas || s.kelas === kelas))
       .filter(s => (!tingkat || String(s.tingkat).trim().toLowerCase() === String(tingkat).trim().toLowerCase()))
       .filter(s => {
@@ -402,14 +324,14 @@ function applyFilter() {
   const pageData = filtered.slice(startIndex, startIndex + rowsPerPage);
 
   if (pageData.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6">Tidak ada data.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Tidak ada data.</td></tr>`;
     document.getElementById("jumlahData").textContent = "0";
     renderPagination(0);
     return;
   }
 
   const fragment = document.createDocumentFragment();
-  pageData.forEach((s, idx) => {
+  pageData.forEach((s) => {
     const tr = document.createElement("tr");
     const namaTd = document.createElement("td"); namaTd.textContent = s.nama || "-";
     const kelasTd = document.createElement("td"); kelasTd.textContent = formatNamaKelas(s.kelas, s.tingkat);
@@ -425,7 +347,6 @@ function applyFilter() {
     statusTd.dataset.rowIndex = s.rowIndex;
     statusTd.dataset.statusMasuk = value;
 
-    // Panggil fungsi render status badge berwarna
     renderStatusBadge(statusTd, s, value);
 
     tr.appendChild(namaTd);
@@ -438,7 +359,8 @@ function applyFilter() {
   });
 
   tbody.appendChild(fragment);
-  document.getElementById("jumlahData").textContent = `${filtered.length}`;
+  const jumlahEl = document.getElementById("jumlahData");
+  if (jumlahEl) jumlahEl.textContent = `${filtered.length}`;
   renderPagination(filtered.length);
 }
 
@@ -474,66 +396,16 @@ function renderPagination(total) {
   container.appendChild(nextBtn);
 }
 
-// Mode Edit: Dropdown Otomatis tanpa Tombol [X]
-function editStatus(index, originalValue, rowIndex) {
-  const td = document.getElementById(`status-${index}`);
-  
-  td.innerHTML = `
-    <select id="statusSelect-${index}" class="inline-select" onblur="cancelEdit(${index}, '${originalValue}', ${rowIndex})">
-      ${getDropdownOptionsHTML(originalValue)}
-    </select>
-  `;
-
-  const select = document.getElementById(`statusSelect-${index}`);
-  select.focus();
-
-  select.addEventListener("change", () => {
-    const newValue = select.value;
-    const targetSiswa = dataSiswa.find(s => Number(s.rowIndex) === Number(rowIndex));
-    const tgl = targetSiswa ? targetSiswa.tanggal : "";
-
-    td.innerHTML = `
-      <div class="status-chip ${getStatusClass(newValue)}" onclick="editStatus(${index}, '${newValue}', ${rowIndex})" title="Klik untuk ubah status">
-        <span>${newValue || "Belum diisi"}</span>
-        ${SVG_PENCIL}
-      </div>
-    `;
-    processStatusChange(rowIndex, newValue, tgl);
-  });
-}
-
-function cancelEdit(index, originalValue, rowIndex) {
-  const td = document.getElementById(`status-${index}`);
-  // Hanya cancel jika select tidak sedang berganti nilai
-  setTimeout(() => {
-    if (document.activeElement?.id !== `statusSelect-${index}`) {
-      td.innerHTML = `
-        <div class="status-chip ${getStatusClass(originalValue)}" onclick="editStatus(${index}, '${originalValue}', ${rowIndex})" title="Klik untuk ubah status">
-          <span>${originalValue || "Belum diisi"}</span>
-          ${SVG_PENCIL}
-        </div>
-      `;
-    }
-  }, 150);
-}
-
-function getDropdownOptionsHTML(selected) {
-  const opsiStatus = ["", "Tepat Waktu", "Terlambat", "Sangat Terlambat", "Sangat Terlambat Sekali", "Sakit", "Izin", "Alpa", "Hadir Tidak Presensi", "Libur"];
-  return opsiStatus.map(o => `<option value="${o}" ${o === selected ? "selected" : ""}>${o || "-- Pilih Status --"}</option>`).join('');
-}
-
-let syncTimer = null; // Timer untuk Debounce
+let syncTimer = null;
 
 function processStatusChange(rowIndex, newValue, tanggal) {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   const piketID = user ? user.nama : "Petugas";
   const timestamp = new Date().toISOString();
 
-  // 1. Update data memori secara realtime
-  const targetSiswa = dataSiswa.find(s => Number(s.rowIndex) === Number(rowIndex));
+  const targetSiswa = window.dataSiswa.find(s => Number(s.rowIndex) === Number(rowIndex));
   if (targetSiswa) targetSiswa.statusMasuk = newValue;
 
-  // 2. Simpan antrean LocalStorage
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   const existingIdx = queue.findIndex(item => Number(item.rowIndex) === Number(rowIndex));
 
@@ -554,16 +426,10 @@ function processStatusChange(rowIndex, newValue, tanggal) {
   localStorage.setItem("piket_pending_updates", JSON.stringify(queue));
   updatePendingBadge();
 
-  // 3. Debounce sync background
   clearTimeout(syncTimer);
-  syncTimer = setTimeout(() => {
-    triggerAutoSync();
-  }, 1500); 
+  syncTimer = setTimeout(() => triggerAutoSync(), 1500); 
 }
 
-/**
- * ⚡ Eksekutor Auto-Sync ke Server
- */
 async function triggerAutoSync() {
   if (!navigator.onLine) {
     showToast("Offline: Perubahan tersimpan di perangkat", "info", 2000);
@@ -572,12 +438,6 @@ async function triggerAutoSync() {
 
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   if (queue.length === 0) return;
-
-  const saveBtn = document.querySelector("#absenForm button[type='submit']");
-  if (saveBtn) {
-    saveBtn.disabled = true;
-    saveBtn.innerHTML = `Syncing (${queue.length})`;
-  }
 
   try {
     const response = await fetch(API_URL, {
@@ -594,14 +454,11 @@ async function triggerAutoSync() {
       showToast("Data tersimpan otomatis ke server", "success", 2000);
     }
   } catch (err) {
-    console.warn("[Auto-Sync Background] Server sibuk/koneksi terputus. Data tersimpan di LocalStorage.");
+    console.warn("[Auto-Sync Background] Server sibuk/koneksi terputus.");
     updatePendingBadge();
   }
 }
 
-/**
- * 🌐 EVENT LISTENERS: Auto-Sync Saat Online
- */
 window.addEventListener("online", () => {
   showToast("Koneksi terhubung kembali. Menyingkronkan data...", "info");
   triggerAutoSync();
@@ -647,8 +504,7 @@ async function handleSubmit(e) {
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: "simpanStatusMasuk", payload: queue })
     });
-    const resText = await response.text();
-    const result = JSON.parse(resText);
+    const result = await response.json();
 
     hideLoading();
     if (result.success) {
@@ -664,9 +520,6 @@ async function handleSubmit(e) {
   }
 }
 
-/**
- * 🔄 AUTO POLLING BACKGROUND (SETIAP 30 DETIK)
- */
 let pollingTimer = null;
 const POLLING_INTERVAL = 30000;
 
@@ -674,9 +527,7 @@ function startAutoPolling() {
   stopAutoPolling();
   pollingTimer = setInterval(() => {
     let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
-    if (navigator.onLine && queue.length === 0) {
-      silentFetchData();
-    }
+    if (navigator.onLine && queue.length === 0) silentFetchData();
   }, POLLING_INTERVAL);
 }
 
@@ -698,7 +549,7 @@ async function silentFetchData() {
     const newData = await response.json();
 
     if (Array.isArray(newData) && newData.length > 0) {
-      dataSiswa = newData;
+      window.dataSiswa = newData;
       applyFilter.keepPage = true; 
       applyFilter();
     }
@@ -717,12 +568,14 @@ document.addEventListener("visibilitychange", () => {
 });
 
 function setPetugasPiket(nama) {
-  document.getElementById('petugasPiket').textContent = `👤 ${nama || "-"}`;
+  const el = document.getElementById('petugasPiket');
+  if (el) el.textContent = `👤 ${nama || "-"}`;
 }
 
 function setRoleUser(role) {
   const roleLabel = { "Admin": "🟣 Admin Presensi", "Piket": "🟢 Petugas Piket" };
-  document.getElementById("roleUser").textContent = roleLabel[role] || "⚪ -";
+  const el = document.getElementById("roleUser");
+  if (el) el.textContent = roleLabel[role] || "⚪ -";
 }
 
 function getStatusClass(status) {
@@ -738,7 +591,7 @@ function getStatusClass(status) {
   if (s.includes("alpa")) return "status-alpa";
   if (s.includes("libur")) return "status-libur";
   if (s.includes("prakerin") || s.includes("pkl")) return "status-prakerin";
-  return "status-kosong"; // Default fallback jika ada string lain yang tidak dikenal
+  return "status-kosong";
 }
 
 function showToast(message, type = "info", duration = 3000) {
@@ -748,7 +601,7 @@ function showToast(message, type = "info", duration = 3000) {
   toast.className = `toast ${type}`;
   toast.textContent = message;
   container.appendChild(toast);
-  setTimeout(() => { toast.remove(); }, duration);
+  setTimeout(() => toast.remove(), duration);
 }
 
 function logout() {
@@ -756,36 +609,27 @@ function logout() {
   window.location.href = "index.html";
 }
 
-function closeNotif() { document.getElementById("notifModal").classList.remove("active"); }
-function closeError() { document.getElementById("errorModal").classList.remove("active"); }
-function closeConfirm() { document.getElementById("confirmModal").classList.remove("active"); }
-
-document.addEventListener('DOMContentLoaded', initFormPiket);
+function closeNotif() { document.getElementById("notifModal")?.classList.remove("active"); }
+function closeError() { document.getElementById("errorModal")?.classList.remove("active"); }
+function closeConfirm() { document.getElementById("confirmModal")?.classList.remove("active"); }
 
 async function tarikDataPresensi() {
   showLoading("Menarik & memproses data presensi dari Pool...");
-  
   try {
-    // 1. Tembak pemicu ke Master TA
     const response = await fetch(`${API_URL}?action=tarikDataEngine`);
     const result = await response.json();
 
     if (result.success) {
-      // 2. Ambil data terbaru & tunggu sampai render tabel selesai
       const selectedDate = document.getElementById("selectedDate")?.value;
-      await fetchData(selectedDate); // fetchData() akan memanggil hideLoading() di akhirnya
-
-      // 3. TAMPILKAN TOAST SETELAH LOADING & BLUR BENAR-BENAR HILANG
+      await fetchData(selectedDate);
       showToast(result.message || "Data presensi berhasil diperbarui!", "success");
-
     } else {
-      hideLoading(); // Tutup loading kalau backend return error
+      hideLoading();
       showToast("Gagal Tarik Data: " + result.message, "error");
     }
-
   } catch (err) {
     console.error(err);
-    hideLoading(); // Tutup loading kalau terjadi error jaringan
+    hideLoading();
     showToast("Terjadi kesalahan jaringan saat tarik data", "error");
   }
 }
@@ -802,19 +646,15 @@ function cetakRekap() {
 
 function formatNamaKelas(idRombel, tingkat) {
   if (!idRombel || typeof idRombel !== "string") return "-";
-
   const parts = idRombel.trim().split("-");
-  const jurusan = parts[0] || ""; // Contoh: "AKN"
-  const subPart = parts[1] || ""; // Contoh: "A24"
-  
-  // Ambil huruf depannya saja sebagai sub kelas (misal "A24" jadi "A")
+  const jurusan = parts[0] || "";
+  const subPart = parts[1] || "";
   const subKelas = subPart.replace(/[0-9]/g, "").trim(); 
   const tkt = tingkat || "";
 
   if (jurusan && tkt && subKelas) {
     return `${jurusan.toUpperCase()} ${tkt.toUpperCase()}-${subKelas.toUpperCase()}`;
   }
-
   return idRombel;
 }
 
@@ -831,12 +671,10 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
   const textSpan = containerElement.querySelector('.dropdown-text');
   const menuContainer = containerElement.querySelector('.dropdown-menu');
 
-  // Cari label awal
   const currentObj = optionsArray.find(opt => opt.value === selectedValue) || optionsArray[0];
   textSpan.innerText = currentObj.label;
   containerElement.setAttribute('data-value', currentObj.value);
 
-  // Render list opsi secara dinamis
   optionsArray.forEach(item => {
     const div = document.createElement('div');
     div.className = `dropdown-item ${item.class || ''}`;
@@ -845,7 +683,6 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
     menuContainer.appendChild(div);
   });
 
-  // Event buka/tutup
   const selectedBox = containerElement.querySelector('.dropdown-selected');
   selectedBox.onclick = (e) => {
     e.stopPropagation();
@@ -855,7 +692,6 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
     containerElement.classList.toggle('open');
   };
 
-  // Event pilih item
   menuContainer.onclick = (e) => {
     const itemDiv = e.target.closest('.dropdown-item');
     if (!itemDiv) return;
@@ -873,9 +709,10 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
   };
 }
 
-// Tutup dropdown kalau klik di luar area
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.custom-dropdown')) {
     document.querySelectorAll('.custom-dropdown').forEach(el => el.classList.remove('open'));
   }
 });
+
+document.addEventListener('DOMContentLoaded', initFormPiket);
