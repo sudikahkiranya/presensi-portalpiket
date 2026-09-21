@@ -634,14 +634,45 @@ async function tarikDataPresensi() {
   }
 }
 
-function cetakRekap() {
+async function cetakRekap() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
-  if (!user) return;
-  showLoading("Membuat rekap PDF...");
-  setTimeout(() => {
+  if (!user) {
+    showToast("Silakan login terlebih dahulu.", "error");
+    return;
+  }
+
+  const selectedDate = document.getElementById("selectedDate")?.value || new Date().toISOString().split("T")[0];
+  const namaPetugas = user.nama || "Petugas Piket";
+
+  showLoading("Mengolah data & membuat PDF Rekap...");
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        action: "cetakRekapPdf",
+        tanggal: selectedDate,
+        namaPetugas: namaPetugas
+      })
+    });
+
+    const result = await response.json();
     hideLoading();
-    showToast("Fitur rekap siap diproses via Apps Script", "info");
-  }, 1200);
+
+    if (result.success && result.pdfUrl) {
+      showToast("PDF Berhasil dibuat! Membuka file...", "success", 3000);
+      
+      // Buka PDF di tab baru untuk di-download/print
+      window.open(result.pdfUrl, "_blank");
+    } else {
+      showToast("Gagal: " + (result.message || "Terjadi kesalahan"), "error", 4000);
+    }
+  } catch (err) {
+    console.error(err);
+    hideLoading();
+    showToast("Terjadi kesalahan koneksi saat membuat PDF.", "error");
+  }
 }
 
 function formatNamaKelas(idRombel, tingkat) {
