@@ -762,13 +762,29 @@ function closeConfirm() { document.getElementById("confirmModal").classList.remo
 
 document.addEventListener('DOMContentLoaded', initFormPiket);
 
-function tarikDataPresensi() {
-  showLoading("Memperbarui data presensi...");
-  setTimeout(() => {
+async function tarikDataPresensi() {
+  showLoading("Menarik & memproses data presensi dari Pool...");
+  
+  try {
+    // 1. Tembak action "tarikDataEngine" ke Master Utama
+    const response = await fetch(`${API_URL}?action=tarikDataEngine`);
+    const result = await response.json();
+
+    if (result.success) {
+      showToast(result.message || "Data presensi berhasil diperbarui", "success");
+      
+      // 2. Ambil tanggal terpilih jika role Admin, lalu refresh data tabel
+      const selectedDate = document.getElementById("selectedDate")?.value;
+      await fetchData(selectedDate);
+    } else {
+      showToast("Gagal Tarik Data: " + result.message, "error");
+      hideLoading();
+    }
+  } catch (err) {
+    console.error(err);
+    showToast("Terjadi kesalahan jaringan saat tarik data", "error");
     hideLoading();
-    showToast("Data presensi berhasil diperbarui", "success");
-    fetchData();
-  }, 1000);
+  }
 }
 
 function cetakRekap() {
