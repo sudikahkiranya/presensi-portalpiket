@@ -681,17 +681,27 @@ async function tarikDataPresensi() {
     hideLoading();
     showToast("Berhasil membuat rekap PDF!", "success");
 
-    // 4. Buka PDF di tab baru jika URL tersedia
+    // 4. Buka PDF di tab baru dengan mengecek properti URL-nya
     if (dataRekap.result) {
-      window.open(dataRekap.result, "_blank");
+      // Ambil URL String dari properti Object (url/pdfUrl/downloadUrl) atau pakai dataRekap.result jika sudah string
+      const pdfUrl = (typeof dataRekap.result === 'object') 
+        ? (dataRekap.result.url || dataRekap.result.pdfUrl || dataRekap.result.downloadUrl) 
+        : dataRekap.result;
+
+      if (pdfUrl && typeof pdfUrl === 'string') {
+        window.open(pdfUrl, "_blank");
+      } else {
+        console.error("Format URL PDF tidak valid:", dataRekap.result);
+        showToast("Gagal mendapatkan link PDF yang valid", "error");
+      }
     }
 
-  } catch (err) {
-    console.error(err);
-    showToast(`Gagal: ${err.message}`, "error");
-    hideLoading();
+    } catch (err) {
+      console.error(err);
+      showToast(`Gagal: ${err.message}`, "error");
+      hideLoading();
+    }
   }
-}
 
 function formatNamaKelas(idRombel, tingkat) {
   if (!idRombel || typeof idRombel !== "string") return "-";
