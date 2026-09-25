@@ -634,7 +634,7 @@ async function tarikDataPresensi() {
   }
 }
 
-  async function cetakRekap() {
+async function cetakRekap() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   if (!user) {
     showToast("Silakan login terlebih dahulu", "error");
@@ -681,27 +681,39 @@ async function tarikDataPresensi() {
     hideLoading();
     showToast("Berhasil membuat rekap PDF!", "success");
 
-    // 4. Buka PDF di tab baru dengan mengecek properti URL-nya
-    if (dataRekap.result) {
-      // Ambil URL String dari properti Object (url/pdfUrl/downloadUrl) atau pakai dataRekap.result jika sudah string
-      const pdfUrl = (typeof dataRekap.result === 'object') 
-        ? (dataRekap.result.url || dataRekap.result.pdfUrl || dataRekap.result.downloadUrl) 
-        : dataRekap.result;
-
-      if (pdfUrl && typeof pdfUrl === 'string') {
-        window.open(pdfUrl, "_blank");
-      } else {
-        console.error("Format URL PDF tidak valid:", dataRekap.result);
-        showToast("Gagal mendapatkan link PDF yang valid", "error");
-      }
+    // 4. AMBIL URL PDF (Mendukung format String maupun Object JSON)
+    let pdfUrl = "";
+    if (typeof dataRekap.result === "object" && dataRekap.result !== null) {
+      pdfUrl = dataRekap.result.url || dataRekap.result.pdfUrl || dataRekap.result.downloadUrl || "";
+    } else if (typeof dataRekap.result === "string") {
+      pdfUrl = dataRekap.result;
     }
 
-    } catch (err) {
-      console.error(err);
-      showToast(`Gagal: ${err.message}`, "error");
-      hideLoading();
+    if (!pdfUrl) {
+      throw new Error("Link PDF tidak ditemukan dari server.");
     }
+
+    // 5. HUBUNGKAN KE NOTIF MODAL HTML
+    const pdfLinkEl = document.getElementById("pdfLink");
+    const notifModalEl = document.getElementById("notifModal");
+
+    if (pdfLinkEl) {
+      pdfLinkEl.href = pdfUrl; // Pasang URL PDF ke elemen <a>
+    }
+
+    if (notifModalEl) {
+      notifModalEl.classList.add("active"); // Tampilkan modal notifikasi
+    } else {
+      // Fallback jika modal tidak ditemukan, buka di tab baru
+      window.open(pdfUrl, "_blank");
+    }
+
+  } catch (err) {
+    console.error(err);
+    showToast(`Gagal: ${err.message}`, "error");
+    hideLoading();
   }
+}
 
 function formatNamaKelas(idRombel, tingkat) {
   if (!idRombel || typeof idRombel !== "string") return "-";
