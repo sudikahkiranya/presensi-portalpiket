@@ -527,13 +527,43 @@ footer {
 /* ==========================================================================
    9. MODALS, TOASTS & CUSTOM DROPDOWN COMPONENT
    ========================================================================== */
+/* Layering Modal Utama */
+.modal-overlay,
+#notifModal { 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(0, 0, 0, 0.4); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 1050 !important; /* Layer dasar modal */
+  opacity: 0; 
+  pointer-events: none; 
+  transition: opacity 0.25s ease; 
+}
+
+.modal-overlay.active,
+#notifModal.active { 
+  opacity: 1; 
+  pointer-events: auto; 
+}
+
+.modal-box { 
+  background: #ffffff; 
+  padding: 20px; 
+  border-radius: 14px; 
+  width: 320px; 
+  text-align: center; 
+}
+
+/* Layering Loading Overlay agar Tepat di Atas Modal */
 #loadingOverlay {
   display: none; 
   position: fixed; 
   inset: 0; 
-  background: rgba(0, 0, 0, 0.4); 
+  background: rgba(0, 0, 0, 0.5); 
   backdrop-filter: blur(4px); 
-  z-index: 9998; 
+  z-index: 9999 !important; /* Melayang di atas modal 1050 */
   justify-content: center; 
   align-items: center;
 }
@@ -563,37 +593,13 @@ footer {
   to { transform: rotate(360deg); } 
 }
 
-.modal-overlay { 
-  position: fixed; 
-  inset: 0; 
-  background: rgba(0, 0, 0, 0.4); 
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  z-index: 9999; 
-  opacity: 0; 
-  pointer-events: none; 
-  transition: opacity 0.25s ease; 
-}
-
-.modal-overlay.active { 
-  opacity: 1; 
-  pointer-events: auto; 
-}
-
-.modal-box { 
-  background: #ffffff; 
-  padding: 20px; 
-  border-radius: 14px; 
-  width: 320px; 
-  text-align: center; 
-}
-
-#toastContainer { 
+/* Layering Toast Container Paling Depan */
+#toastContainer,
+.toast-container { 
   position: fixed; 
   top: 20px; 
   right: 20px; 
-  z-index: 9999; 
+  z-index: 10000 !important; /* Layer paling atas */
 }
 
 .toast { 
@@ -601,7 +607,7 @@ footer {
   padding: 12px 16px; 
   border-radius: 10px; 
   margin-bottom: 10px; 
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1); 
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); 
   font-size: 13px; 
 }
 

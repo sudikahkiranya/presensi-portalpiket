@@ -736,13 +736,12 @@ async function kirimRekapGrupWA() {
   const dateVal = document.getElementById("selectedDate")?.value || new Date().toISOString().split("T")[0];
   const tanggalSelected = (user.role === "Admin") ? dateVal : new Date().toISOString().split("T")[0];
 
-  // Gunakan URL PDF yang sudah disimpan di latestPdfUrl
   const pdfUrl = latestPdfUrl || "";
 
   showLoading("Sedang mengirim rekap presensi ke Grup WhatsApp...");
 
   try {
-    const targetUrl = `${API_URL}?action=kirimRekapGrupWA&namaPetugas=${encodeURIComponent(namaPetugas)}&tanggal=${tanggalSelected}&pdfUrl=${encodeURIComponent(pdfUrl)}`;
+    const targetUrl = `${API_URL}?action=kirimRekapGrupWA&namaPetugas=${encodeURIComponent(namaPetugas)}&tanggal=${encodeURIComponent(tanggalSelected)}&pdfUrl=${encodeURIComponent(pdfUrl)}`;
 
     const response = await fetch(targetUrl);
     const result = await response.json();
