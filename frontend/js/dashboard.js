@@ -634,6 +634,9 @@ async function tarikDataPresensi() {
   }
 }
 
+// Variable global untuk menampung URL PDF hasil pembuatan rekap terakhir
+let latestPdfUrl = "";
+
 async function cetakRekap() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   if (!user) {
@@ -693,6 +696,9 @@ async function cetakRekap() {
       throw new Error("Link PDF tidak ditemukan dari server.");
     }
 
+    // SIMPAN KE VARIABEL GLOBAL AGAR BISA DIPAKAI OLEH kirimRekapGrupWA
+    latestPdfUrl = pdfUrl;
+
     // 5. HUBUNGKAN KE NOTIF MODAL HTML
     const pdfLinkEl = document.getElementById("pdfLink");
     const notifModalEl = document.getElementById("notifModal");
@@ -712,6 +718,46 @@ async function cetakRekap() {
     console.error(err);
     showToast(`Gagal: ${err.message}`, "error");
     hideLoading();
+  }
+}
+
+/**
+ * FUNGSI UNTUK MENGIRIM REKAP KE GRUP WA PIKET
+ * Dipanggil oleh tombol "Kirim Rekap ke Grup WA" di Modal / Dashboard
+ */
+async function kirimRekapGrupWA() {
+  const user = JSON.parse(localStorage.getItem("piket_user"));
+  if (!user) {
+    showToast("Silakan login terlebih dahulu", "error");
+    return;
+  }
+
+  const namaPetugas = user.nama || user.username || "Petugas Piket";
+  const dateVal = document.getElementById("selectedDate")?.value || new Date().toISOString().split("T")[0];
+  const tanggalSelected = (user.role === "Admin") ? dateVal : new Date().toISOString().split("T")[0];
+
+  // Gunakan URL PDF yang sudah disimpan di latestPdfUrl
+  const pdfUrl = latestPdfUrl || "";
+
+  showLoading("Sedang mengirim rekap presensi ke Grup WhatsApp...");
+
+  try {
+    const targetUrl = `${API_URL}?action=kirimRekapGrupWA&namaPetugas=${encodeURIComponent(namaPetugas)}&tanggal=${tanggalSelected}&pdfUrl=${encodeURIComponent(pdfUrl)}`;
+
+    const response = await fetch(targetUrl);
+    const result = await response.json();
+
+    hideLoading();
+
+    if (result.success) {
+      showToast(result.message || "Rekap berhasil dikirim ke Grup WA!", "success");
+    } else {
+      showToast("Gagal mengirim WA: " + (result.message || "Terjadi kesalahan server."), "error");
+    }
+  } catch (err) {
+    hideLoading();
+    console.error("❌ Error kirimRekapGrupWA:", err);
+    showToast("Terjadi kesalahan koneksi saat mengirim ke WA.", "error");
   }
 }
 
@@ -787,30 +833,3 @@ document.addEventListener('click', (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', initFormPiket);
-
-async function kirimRekapGrupWA(pdfUrl = "") {
-  try {
-    showLoading("Sedang mengirim rekap presensi ke Grup WhatsApp...");
-
-    const namaPetugas = document.getElementById("petugasInput")?.value || "Petugas Piket";
-    const tanggal = document.getElementById("tanggalFilter")?.value || new Date().toISOString().split("T")[0];
-
-    // Panggil Backend Apps Script via GET / fetch
-    const targetUrl = `${GAS_API_URL}?action=kirimRekapGrupWA&namaPetugas=${encodeURIComponent(namaPetugas)}&tanggal=${encodeURIComponent(tanggal)}&pdfUrl=${encodeURIComponent(pdfUrl)}`;
-
-    const response = await fetch(targetUrl);
-    const result = await response.json();
-
-    hideLoading();
-
-    if (result.success) {
-      showToast(result.message || "Rekap berhasil dikirim ke Grup WA!", "success");
-    } else {
-      showToast("Gagal mengirim WA: " + (result.message || "Terjadi kesalahan server."), "error");
-    }
-  } catch (err) {
-    hideLoading();
-    console.error("❌ Error kirimRekapGrupWA:", err);
-    showToast("Terjadi kesalahan koneksi saat mengirim ke WA.", "error");
-  }
-} 
