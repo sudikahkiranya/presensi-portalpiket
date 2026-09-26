@@ -787,3 +787,30 @@ document.addEventListener('click', (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', initFormPiket);
+
+async function kirimRekapGrupWA(pdfUrl = "") {
+  try {
+    showLoading("Sedang mengirim rekap presensi ke Grup WhatsApp...");
+
+    const namaPetugas = document.getElementById("petugasInput")?.value || "Petugas Piket";
+    const tanggal = document.getElementById("tanggalFilter")?.value || new Date().toISOString().split("T")[0];
+
+    // Panggil Backend Apps Script via GET / fetch
+    const targetUrl = `${GAS_API_URL}?action=kirimRekapGrupWA&namaPetugas=${encodeURIComponent(namaPetugas)}&tanggal=${encodeURIComponent(tanggal)}&pdfUrl=${encodeURIComponent(pdfUrl)}`;
+
+    const response = await fetch(targetUrl);
+    const result = await response.json();
+
+    hideLoading();
+
+    if (result.success) {
+      showToast(result.message || "Rekap berhasil dikirim ke Grup WA!", "success");
+    } else {
+      showToast("Gagal mengirim WA: " + (result.message || "Terjadi kesalahan server."), "error");
+    }
+  } catch (err) {
+    hideLoading();
+    console.error("❌ Error kirimRekapGrupWA:", err);
+    showToast("Terjadi kesalahan koneksi saat mengirim ke WA.", "error");
+  }
+} 

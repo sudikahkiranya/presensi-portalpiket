@@ -32,7 +32,9 @@
     <h3>✅ Rekap Presensi Hari Ini selesai dibuat</h3>
     <p><a id="pdfLink" href="#" target="_blank">Lihat Rekap PDF</a></p>
     <div style="margin-top:15px; display:flex; flex-direction:column; gap:8px;">
-      <button type="button" id="btnKirimWA" onclick="kirimRekapGrupPiket()">Kirim Rekap ke Grup WA</button>
+     <button type="button" id="btnKirimWA" onclick="kirimRekapGrupWA(currentPdfUrl)">
+        Kirim Rekap ke Grup WA
+      </button>
       <button type="button" style="background:#64748b;" onclick="closeNotif()">Tutup</button>
     </div>
   </div>
