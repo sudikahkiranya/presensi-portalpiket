@@ -743,3 +743,17 @@ input[type="text"]:focus {
   border-color: #006D77;
   box-shadow: 0 0 0 3px rgba(0, 109, 119, 0.15);
 }
+
+
+/* TEST: pastikan menu drop-up benar-benar diterapkan */
+#tbodySiswa .custom-dropdown.drop-up {
+  position: relative !important;
+}
+
+#tbodySiswa .custom-dropdown.drop-up > .dropdown-menu {
+  top: auto !important;
+  bottom: calc(100% + 4px) !important;
+  max-height: 250px !important;
+  overflow-y: auto !important;
+  z-index: 999999 !important;
+}
