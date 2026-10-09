@@ -253,23 +253,50 @@ function renderStatusBadge(statusTd, s, value) {
       selectedBox.style.cssText = BASE_STYLE + `border: 1px solid #c5d3e8; background-color: #ffffff; cursor: pointer; color: #333;`;
     }
 
-    const menuContainer = dropdownWrapper.querySelector('.dropdown-menu');
+    
+    const menuContainer = dropdownWrapper.querySelector(".dropdown-menu");
+
     if (menuContainer) {
       menuContainer.style.cssText = `
-        max-height: none; overflow-y: visible; text-align: center; border-radius: 12px;
-        min-width: 100%; width: max-content; left: 50%; transform: translateX(-50%);
-        box-shadow: 0 4px 14px rgba(0,0,0,0.12); border: 1px solid #e2e8f0; background: #ffffff; z-index: 99; padding: 4px 0;
+        text-align: center;
+        border-radius: 12px;
+        min-width: 100%;
+        width: max-content;
+        left: 50%;
+        transform: translateX(-50%);
+        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        padding: 4px 0;
+        box-sizing: border-box;
       `;
-      
-      menuContainer.querySelectorAll('.dropdown-item').forEach(item => {
+
+      menuContainer.querySelectorAll(".dropdown-item").forEach(item => {
         item.style.cssText = `
-          background-color: transparent; color: #333; text-align: center; justify-content: center;
-          display: flex; font-size: 12px; padding: 8px 12px; white-space: nowrap; cursor: pointer; transition: background-color 0.15s ease;
+          background-color: transparent;
+          color: #333;
+          text-align: center;
+          justify-content: center;
+          display: flex;
+          font-size: 12px;
+          padding: 8px 12px;
+          white-space: nowrap;
+          cursor: pointer;
+          transition: background-color 0.15s ease;
         `;
-        item.onmouseenter = function() { this.style.backgroundColor = "#f1f5f9"; this.style.color = "#1e293b"; };
-        item.onmouseleave = function() { this.style.backgroundColor = "transparent"; this.style.color = "#333"; };
+
+        item.onmouseenter = function() {
+          this.style.backgroundColor = "#f1f5f9";
+          this.style.color = "#1e293b";
+        };
+
+        item.onmouseleave = function() {
+          this.style.backgroundColor = "transparent";
+          this.style.color = "#333";
+        };
       });
     }
+
 
     openCustomDropdown(dropdownWrapper);
 
