@@ -732,3 +732,26 @@ input[type="text"]:focus {
   border-color: #006D77;
   box-shadow: 0 0 0 3px rgba(0, 109, 119, 0.15);
 }
+
+
+/* 1. Bebaskan kontainer tabel dari pemotongan (clipping) */
+.table-responsive {
+  overflow: visible !important; /* 🔥 Bikin dropdown melayang bebas keluar batas tabel */
+}
+
+/* 2. Pastikan baris tabel & cell tempat dropdown berada punya z-index lebih tinggi */
+#tbodySiswa tr {
+  position: relative;
+}
+
+#tbodySiswa tr:has(.custom-dropdown.open) {
+  z-index: 999 !important; /* Menjamin baris yang dropdown-nya terbuka selalu di paling depan */
+}
+
+/* 3. Penyesuaian Drop-Up agar tidak tertutup header */
+.custom-dropdown.drop-up .dropdown-menu {
+  top: auto !important;
+  bottom: calc(100% + 6px) !important;
+  z-index: 9999 !important;
+  box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.15) !important;
+}
