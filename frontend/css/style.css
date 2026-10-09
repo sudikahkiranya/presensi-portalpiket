@@ -752,3 +752,22 @@ input[type="text"]:focus {
   overflow-y: auto !important;
   z-index: 999999 !important;
 }
+
+
+/* Samakan dimensi badge dan kontrol edit status */
+.status-badge-btn,
+#tbodySiswa .custom-dropdown .dropdown-selected {
+  box-sizing: border-box !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1.2 !important;
+  vertical-align: middle;
+}
+
+/* Pastikan wrapper tidak menambah tinggi baris */
+#tbodySiswa td:has(.custom-dropdown),
+#tbodySiswa td:has(.status-badge-btn) {
+  vertical-align: middle;
+}
