@@ -768,7 +768,7 @@ function formatNamaKelas(idRombel, tingkat) {
   const subKelas = subPart.replace(/[0-9]/g, "").trim(); 
   const tkt = tingkat || "";
 
-  if (jurusan && tkt && subKelas) {
+  if (jurusan && tkt && subKelas) { 
     return `${jurusan.toUpperCase()} ${tkt.toUpperCase()}-${subKelas.toUpperCase()}`;
   }
   return idRombel;
@@ -826,8 +826,30 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
 }
 
 document.addEventListener('click', (e) => {
-  if (!e.target.closest('.custom-dropdown')) {
-    document.querySelectorAll('.custom-dropdown').forEach(el => el.classList.remove('open'));
+  const dropdownEl = e.target.closest('.custom-dropdown');
+
+  if (dropdownEl) {
+    // Jika dropdown hendak dibuka (saat ini belum punya class 'open')
+    if (!dropdownEl.classList.contains('open')) {
+      const rect = dropdownEl.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const estimatedMenuHeight = 220; // Estimasi tinggi menu dropdown (px)
+
+      // Buka ke atas jika sisa ruang di bawah tidak cukup
+      if (spaceBelow < estimatedMenuHeight) {
+        dropdownEl.classList.add('drop-up');
+      } else {
+        dropdownEl.classList.remove('drop-up');
+      }
+    }
+
+    // Toggle class open
+    dropdownEl.classList.toggle('open');
+  } else {
+    // Jika klik di luar area custom-dropdown, tutup semua dropdown & reset status drop-up
+    document.querySelectorAll('.custom-dropdown').forEach(el => {
+      el.classList.remove('open', 'drop-up');
+    });
   }
 });
 

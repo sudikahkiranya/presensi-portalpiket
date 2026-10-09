@@ -305,6 +305,7 @@ button:disabled {
   border: 1px solid #b8dade;
   margin-top: 15px;
   background: #ffffff;
+  min-height: 280px; /* 🔥 TAMBAHKAN INI agar kontainer tabel cukup tinggi meskipun data sedikit */
 }
 
 table { 
@@ -692,6 +693,23 @@ footer {
 
 .custom-dropdown.open .dropdown-selected svg {
   transform: rotate(180deg);
+}
+
+/* ==========================================================================
+   STYLING TAMBAHAN: DROP-UP MODE (Buka Menu ke Atas)
+   ========================================================================== */
+.custom-dropdown.drop-up .dropdown-menu {
+  top: auto !important;
+  bottom: calc(100% + 4px) !important;
+  box-shadow: 0 -6px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.custom-dropdown.drop-up .dropdown-selected svg {
+  transform: rotate(180deg) !important;
+}
+
+.custom-dropdown.drop-up.open .dropdown-selected svg {
+  transform: rotate(0deg) !important;
 }
 
 /* Styling untuk kotak pencarian Nama Siswa agar senada dengan pil dropdown */
