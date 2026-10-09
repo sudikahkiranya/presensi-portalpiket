@@ -829,18 +829,21 @@ document.addEventListener('click', (e) => {
   const dropdownEl = e.target.closest('.custom-dropdown');
 
   if (dropdownEl) {
-    // Jika dropdown hendak dibuka (saat ini belum punya class 'open')
-    if (!dropdownEl.classList.contains('open')) {
-      const rect = dropdownEl.getBoundingClientRect();
-      const spaceBelow = window.innerHeight - rect.bottom;
-      const estimatedMenuHeight = 220; // Estimasi tinggi menu dropdown (px)
+    // Cari kontainer tabel terdekat tempat dropdown berada
+    const container = dropdownEl.closest('.table-responsive') || dropdownEl.closest('.card') || document.body;
+    
+    const dropdownRect = dropdownEl.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
 
-      // Buka ke atas jika sisa ruang di bawah tidak cukup
-      if (spaceBelow < estimatedMenuHeight) {
-        dropdownEl.classList.add('drop-up');
-      } else {
-        dropdownEl.classList.remove('drop-up');
-      }
+    // Hitung sisa ruang di bawah dropdown relatif terhadap batas bawah kontainer tabelnya
+    const spaceBelowInContainer = containerRect.bottom - dropdownRect.bottom;
+    const estimatedMenuHeight = 220; // Estimasi tinggi menu dropdown (px)
+
+    // Jika sisa ruang di dalam kontainer < 220px, paksa buka ke atas (.drop-up)
+    if (spaceBelowInContainer < estimatedMenuHeight) {
+      dropdownEl.classList.add('drop-up');
+    } else {
+      dropdownEl.classList.remove('drop-up');
     }
 
     // Toggle class open
