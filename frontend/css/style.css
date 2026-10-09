@@ -655,6 +655,7 @@ footer {
 .dropdown-menu {
   position: absolute;
   top: calc(100% + 4px);
+  bottom: auto;
   left: 0;
   width: 100%;
   max-height: 250px;
@@ -665,7 +666,8 @@ footer {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   display: none;
   flex-direction: column;
-  z-index: 9999 !important;
+  z-index: 99999 !important;
+  box-sizing: border-box;
 }
 
 .dropdown-menu::-webkit-scrollbar {
@@ -706,8 +708,9 @@ footer {
 /* 🔥 PAKSA STYLING DROP-UP AGAR SELALU MEMBUKA KE ATAS */
 .custom-dropdown.drop-up .dropdown-menu {
   top: auto !important;
-  bottom: 100% !important;
-  margin-bottom: 6px !important;
+  bottom: calc(100% + 4px) !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
   z-index: 999999 !important;
 }
 

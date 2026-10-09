@@ -271,7 +271,7 @@ function renderStatusBadge(statusTd, s, value) {
       });
     }
 
-    dropdownWrapper.classList.add('open');
+    openCustomDropdown(dropdownWrapper);
 
     const resetToBadge = function() {
       cleanupListeners();
@@ -779,51 +779,132 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
   containerElement.innerHTML = `
     <div class="dropdown-selected">
       <span class="dropdown-text"></span>
-      <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      <svg viewBox="0 0 24 24" width="13" height="13"
+        stroke="currentColor" stroke-width="2" fill="none">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
     </div>
     <div class="dropdown-menu"></div>
   `;
 
-  const textSpan = containerElement.querySelector('.dropdown-text');
-  const menuContainer = containerElement.querySelector('.dropdown-menu');
+  const textSpan = containerElement.querySelector(".dropdown-text");
+  const menu = containerElement.querySelector(".dropdown-menu");
+  const selectedBox = containerElement.querySelector(".dropdown-selected");
 
-  const currentObj = optionsArray.find(opt => opt.value === selectedValue) || optionsArray[0];
+  const currentObj =
+    optionsArray.find(opt => opt.value === selectedValue) || optionsArray[0];
+
   textSpan.innerText = currentObj.label;
-  containerElement.setAttribute('data-value', currentObj.value);
+  containerElement.setAttribute("data-value", currentObj.value);
 
   optionsArray.forEach(item => {
-    const div = document.createElement('div');
-    div.className = `dropdown-item ${item.class || ''}`;
-    div.setAttribute('data-value', item.value);
+    const div = document.createElement("div");
+    div.className = `dropdown-item ${item.class || ""}`;
+    div.setAttribute("data-value", item.value);
     div.innerText = item.label;
-    menuContainer.appendChild(div);
+    menu.appendChild(div);
   });
 
-  const selectedBox = containerElement.querySelector('.dropdown-selected');
-  selectedBox.onclick = (e) => {
+  selectedBox.onclick = function(e) {
     e.stopPropagation();
-    document.querySelectorAll('.custom-dropdown').forEach(el => {
-      if (el !== containerElement) el.classList.remove('open');
-    });
-    containerElement.classList.toggle('open');
+
+    if (containerElement.classList.contains("open")) {
+      closeCustomDropdown(containerElement);
+      return;
+    }
+
+    openCustomDropdown(containerElement);
   };
 
-  menuContainer.onclick = (e) => {
-    const itemDiv = e.target.closest('.dropdown-item');
-    if (!itemDiv) return;
+  menu.onclick = function(e) {
+    e.stopPropagation();
 
-    const val = itemDiv.getAttribute('data-value');
-    const lbl = itemDiv.innerText;
+    const item = e.target.closest(".dropdown-item");
+    if (!item) return;
 
-    textSpan.innerText = lbl;
-    containerElement.setAttribute('data-value', val);
-    containerElement.classList.remove('open');
+    const value = item.getAttribute("data-value");
+    const label = item.innerText;
 
-    if (typeof onSelectCallback === 'function') {
-      onSelectCallback(val, lbl);
+    textSpan.innerText = label;
+    containerElement.setAttribute("data-value", value);
+
+    closeCustomDropdown(containerElement);
+
+    if (typeof onSelectCallback === "function") {
+      onSelectCallback(value, label);
     }
   };
 }
+
+function closeCustomDropdown(dropdown) {
+  if (!dropdown) return;
+
+  dropdown.classList.remove("open", "drop-up");
+
+  const menu = dropdown.querySelector(".dropdown-menu");
+  if (!menu) return;
+
+  menu.style.removeProperty("top");
+  menu.style.removeProperty("bottom");
+  menu.style.removeProperty("margin-top");
+  menu.style.removeProperty("margin-bottom");
+  menu.style.removeProperty("max-height");
+  menu.style.removeProperty("overflow-y");
+}
+
+function openCustomDropdown(dropdown) {
+  if (!dropdown) return;
+
+  const menu = dropdown.querySelector(".dropdown-menu");
+  if (!menu) return;
+
+  document.querySelectorAll(".custom-dropdown.open").forEach(function(el) {
+    if (el !== dropdown) {
+      closeCustomDropdown(el);
+    }
+  });
+
+  dropdown.classList.remove("drop-up");
+  dropdown.classList.add("open");
+
+  menu.style.setProperty("top", "calc(100% + 4px)", "important");
+  menu.style.setProperty("bottom", "auto", "important");
+  menu.style.setProperty("max-height", "250px", "important");
+  menu.style.setProperty("overflow-y", "auto", "important");
+
+  const rect = dropdown.getBoundingClientRect();
+  const viewportHeight = window.innerHeight;
+  const spaceBelow = Math.max(0, viewportHeight - rect.bottom - 8);
+  const spaceAbove = Math.max(0, rect.top - 8);
+  const menuHeight = Math.min(menu.scrollHeight, 250);
+
+  const openUp = spaceBelow < menuHeight && spaceAbove > spaceBelow;
+
+  if (openUp) {
+    dropdown.classList.add("drop-up");
+
+    menu.style.setProperty("top", "auto", "important");
+    menu.style.setProperty("bottom", "calc(100% + 4px)", "important");
+  }
+
+  const availableSpace = openUp ? spaceAbove : spaceBelow;
+
+  if (availableSpace < menuHeight) {
+    menu.style.setProperty(
+      "max-height",
+      Math.max(80, availableSpace) + "px",
+      "important"
+    );
+  }
+}
+
+document.addEventListener("click", function(e) {
+  if (e.target.closest(".custom-dropdown")) return;
+
+  document.querySelectorAll(".custom-dropdown.open").forEach(function(el) {
+    closeCustomDropdown(el);
+  });
+});
 
 // Ganti seluruh event listener click custom-dropdown dengan ini:
 document.addEventListener('click', function (e) {
