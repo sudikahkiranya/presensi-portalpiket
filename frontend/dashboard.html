@@ -88,31 +88,67 @@
   <form id="absenForm" onsubmit="handleSubmit(event)">
     <div class="card">
       
-      <!-- FILTER WRAPPER -->
-      <div class="filter-wrapper">
-        <div class="filter-group">
-          <div class="filter-item">
-            <label for="filterKelas">Kelas:</label>
-            <div id="filterKelas" data-value=""></div>
-          </div>
-          <div class="filter-item">
-            <label for="filterTingkat">Tingkat:</label>
-            <div id="filterTingkat" data-value=""></div>
-          </div>
-          <div class="filter-item">
-            <label for="filterStatus">Status Masuk:</label>
-            <div id="filterStatus" data-value=""></div>
-          </div>
-
-          <div class="filter-item">
-            <label for="filterNama">Nama Siswa:</label>
-            <input type="text" id="filterNama" class="filter-input-text" placeholder="Cari nama..." onkeyup="applyFilter()">
+      <div class="filter-group">
+        <!-- Filter Kelas -->
+        <div class="filter-item">
+          <label for="filterKelas">Kelas:</label>
+          <div class="custom-dropdown" id="filterKelas" data-value="">
+            <div class="dropdown-selected">
+              <span>Semua</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <div class="dropdown-menu">
+              <div class="dropdown-item active" data-value="">Semua</div>
+            </div>
           </div>
         </div>
 
-        <div class="jumlah-data-box">
-          <label>Jumlah Data</label>
-          <span id="jumlahData">0</span>
+        <!-- Filter Tingkat -->
+        <div class="filter-item">
+          <label for="filterTingkat">Tingkat:</label>
+          <div class="custom-dropdown" id="filterTingkat" data-value="">
+            <div class="dropdown-selected">
+              <span>Semua</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <div class="dropdown-menu">
+              <div class="dropdown-item active" data-value="">Semua</div>
+              <div class="dropdown-item" data-value="X">X</div>
+              <div class="dropdown-item" data-value="XI">XI</div>
+              <div class="dropdown-item" data-value="XII">XII</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Status Masuk -->
+        <div class="filter-item">
+          <label for="filterStatus">Status Masuk:</label>
+          <div class="custom-dropdown" id="filterStatus" data-value="">
+            <div class="dropdown-selected">
+              <span>Semua</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </div>
+            <div class="dropdown-menu">
+              <div class="dropdown-item active" data-value="">Semua</div>
+              <div class="dropdown-item" data-value="Tepat Waktu">Tepat Waktu</div>
+              <div class="dropdown-item" data-value="Terlambat">Terlambat</div>
+              <div class="dropdown-item" data-value="Alpa">Alpa</div>
+              <div class="dropdown-item" data-value="Sakit">Sakit</div>
+              <div class="dropdown-item" data-value="Izin">Izin</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Nama Siswa -->
+        <div class="filter-item">
+          <label for="filterNama">Nama Siswa:</label>
+          <input type="text" id="filterNama" class="filter-input-text" placeholder="Cari nama..." onkeyup="applyFilter()">
         </div>
       </div>
 

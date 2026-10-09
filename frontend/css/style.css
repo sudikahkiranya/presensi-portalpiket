@@ -745,11 +745,6 @@ input[type="text"]:focus {
 }
 
 
-/* TEST: pastikan menu drop-up benar-benar diterapkan */
-#tbodySiswa .custom-dropdown.drop-up {
-  position: relative !important;
-}
-
 #tbodySiswa .custom-dropdown.drop-up > .dropdown-menu {
   top: auto !important;
   bottom: calc(100% + 4px) !important;
