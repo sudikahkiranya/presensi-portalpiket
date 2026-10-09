@@ -825,62 +825,76 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
   };
 }
 
-document.addEventListener('click', (e) => {
-  const dropdownEl = e.target.closest('.custom-dropdown');
+// Ganti seluruh event listener click custom-dropdown dengan ini:
+document.addEventListener('click', function (e) {
+  const dropdownToggle = e.target.closest('.custom-dropdown');
 
-  // 1. Jika yang diklik adalah custom-dropdown
-  if (dropdownEl) {
-    const menu = dropdownEl.querySelector('.dropdown-menu');
-    const isAlreadyOpen = dropdownEl.classList.contains('open');
-
-    // Tutup semua dropdown lain yang sedang terbuka
-    document.querySelectorAll('.custom-dropdown').forEach(el => {
-      if (el !== dropdownEl) {
-        el.classList.remove('open', 'drop-up');
-        const m = el.querySelector('.dropdown-menu');
-        if (m) m.style.cssText = ''; // Clear inline styles
-      }
-    });
-
-    if (!isAlreadyOpen) {
-      // Ukur posisi tombol terhadap layar (viewport)
-      const rect = dropdownEl.getBoundingClientRect();
-      const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-      const spaceBelow = windowHeight - rect.bottom;
-      const menuHeight = 260; // Estimasi tinggi menu dropdown (px)
-
-      // JIKA sisa layar di bawah kurang dari tinggi menu -> PAKSA BUKA KE ATAS!
-      if (spaceBelow < menuHeight) {
-        dropdownEl.classList.add('drop-up');
-        if (menu) {
-          menu.style.setProperty('top', 'auto', 'important');
-          menu.style.setProperty('bottom', 'calc(100% + 6px)', 'important');
-          menu.style.setProperty('box-shadow', '0 -8px 20px rgba(0, 0, 0, 0.18)', 'important');
-        }
-      } else {
-        dropdownEl.classList.remove('drop-up');
-        if (menu) {
-          menu.style.setProperty('top', 'calc(100% + 4px)', 'important');
-          menu.style.setProperty('bottom', 'auto', 'important');
-          menu.style.setProperty('box-shadow', '0 6px 16px rgba(0, 0, 0, 0.08)', 'important');
-        }
-      }
-
-      dropdownEl.classList.add('open');
-    } else {
-      dropdownEl.classList.remove('open', 'drop-up');
-      if (menu) menu.style.cssText = '';
-    }
-
-    e.stopPropagation();
-  } else {
-    // 2. Jika klik di luar dropdown, tutup semuanya
+  // Jika klik terjadi DI LUAR custom-dropdown, tutup semua dropdown
+  if (!dropdownToggle) {
     document.querySelectorAll('.custom-dropdown').forEach(el => {
       el.classList.remove('open', 'drop-up');
       const m = el.querySelector('.dropdown-menu');
       if (m) m.style.cssText = '';
     });
+    return;
   }
+
+  const menu = dropdownToggle.querySelector('.dropdown-menu');
+  const isAlreadyOpen = dropdownToggle.classList.contains('open');
+
+  // 1. Tutup semua dropdown lain terlebih dahulu
+  document.querySelectorAll('.custom-dropdown').forEach(el => {
+    if (el !== dropdownToggle) {
+      el.classList.remove('open', 'drop-up');
+      const m = el.querySelector('.dropdown-menu');
+      if (m) m.style.cssText = '';
+    }
+  });
+
+  // 2. Jika tadinya tertutup, sekarang kita buka dan hitung posisinya secara akurat
+  if (!isAlreadyOpen) {
+    // Ambil koordinat tombol presisi terhadap Layar (Viewport)
+    const rect = dropdownToggle.getBoundingClientRect();
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+    
+    // Hitung jarak dari bawah tombol ke paling bawah layar
+    const spaceBelow = windowHeight - rect.bottom;
+    const menuHeight = 240; // Tinggi estimasi menu dropdown
+
+    console.log("🔍 [DEBUG Dropdown] Jarak ke bawah layar:", spaceBelow, "px");
+
+    // JIKA sisa ruang layar ke bawah < 240px, PAKSA DROP-UP!
+    if (spaceBelow < menuHeight) {
+      console.log("⬆️ [DEBUG Dropdown] Ruang sempit! Paksa Buka KE ATAS (Drop-Up)");
+      dropdownToggle.classList.add('drop-up');
+      
+      if (menu) {
+        menu.style.setProperty('top', 'auto', 'important');
+        menu.style.setProperty('bottom', '100%', 'important');
+        menu.style.setProperty('margin-bottom', '6px', 'important');
+        menu.style.setProperty('box-shadow', '0 -8px 20px rgba(0, 0, 0, 0.18)', 'important');
+      }
+    } else {
+      console.log("⬇️ [DEBUG Dropdown] Ruang cukup! Buka KE BAWAH");
+      dropdownToggle.classList.remove('drop-up');
+      
+      if (menu) {
+        menu.style.setProperty('top', '100%', 'important');
+        menu.style.setProperty('bottom', 'auto', 'important');
+        menu.style.setProperty('margin-top', '4px', 'important');
+        menu.style.setProperty('box-shadow', '0 6px 16px rgba(0, 0, 0, 0.08)', 'important');
+      }
+    }
+
+    dropdownToggle.classList.add('open');
+  } else {
+    // Jika diklik lagi saat terbuka, tutup
+    dropdownToggle.classList.remove('open', 'drop-up');
+    if (menu) menu.style.cssText = '';
+  }
+
+  // Hentikan propagasi agar tidak langsung tertutup oleh event listener lain
+  e.stopPropagation();
 });
 
 document.addEventListener('DOMContentLoaded', initFormPiket);

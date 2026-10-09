@@ -346,6 +346,7 @@ th {
 /* Menjamin baris yang dropdown-nya sedang terbuka tampil paling depan */
 #tbodySiswa tr:has(.custom-dropdown.open) {
   z-index: 9999 !important;
+  position: relative !important;
 }
 
 tr:nth-child(even) td { 
@@ -705,9 +706,9 @@ footer {
 /* 🔥 PAKSA STYLING DROP-UP AGAR SELALU MEMBUKA KE ATAS */
 .custom-dropdown.drop-up .dropdown-menu {
   top: auto !important;
-  bottom: calc(100% + 6px) !important;
-  box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.15) !important;
-  z-index: 99999 !important;
+  bottom: 100% !important;
+  margin-bottom: 6px !important;
+  z-index: 999999 !important;
 }
 
 .custom-dropdown.drop-up .dropdown-selected svg {
