@@ -751,7 +751,8 @@ input[type="text"]:focus {
 /* 3. Penyesuaian Drop-Up agar tidak tertutup header */
 .custom-dropdown.drop-up .dropdown-menu {
   top: auto !important;
-  bottom: calc(100% + 6px) !important;
-  z-index: 9999 !important;
+  bottom: 100% !important; /* Pas di atas tombol */
+  margin-bottom: 6px !important;
+  z-index: 99999 !important;
   box-shadow: 0 -8px 20px rgba(0, 0, 0, 0.15) !important;
 }

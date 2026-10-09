@@ -829,18 +829,24 @@ document.addEventListener('click', (e) => {
   const dropdownEl = e.target.closest('.custom-dropdown');
 
   if (dropdownEl) {
-    // Cari kontainer tabel terdekat tempat dropdown berada
-    const container = dropdownEl.closest('.table-responsive') || dropdownEl.closest('.card') || document.body;
-    
+    // 1. Ambil posisi dropdown terhadap viewport layar
     const dropdownRect = dropdownEl.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
+    const spaceBelowWindow = window.innerHeight - dropdownRect.bottom;
 
-    // Hitung sisa ruang di bawah dropdown relatif terhadap batas bawah kontainer tabelnya
-    const spaceBelowInContainer = containerRect.bottom - dropdownRect.bottom;
-    const estimatedMenuHeight = 220; // Estimasi tinggi menu dropdown (px)
+    // 2. Ambil posisi pembatas tabel terdekat
+    const container = dropdownEl.closest('.table-responsive') || dropdownEl.closest('.card');
+    let spaceBelowContainer = spaceBelowWindow;
 
-    // Jika sisa ruang di dalam kontainer < 220px, paksa buka ke atas (.drop-up)
-    if (spaceBelowInContainer < estimatedMenuHeight) {
+    if (container) {
+      const containerRect = container.getBoundingClientRect();
+      spaceBelowContainer = containerRect.bottom - dropdownRect.bottom;
+    }
+
+    // Menghitung estimasi tinggi menu (sekitar 250px)
+    const estimatedMenuHeight = 250;
+
+    // 🔥 JIKA sisa ruang layar atau ruang di container kurang dari 250px, PAKSA DROP-UP!
+    if (spaceBelowWindow < estimatedMenuHeight || spaceBelowContainer < estimatedMenuHeight) {
       dropdownEl.classList.add('drop-up');
     } else {
       dropdownEl.classList.remove('drop-up');
