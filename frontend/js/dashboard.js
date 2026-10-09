@@ -92,32 +92,59 @@ function refreshData() {
   }
 }
 
+
 async function fetchData(selectedDate) {
+  // Tampilkan filter lebih dulu jika elemen belum diinisialisasi.
+  if (!document.querySelector("#filterKelas .dropdown-selected") ||
+      !document.querySelector("#filterTingkat .dropdown-selected") ||
+      !document.querySelector("#filterStatus .dropdown-selected")) {
+    initFilters();
+  }
+
   showLoading("Memuat data...");
+
   const user = JSON.parse(localStorage.getItem("piket_user"));
   const tanggalPresensi = document.getElementById("tanggalPresensi");
-  const dateVal = selectedDate || document.getElementById("selectedDate")?.value || new Date().toISOString().split("T")[0];
+  const dateVal =
+    selectedDate ||
+    document.getElementById("selectedDate")?.value ||
+    new Date().toISOString().split("T")[0];
 
   if (tanggalPresensi) {
-    let tanggalObj = (user && user.role === "Admin") ? new Date(dateVal) : new Date();
+    const tanggalObj =
+      user && user.role === "Admin" ? new Date(dateVal) : new Date();
+
     tanggalPresensi.textContent = tanggalObj.toLocaleDateString("id-ID", {
-      weekday: "long", day: "numeric", month: "long", year: "numeric"
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric"
     });
   }
 
   try {
     let url = `${API_URL}?action=getSiswaHariIni`;
+
     if (user && user.role === "Admin" && dateVal) {
       url = `${API_URL}?action=getSiswaByTanggal&tanggal=${dateVal}`;
     }
 
     const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`);
+    }
+
     const data = await response.json();
-    
+
     window.dataSiswa = Array.isArray(data) ? data : [];
+
+    // Perbarui opsi Kelas dan Tingkat berdasarkan data terbaru.
     initFilters(window.dataSiswa);
+
     applyFilter();
     hideLoading();
+
   } catch (err) {
     console.error(err);
     showToast("Gagal terhubung ke server Backend API", "error");
@@ -125,21 +152,31 @@ async function fetchData(selectedDate) {
   }
 }
 
-function initFilters(data) {
+
+
+function initFilters(data = null) {
+  const isDataReady = Array.isArray(data);
+
+  // ==========================================
+  // 1. FILTER KELAS
+  // ==========================================
   const kelasContainer = document.getElementById("filterKelas");
+
   const kelasMap = new Map();
-  
-  data.forEach(s => {
-    if (s.kelas && !kelasMap.has(s.kelas)) {
-      kelasMap.set(s.kelas, formatNamaKelas(s.kelas, s.tingkat));
-    }
-  });
+
+  if (isDataReady) {
+    data.forEach(s => {
+      if (s.kelas && !kelasMap.has(s.kelas)) {
+        kelasMap.set(s.kelas, formatNamaKelas(s.kelas, s.tingkat));
+      }
+    });
+  }
 
   const parseLabel = (label) => {
-    const parts = label.split(" "); 
+    const parts = label.split(" ");
     const jurusan = parts[0] || "";
-    const sisa = parts[1] || ""; 
-    const [tingkat, sub] = sisa.split("-"); 
+    const sisa = parts[1] || "";
+    const [tingkat, sub] = sisa.split("-");
 
     let weight = 99;
     if (tingkat === "X") weight = 1;
@@ -150,13 +187,17 @@ function initFilters(data) {
   };
 
   const sortedKeys = [...kelasMap.keys()].sort((a, b) => {
-    const labelA = kelasMap.get(a);
-    const labelB = kelasMap.get(b);
-    const pA = parseLabel(labelA);
-    const pB = parseLabel(labelB);
+    const pA = parseLabel(kelasMap.get(a));
+    const pB = parseLabel(kelasMap.get(b));
 
-    if (pA.jurusan !== pB.jurusan) return pA.jurusan.localeCompare(pB.jurusan);
-    if (pA.weight !== pB.weight) return pA.weight - pB.weight;
+    if (pA.jurusan !== pB.jurusan) {
+      return pA.jurusan.localeCompare(pB.jurusan);
+    }
+
+    if (pA.weight !== pB.weight) {
+      return pA.weight - pB.weight;
+    }
+
     return pA.sub.localeCompare(pB.sub);
   });
 
@@ -168,15 +209,46 @@ function initFilters(data) {
     }))
   ];
 
-  if (kelasContainer) createCustomDropdown(kelasContainer, kelasOptions, "", () => applyFilter());
+  if (kelasContainer) {
+    createCustomDropdown(
+      kelasContainer,
+      kelasOptions,
+      "",
+      () => applyFilter()
+    );
+  }
 
+  // ==========================================
+  // 2. FILTER TINGKAT
+  // ==========================================
   const tingkatContainer = document.getElementById("filterTingkat");
-  const uniqueTingkat = [...new Set(data.map(s => s.tingkat).filter(Boolean))].sort();
-  const tingkatOptions = [{ value: "", label: "Semua" }, ...uniqueTingkat.map(t => ({ value: t, label: t }))];
-  
-  if (tingkatContainer) createCustomDropdown(tingkatContainer, tingkatOptions, "", () => applyFilter());
 
+  const uniqueTingkat = isDataReady
+    ? [...new Set(data.map(s => s.tingkat).filter(Boolean))].sort()
+    : [];
+
+  const tingkatOptions = [
+    { value: "", label: "Semua" },
+    ...uniqueTingkat.map(t => ({
+      value: t,
+      label: t
+    }))
+  ];
+
+  if (tingkatContainer) {
+    createCustomDropdown(
+      tingkatContainer,
+      tingkatOptions,
+      "",
+      () => applyFilter()
+    );
+  }
+
+  // ==========================================
+  // 3. FILTER STATUS MASUK
+  // ==========================================
   const statusContainer = document.getElementById("filterStatus");
+
   const statusOptions = [
     { value: "", label: "Semua" },
     { value: "Kosong", label: "Kosong" },
@@ -188,8 +260,16 @@ function initFilters(data) {
     { value: "Sangat Terlambat", label: "Sangat Terlambat" }
   ];
 
-  if (statusContainer) createCustomDropdown(statusContainer, statusOptions, "", () => applyFilter());
+  if (statusContainer) {
+    createCustomDropdown(
+      statusContainer,
+      statusOptions,
+      "",
+      () => applyFilter()
+    );
+  }
 }
+
 
 function renderStatusBadge(statusTd, s, value) {
   const matchStatus = masterStatusList.find(m => m.value === value);
