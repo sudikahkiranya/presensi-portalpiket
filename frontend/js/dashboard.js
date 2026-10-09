@@ -828,49 +828,57 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
 document.addEventListener('click', (e) => {
   const dropdownEl = e.target.closest('.custom-dropdown');
 
+  // 1. Jika yang diklik adalah custom-dropdown
   if (dropdownEl) {
-    // 1. Cek posisi baris di dalam tabel (tr)
-    const currentRow = dropdownEl.closest('tr');
-    const tbody = currentRow ? currentRow.closest('tbody') : null;
-    let isLastRows = false;
+    const menu = dropdownEl.querySelector('.dropdown-menu');
+    const isAlreadyOpen = dropdownEl.classList.contains('open');
 
-    if (tbody && currentRow) {
-      const allRows = Array.from(tbody.querySelectorAll('tr'));
-      const rowIndex = allRows.indexOf(currentRow);
-      const totalRows = allRows.length;
-
-      // Jika data <= 3 baris, ATAU posisi baris berada di 2 baris paling bawah, PAKSA DROP-UP!
-      if (totalRows <= 3 || rowIndex >= totalRows - 2) {
-        isLastRows = true;
+    // Tutup semua dropdown lain yang sedang terbuka
+    document.querySelectorAll('.custom-dropdown').forEach(el => {
+      if (el !== dropdownEl) {
+        el.classList.remove('open', 'drop-up');
+        const m = el.querySelector('.dropdown-menu');
+        if (m) m.style.cssText = ''; // Clear inline styles
       }
-    }
+    });
 
-    // 2. Cek juga sisa ruang di kontainer card/tabel
-    const container = dropdownEl.closest('.card') || dropdownEl.closest('.table-responsive');
-    let isCloseToContainerBottom = false;
+    if (!isAlreadyOpen) {
+      // Ukur posisi tombol terhadap layar (viewport)
+      const rect = dropdownEl.getBoundingClientRect();
+      const windowHeight = window.innerHeight || document.documentElement.clientHeight;
+      const spaceBelow = windowHeight - rect.bottom;
+      const menuHeight = 260; // Estimasi tinggi menu dropdown (px)
 
-    if (container) {
-      const dropdownRect = dropdownEl.getBoundingClientRect();
-      const containerRect = container.getBoundingClientRect();
-      // Jika jarak dari tombol ke bawah card < 200px
-      if (containerRect.bottom - dropdownRect.bottom < 200) {
-        isCloseToContainerBottom = true;
+      // JIKA sisa layar di bawah kurang dari tinggi menu -> PAKSA BUKA KE ATAS!
+      if (spaceBelow < menuHeight) {
+        dropdownEl.classList.add('drop-up');
+        if (menu) {
+          menu.style.setProperty('top', 'auto', 'important');
+          menu.style.setProperty('bottom', 'calc(100% + 6px)', 'important');
+          menu.style.setProperty('box-shadow', '0 -8px 20px rgba(0, 0, 0, 0.18)', 'important');
+        }
+      } else {
+        dropdownEl.classList.remove('drop-up');
+        if (menu) {
+          menu.style.setProperty('top', 'calc(100% + 4px)', 'important');
+          menu.style.setProperty('bottom', 'auto', 'important');
+          menu.style.setProperty('box-shadow', '0 6px 16px rgba(0, 0, 0, 0.08)', 'important');
+        }
       }
-    }
 
-    // 🔥 PAKSA DROP-UP jika merupakan baris terbawah ATAU mepet ke bawah card
-    if (isLastRows || isCloseToContainerBottom) {
-      dropdownEl.classList.add('drop-up');
+      dropdownEl.classList.add('open');
     } else {
-      dropdownEl.classList.remove('drop-up');
+      dropdownEl.classList.remove('open', 'drop-up');
+      if (menu) menu.style.cssText = '';
     }
 
-    // Toggle class open
-    dropdownEl.classList.toggle('open');
+    e.stopPropagation();
   } else {
-    // Jika klik di luar area custom-dropdown, tutup semua
+    // 2. Jika klik di luar dropdown, tutup semuanya
     document.querySelectorAll('.custom-dropdown').forEach(el => {
       el.classList.remove('open', 'drop-up');
+      const m = el.querySelector('.dropdown-menu');
+      if (m) m.style.cssText = '';
     });
   }
 });

@@ -305,6 +305,7 @@ button:disabled {
   border: 1px solid #b8dade;
   margin-top: 15px;
   background: #ffffff;
+  overflow: visible !important;
 }
 
 table { 
@@ -344,7 +345,7 @@ th {
 
 /* Menjamin baris yang dropdown-nya sedang terbuka tampil paling depan */
 #tbodySiswa tr:has(.custom-dropdown.open) {
-  z-index: 999 !important;
+  z-index: 9999 !important;
 }
 
 tr:nth-child(even) td { 
@@ -677,6 +678,10 @@ footer {
 
 .custom-dropdown.open .dropdown-menu {
   display: flex;
+}
+
+.custom-dropdown .dropdown-menu {
+  z-index: 99999 !important;
 }
 
 .dropdown-item {
