@@ -312,7 +312,18 @@ function renderStatusBadge(statusTd, s, value) {
 
     statusTd.innerHTML = "";
     const dropdownWrapper = document.createElement("div");
-    dropdownWrapper.style.cssText = "position: relative; display: inline-block; background: transparent; border: none; padding: 0; margin: 0;";
+    dropdownWrapper.style.cssText = `
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      height: 32px;
+      margin: 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+    `;
 
     createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
       cleanupListeners();
