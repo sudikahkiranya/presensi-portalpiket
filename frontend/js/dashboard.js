@@ -53,8 +53,10 @@ function hideLoading() {
   if (el) el.classList.remove("active");
 }
 
+
 function initFormPiket() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
+
   if (!user) {
     window.location.href = "index.html";
     return;
@@ -69,12 +71,29 @@ function initFormPiket() {
     if (adminFilter) adminFilter.style.display = "block";
 
     const dateInput = document.getElementById("selectedDate");
-    if (dateInput && !dateInput.value) {
-      const today = new Date();
-      const local = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
-      dateInput.value = local.toISOString().split("T")[0];
+
+    if (dateInput) {
+      // Ambil tanggal sebelumnya; jika belum ada, gunakan hari ini.
+      const tanggalTersimpan = sessionStorage.getItem("piket_selected_date");
+
+      if (tanggalTersimpan) {
+        dateInput.value = tanggalTersimpan;
+      } else if (!dateInput.value) {
+        const today = new Date();
+        const local = new Date(
+          today.getTime() - today.getTimezoneOffset() * 60000
+        );
+
+        dateInput.value = local.toISOString().split("T")[0];
+      }
+
+      // Simpan tanggal yang digunakan sebelum mengambil data.
+      sessionStorage.setItem("piket_selected_date", dateInput.value);
+
+      fetchData(dateInput.value);
+    } else {
+      fetchData();
     }
-    fetchData(dateInput.value);
   } else {
     fetchData();
   }
@@ -105,10 +124,25 @@ async function fetchData(selectedDate) {
 
   const user = JSON.parse(localStorage.getItem("piket_user"));
   const tanggalPresensi = document.getElementById("tanggalPresensi");
+  const dateInput = document.getElementById("selectedDate");
+
   const dateVal =
     selectedDate ||
-    document.getElementById("selectedDate")?.value ||
-    new Date().toISOString().split("T")[0];
+    dateInput?.value ||
+    sessionStorage.getItem("piket_selected_date") ||
+    (() => {
+      const today = new Date();
+      const local = new Date(
+        today.getTime() - today.getTimezoneOffset() * 60000
+      );
+      return local.toISOString().split("T")[0];
+    })();
+
+  // Pertahankan tanggal pilihan admin saat reload
+  if (user && user.role === "Admin" && dateInput && dateVal) {
+    dateInput.value = dateVal;
+    sessionStorage.setItem("piket_selected_date", dateVal);
+  }
 
   if (tanggalPresensi) {
     const tanggalObj =
@@ -840,24 +874,47 @@ function stopAutoPolling() {
 
 async function silentFetchData() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
-  const dateVal = document.getElementById("selectedDate")?.value || new Date().toISOString().split("T")[0];
+  const dateInput = document.getElementById("selectedDate");
+
+  const dateVal =
+    dateInput?.value ||
+    sessionStorage.getItem("piket_selected_date") ||
+    (() => {
+      const today = new Date();
+      const local = new Date(
+        today.getTime() - today.getTimezoneOffset() * 60000
+      );
+      return local.toISOString().split("T")[0];
+    })();
+
+  // Pertahankan tanggal pilihan admin
+  if (user && user.role === "Admin" && dateVal) {
+    if (dateInput) dateInput.value = dateVal;
+    sessionStorage.setItem("piket_selected_date", dateVal);
+  }
 
   try {
     let url = `${API_URL}?action=getSiswaHariIni`;
+
     if (user && user.role === "Admin" && dateVal) {
       url = `${API_URL}?action=getSiswaByTanggal&tanggal=${dateVal}`;
     }
 
     const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error: ${response.status}`);
+    }
+
     const newData = await response.json();
 
-    if (Array.isArray(newData) && newData.length > 0) {
+    if (Array.isArray(newData)) {
       window.dataSiswa = newData;
-      applyFilter.keepPage = true; 
+      applyFilter.keepPage = true;
       applyFilter();
     }
   } catch (err) {
-    console.warn("[Auto-Polling] Gagal menarik data background.");
+    console.warn("[Auto-Polling] Gagal menarik data background.", err);
   }
 }
 
