@@ -598,11 +598,25 @@ tr:nth-child(even) td {
 /* ==========================================================================
    8. PAGINATION & FOOTER
    ========================================================================== */
-.table-footer { 
-  display: flex; 
-  justify-content: center; 
-  align-items: center; 
-  margin-top: 20px; 
+.table-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 0;
+  padding: 16px 0 0;
+  background: #ffffff;
+  border-radius: 0 0 12px 12px;
+}
+
+#pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 100%;
 }
 
 #pagination button { 
