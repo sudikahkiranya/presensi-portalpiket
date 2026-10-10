@@ -226,9 +226,10 @@ button:disabled {
    ========================================================================== */
 .filter-wrapper {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 1.5fr);
+  /* Area filter mengambil sisa ruang; area statistik selalu tetap di kanan */
+  grid-template-columns: minmax(0, 1fr) 456px;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 
   width: 100%;
   box-sizing: border-box;
@@ -270,12 +271,14 @@ button:disabled {
 
 /* AREA KANAN: STATISTIK */
 .statistik-wrapper {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
   align-items: stretch;
+  justify-content: flex-end;
   gap: 8px;
 
-  width: 100%;
+  /* Lebar area tetap untuk 3 atau 4 kartu; kartu selalu menempel kanan */
+  width: 456px;
+  max-width: 100%;
   min-width: 0;
   margin: 0;
 }
@@ -283,11 +286,12 @@ button:disabled {
 /* KARTU STATISTIK */
 .jumlah-data-box {
   display: flex;
+  flex: 0 0 104px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
 
-  width: 100%;
+  width: 104px;
   min-width: 0;
   min-height: 86px;
   box-sizing: border-box;
@@ -336,17 +340,15 @@ button:disabled {
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
-
-  .filter-item {
-    flex: 1 1 180px;
-  }
-
   .statistik-wrapper {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
   }
 
   .jumlah-data-box {
-    width: 100%;
+    flex: 1 1 0;
+    width: auto;
   }
 }
 
@@ -365,7 +367,13 @@ button:disabled {
   }
 
   .statistik-wrapper {
+    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    justify-content: stretch;
+  }
+
+  .jumlah-data-box {
+    width: 100%;
   }
 }
 
