@@ -965,8 +965,21 @@ function showToast(message, type = "info", duration = 3000) {
 }
 
 function logout() {
+  // Hentikan polling agar tidak ada proses background yang berjalan
+  stopAutoPolling();
+
+  // Hapus seluruh data sesi login
   localStorage.removeItem("piket_user");
-  window.location.href = "index.html";
+  localStorage.removeItem("piketID");
+  localStorage.removeItem("namaPetugas");
+  localStorage.removeItem("role");
+  localStorage.removeItem("loginDate");
+
+  // Bersihkan tanggal pilihan admin
+  sessionStorage.removeItem("piket_selected_date");
+
+  // Kembali ke halaman login tanpa menyimpan dashboard di history
+  window.location.replace("index.html");
 }
 
 function closeNotif() { document.getElementById("notifModal")?.classList.remove("active"); }
