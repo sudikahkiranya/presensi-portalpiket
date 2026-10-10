@@ -397,12 +397,22 @@ button:disabled {
 
 .table-responsive {
   width: 100%;
-  overflow: visible !important; /* 🔥 Dibuat visible agar dropdown bebas melayang */
-  border-radius: 12px;
   border: 1px solid #b8dade;
+  border-radius: 12px;
   margin-top: 15px;
   background: #ffffff;
-  overflow: visible !important;
+
+  /* Potong sudut tabel mengikuti radius container */
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.table-responsive thead th:first-child {
+  border-top-left-radius: 11px;
+}
+
+.table-responsive thead th:last-child {
+  border-top-right-radius: 11px;
 }
 
 table { 
