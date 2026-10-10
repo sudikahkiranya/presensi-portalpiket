@@ -193,13 +193,13 @@
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  width: 38px !important;
-  height: 38px !important;
+  width: 30px !important;
+  height: 30px !important;
   padding: 0 !important;
   margin: 0 !important;
   border: 0 !important;
-  border-radius: 10px !important;
-  background: #eaf7f6 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
   color: #007f86 !important;
   opacity: 1 !important;
   visibility: visible !important;
@@ -235,6 +235,27 @@
   }
 }
 
+
+.password-toggle:hover,
+.toggle-password:hover,
+#togglePassword:hover,
+#togglePasswordBtn:hover,
+.show-password:hover,
+.password-eye:hover {
+  background: transparent !important;
+  color: #005f65 !important;
+}
+.password-toggle:focus-visible,
+.toggle-password:focus-visible,
+#togglePassword:focus-visible,
+#togglePasswordBtn:focus-visible,
+.show-password:focus-visible,
+.password-eye:focus-visible {
+  outline: 2px solid #77cfc9 !important;
+  outline-offset: 2px !important;
+  border-radius: 5px !important;
+}
+
 </style>
 </head>
 <body class="login-body">
@@ -242,10 +263,10 @@
     <section class="login-visual" aria-label="Informasi sekolah">
       <div class="visual-copy">
         <div class="visual-eyebrow">
-          <span aria-hidden="true">✦</span> Sistem Internal Sekolah
+          <span aria-hidden="true">✦</span> SISENSI - SISTEM PRESENSI
         </div>
-        <h3>Presensi Piket<br>Lebih Mudah.</h3>
-        <p>Selamat datang di portal presensi piket SMK MedikaCom. Silakan masuk untuk melanjutkan.</p>
+        <!-- <h3>Presensi Piket<br>Lebih Mudah.</h3> -->
+        <p>Jikalau bisa tidak sulit kenapa harus tidak mudah.</p>
       </div>
     </section>
 
@@ -281,7 +302,7 @@
         </button>
       </form>
       <div class="error-msg" id="errorMsg" role="alert" aria-live="polite"></div>
-      <footer class="login-footer">Sistem Presensi&nbsp; • &nbsp;SMK MedikaCom</footer>
+      <footer class="login-footer">SISENSI v 5.1</footer>
     </section>
   </main>
 
