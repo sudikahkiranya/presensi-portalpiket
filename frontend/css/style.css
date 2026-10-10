@@ -225,67 +225,78 @@ button:disabled {
    5. FILTERS & COUNTER BOX
    ========================================================================== */
 .filter-wrapper {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1.5fr);
   align-items: center;
-  gap: 14px;
+  gap: 12px;
+
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 20px;
-  padding: 12px 16px;
+  padding: 14px;
+
   background: #d1e5e9;
   border: 1px solid #b2d5dc;
   border-radius: 14px;
 }
 
+/* AREA KIRI: FILTER */
 .filter-group {
-  display: flex;
-  flex: 1 1 auto;
-  flex-wrap: nowrap;
-  align-items: flex-end;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: end;
   gap: 10px;
+
+  width: 100%;
   min-width: 0;
 }
 
 .filter-item {
   display: flex;
-  flex: 1 1 0;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
+
   font-size: 12px;
   font-weight: 600;
   color: #006D77;
 }
 
 .filter-item .custom-dropdown,
-.filter-input-text {
+.filter-item .filter-input-text {
   width: 100%;
   min-width: 0;
 }
 
+/* AREA KANAN: STATISTIK */
 .statistik-wrapper {
-  display: flex;
-  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: stretch;
   gap: 8px;
-  width: auto;
+
+  width: 100%;
+  min-width: 0;
   margin: 0;
 }
 
+/* KARTU STATISTIK */
 .jumlah-data-box {
   display: flex;
-  flex: 0 1 96px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
-  width: 96px;
+
+  width: 100%;
   min-width: 0;
-  padding: 8px 5px;
-  background: #ffffff;
+  min-height: 86px;
+  box-sizing: border-box;
+  padding: 8px 4px;
+  margin: 0;
+
+  background: #fff;
   border: 1px solid #b8dade;
-  border-radius: 10px;
+  border-radius: 11px;
   text-align: center;
 }
 
@@ -293,8 +304,9 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
+
   width: 100%;
-  height: 24px;
+  min-height: 24px;
   margin-bottom: 4px;
 
   font-size: 9px;
@@ -303,9 +315,7 @@ button:disabled {
   color: #006D77;
   text-transform: uppercase;
   text-align: center;
-
-  white-space: normal;
-  overflow-wrap: normal;
+  overflow-wrap: anywhere;
 }
 
 .jumlah-data-box span {
@@ -319,22 +329,20 @@ button:disabled {
 /* Tablet dan layar sempit: filter di atas, statistik di bawah */
 @media (max-width: 1200px) {
   .filter-wrapper {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .filter-group {
-    flex-wrap: wrap;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
+
 
   .filter-item {
     flex: 1 1 180px;
   }
 
   .statistik-wrapper {
-    display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    width: 100%;
   }
 
   .jumlah-data-box {
@@ -349,9 +357,7 @@ button:disabled {
   }
 
   .filter-group {
-    display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
   }
 
   .filter-item {
@@ -741,8 +747,11 @@ footer {
   top: calc(100% + 4px);
   bottom: auto;
   left: 0;
-  width: 170px;
-  max-width: calc(100vw - 40px);
+
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+
   max-height: 250px;
   overflow-y: auto;
   background: #ffffff;
