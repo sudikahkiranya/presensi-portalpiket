@@ -273,11 +273,13 @@ button:disabled {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: stretch;
-  gap: 8px;
+  justify-self: end;
 
+  gap: 8px;
   width: 100%;
+  max-width: 460px;
   min-width: 0;
-  margin: 0;
+  margin: 0 0 0 auto;
 }
 
 /* KARTU STATISTIK */
