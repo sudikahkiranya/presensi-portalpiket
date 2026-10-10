@@ -135,14 +135,25 @@ async function fetchData(selectedDate) {
       throw new Error(`HTTP error: ${response.status}`);
     }
 
+    
     const data = await response.json();
-
     window.dataSiswa = Array.isArray(data) ? data : [];
 
-    // Perbarui opsi Kelas dan Tingkat berdasarkan data terbaru.
-    initFilters(window.dataSiswa);
+    console.log("Tanggal yang diminta:", dateVal);
+    console.log("Jumlah data:", window.dataSiswa.length);
 
+    console.table(
+      window.dataSiswa.map(s => ({
+        nama: s.nama,
+        kelas: s.kelas,
+        statusMasuk: JSON.stringify(s.statusMasuk),
+        rowIndex: s.rowIndex
+      }))
+    );
+
+    initFilters(window.dataSiswa);
     applyFilter();
+
     hideLoading();
 
   } catch (err) {
