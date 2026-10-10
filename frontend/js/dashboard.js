@@ -153,26 +153,40 @@ async function fetchData(selectedDate) {
 }
 
 
-
 function initFilters(data = null) {
   const isDataReady = Array.isArray(data);
+
+  // Simpan pilihan sebelumnya sebelum dropdown dibuat ulang.
+  const kelasContainer = document.getElementById("filterKelas");
+  const tingkatContainer = document.getElementById("filterTingkat");
+  const statusContainer = document.getElementById("filterStatus");
+
+  const previousKelas =
+    kelasContainer?.getAttribute("data-value") || "";
+
+  const previousTingkat =
+    tingkatContainer?.getAttribute("data-value") || "";
+
+  const previousStatus =
+    statusContainer?.getAttribute("data-value") || "";
 
   // ==========================================
   // 1. FILTER KELAS
   // ==========================================
-  const kelasContainer = document.getElementById("filterKelas");
-
   const kelasMap = new Map();
 
   if (isDataReady) {
     data.forEach(s => {
       if (s.kelas && !kelasMap.has(s.kelas)) {
-        kelasMap.set(s.kelas, formatNamaKelas(s.kelas, s.tingkat));
+        kelasMap.set(
+          s.kelas,
+          formatNamaKelas(s.kelas, s.tingkat)
+        );
       }
     });
   }
 
-  const parseLabel = (label) => {
+  const parseLabel = label => {
     const parts = label.split(" ");
     const jurusan = parts[0] || "";
     const sisa = parts[1] || "";
@@ -183,7 +197,11 @@ function initFilters(data = null) {
     else if (tingkat === "XI") weight = 2;
     else if (tingkat === "XII") weight = 3;
 
-    return { jurusan, weight, sub: sub || "" };
+    return {
+      jurusan,
+      weight,
+      sub: sub || ""
+    };
   };
 
   const sortedKeys = [...kelasMap.keys()].sort((a, b) => {
@@ -210,10 +228,14 @@ function initFilters(data = null) {
   ];
 
   if (kelasContainer) {
+    const selectedKelas = kelasOptions.some(
+      option => option.value === previousKelas
+    ) ? previousKelas : "";
+
     createCustomDropdown(
       kelasContainer,
       kelasOptions,
-      "",
+      selectedKelas,
       () => applyFilter()
     );
   }
@@ -221,10 +243,10 @@ function initFilters(data = null) {
   // ==========================================
   // 2. FILTER TINGKAT
   // ==========================================
-  const tingkatContainer = document.getElementById("filterTingkat");
-
   const uniqueTingkat = isDataReady
-    ? [...new Set(data.map(s => s.tingkat).filter(Boolean))].sort()
+    ? [...new Set(
+        data.map(s => s.tingkat).filter(Boolean)
+      )].sort()
     : [];
 
   const tingkatOptions = [
@@ -236,35 +258,74 @@ function initFilters(data = null) {
   ];
 
   if (tingkatContainer) {
+    const selectedTingkat = tingkatOptions.some(
+      option => option.value === previousTingkat
+    ) ? previousTingkat : "";
+
     createCustomDropdown(
       tingkatContainer,
       tingkatOptions,
-      "",
+      selectedTingkat,
       () => applyFilter()
     );
   }
 
   // ==========================================
-  // 3. FILTER STATUS MASUK
+  // 3. FILTER STATUS MASUK DINAMIS
   // ==========================================
-  const statusContainer = document.getElementById("filterStatus");
+  const statusLabelMap = {
+    "Kosong": "Kosong",
+    "Belum Presensi": "Belum Presensi",
+    "Alpa": "Alpa",
+    "Tepat Waktu": "Tepat Waktu",
+    "Terlambat": "Terlambat",
+    "Prakerin": "Prakerin",
+    "Sangat Terlambat": "Sangat Terlambat"
+  };
+
+  // "Kosong" mewakili data tanpa statusMasuk.
+  // Status lainnya diambil dari data tanggal aktif.
+  const availableStatuses = new Set();
+
+  if (isDataReady) {
+    data.forEach(s => {
+      const status = String(s.statusMasuk ?? "").trim();
+
+      if (!status) {
+        availableStatuses.add("Kosong");
+      } else if (
+        Object.prototype.hasOwnProperty.call(
+          statusLabelMap,
+          status
+        ) &&
+        status !== "Kosong"
+      ) {
+        availableStatuses.add(status);
+      }
+    });
+  }
 
   const statusOptions = [
     { value: "", label: "Semua" },
-    { value: "Kosong", label: "Kosong" },
-    { value: "Belum Presensi", label: "Belum Presensi" },
-    { value: "Alpa", label: "Alpa" },
-    { value: "Tepat Waktu", label: "Tepat Waktu" },
-    { value: "Terlambat", label: "Terlambat" },
-    { value: "Prakerin", label: "Prakerin" },
-    { value: "Sangat Terlambat", label: "Sangat Terlambat" }
+    ...Object.keys(statusLabelMap)
+      .filter(status => availableStatuses.has(status))
+      .map(status => ({
+        value: status,
+        label: status
+      }))
   ];
 
   if (statusContainer) {
+    // Pertahankan pilihan jika masih tersedia.
+    // Jika tidak, reset ke "Semua".
+    const selectedStatus = statusOptions.some(
+      option => option.value === previousStatus
+    ) ? previousStatus : "";
+
     createCustomDropdown(
       statusContainer,
       statusOptions,
-      "",
+      selectedStatus,
       () => applyFilter()
     );
   }
