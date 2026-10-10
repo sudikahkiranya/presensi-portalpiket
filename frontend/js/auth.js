@@ -17,17 +17,41 @@ window.addEventListener("DOMContentLoaded", function () {
   const savedID = localStorage.getItem("piketID");
   const savedNama = localStorage.getItem("namaPetugas");
   const savedDate = localStorage.getItem("loginDate");
+  const savedUser = localStorage.getItem("piket_user");
+
   const today = new Date().toLocaleDateString("id-ID");
 
-  // Jika beda hari, bersihkan sesi lama
+  // Jika tanggal login berbeda, hapus data sesi saja
   if (savedDate && savedDate !== today) {
-    localStorage.clear();
+    localStorage.removeItem("piketID");
+    localStorage.removeItem("namaPetugas");
+    localStorage.removeItem("role");
+    localStorage.removeItem("loginDate");
+    localStorage.removeItem("piket_user");
     return;
   }
 
-  // Jika sesi masih valid dan data lengkap, langsung lempar ke Dashboard
-  if (savedID && savedNama && savedDate === today) {
-    window.location.href = "dashboard.html";
+  // Pastikan data sesi individual dan objek pengguna sama-sama tersedia
+  if (savedID && savedNama && savedDate === today && savedUser) {
+    try {
+      const user = JSON.parse(savedUser);
+
+      if (
+        user &&
+        user.piketID === savedID &&
+        user.nama === savedNama &&
+        user.loginDate === today
+      ) {
+        window.location.replace("dashboard.html");
+      }
+    } catch (error) {
+      // Jika data sesi rusak, bersihkan sesi login
+      localStorage.removeItem("piketID");
+      localStorage.removeItem("namaPetugas");
+      localStorage.removeItem("role");
+      localStorage.removeItem("loginDate");
+      localStorage.removeItem("piket_user");
+    }
   }
 });
 
