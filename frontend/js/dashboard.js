@@ -738,22 +738,25 @@ function updatePendingBadge() {
 
   // IKON REFRESH - STATUS SYNC
   const iconSync = `
-    <svg xmlns="http://www.w3.org/2000/svg"
-         width="16"
-         height="16"
-         viewBox="0 0 24 24"
-         fill="none"
-         stroke="currentColor"
-         stroke-width="2"
-         stroke-linecap="round"
-         stroke-linejoin="round"
-         aria-hidden="true">
-      <polyline points="23 4 23 10 17 10"></polyline>
-      <polyline points="1 20 1 14 7 14"></polyline>
-      <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"></path>
-      <path d="M20.49 15a9 9 0 0 1-14.13 3.36L1 14"></path>
-    </svg>
-  `;
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    class="sync-spinning"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+  >
+    <polyline points="23 4 23 10 17 10"></polyline>
+    <polyline points="1 20 1 14 7 14"></polyline>
+    <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"></path>
+    <path d="M20.49 15a9 9 0 0 1-14.13 3.36L1 14"></path>
+  </svg>
+`;
 
   // ATUR STATUS TOMBOL
   saveBtn.disabled = pendingCount === 0;
