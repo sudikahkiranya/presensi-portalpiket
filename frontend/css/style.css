@@ -226,57 +226,132 @@ button:disabled {
    ========================================================================== */
 .filter-wrapper {
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
   margin-bottom: 20px;
+  padding: 12px 16px;
   background: #d1e5e9;
-  padding: 16px 20px;
-  border-radius: 14px;
   border: 1px solid #b2d5dc;
+  border-radius: 14px;
 }
 
-.filter-group { 
-  display: flex; 
-  flex-wrap: wrap; 
-  gap: 12px; 
-  align-items: flex-end; 
+.filter-group {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  gap: 10px;
+  min-width: 0;
 }
 
-.filter-item { 
-  display: flex; 
-  flex-direction: column; 
-  gap: 4px; 
-  font-size: 12px; 
-  font-weight: 600; 
-  color: #006D77; 
+.filter-item {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #006D77;
+}
+
+.filter-item .custom-dropdown,
+.filter-input-text {
+  width: 100%;
+  min-width: 0;
+}
+
+.statistik-wrapper {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: stretch;
+  gap: 8px;
+  width: auto;
+  margin: 0;
 }
 
 .jumlah-data-box {
   display: flex;
+  flex: 0 1 104px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+  width: 104px;
+  min-width: 0;
+  padding: 8px 6px;
   background: #ffffff;
-  padding: 6px 14px;
-  border-radius: 8px;
   border: 1px solid #b8dade;
-  margin-left: auto;
-  min-width: 85px;
+  border-radius: 10px;
+  text-align: center;
 }
 
-.jumlah-data-box label { 
-  font-size: 10px; 
-  color: #006D77; 
-  font-weight: 600; 
-  text-transform: uppercase; 
+.jumlah-data-box label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 9px;
+  line-height: 1.25;
+  color: #006D77;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
-.jumlah-data-box span { 
-  font-size: 18px; 
-  font-weight: 700; 
-  color: #C05621; 
+.jumlah-data-box span {
+  display: block;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 800;
+  color: #C05621;
+}
+
+/* Tablet dan layar sempit: filter di atas, statistik di bawah */
+@media (max-width: 1200px) {
+  .filter-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-group {
+    flex-wrap: wrap;
+  }
+
+  .filter-item {
+    flex: 1 1 180px;
+  }
+
+  .statistik-wrapper {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .jumlah-data-box {
+    width: 100%;
+  }
+}
+
+/* HP: dua kolom filter dan statistik */
+@media (max-width: 600px) {
+  .filter-wrapper {
+    padding: 12px;
+  }
+
+  .filter-group {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .filter-item {
+    min-width: 0;
+  }
+
+  .statistik-wrapper {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* ==========================================================================
@@ -770,53 +845,4 @@ input[type="text"]:focus {
 #tbodySiswa td:has(.custom-dropdown),
 #tbodySiswa td:has(.status-badge-btn) {
   vertical-align: middle;
-}
-
-.statistik-wrapper {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  width: 100%;
-  margin-bottom: 20px;
-}
-
-.jumlah-data-box {
-  box-sizing: border-box;
-  width: 100%;
-  min-width: 0;
-  padding: 14px 10px;
-  background: #fff;
-  border: 1px solid #b8dce2;
-  border-radius: 12px;
-  text-align: center;
-}
-
-.jumlah-data-box label {
-  display: block;
-  margin-bottom: 5px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #087e8b;
-}
-
-.jumlah-data-box span {
-  display: block;
-  font-size: 24px;
-  font-weight: 800;
-  color: #cc4f19;
-}
-
-/* Tablet dan HP */
-@media (max-width: 768px) {
-  .statistik-wrapper {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
-  }
-}
-
-/* HP dengan layar sangat kecil */
-@media (max-width: 360px) {
-  .statistik-wrapper {
-    grid-template-columns: 1fr;
-  }
 }
