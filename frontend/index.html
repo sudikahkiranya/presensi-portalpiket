@@ -30,8 +30,10 @@
         linear-gradient(135deg, #e8f6f4 0%, #f8fbfa 55%, #e3f5f2 100%);
     }
     body.login-body * { box-sizing: border-box; }
-    .container-login {
-      width: min(1160px, 100%);
+    body.login-body > .container-login {
+      width: min(1160px, calc(100vw - 56px)) !important;
+      max-width: 1160px !important;
+      min-width: 0;
       min-height: 620px;
       display: grid;
       grid-template-columns: minmax(0, .92fr) minmax(0, 1fr);
@@ -57,7 +59,7 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: url("./medikacom-login-illustration.png") center center / cover no-repeat;
+      background: url("./assets/medikacom-login-illustration.png") center center / cover no-repeat;
       z-index: -2;
     }
     .login-visual::after {
@@ -133,9 +135,18 @@
     .login-footer::before, .login-footer::after { content: ""; height: 1px; width: 34px; background: #d8e5e6; }
     .container-login .error-msg { min-height: 0; margin-top: 12px; color: #c0392b; font-size: 12px; text-align: center; }
     #loadingOverlay { z-index: 9999; }
+    @media (min-width: 821px) {
+      body.login-body > .container-login {
+        width: min(1160px, calc(100vw - 56px)) !important;
+        max-width: 1160px !important;
+        grid-template-columns: minmax(0, .92fr) minmax(0, 1fr) !important;
+      }
+      body.login-body > .container-login > .login-visual,
+      body.login-body > .container-login > .login-content { min-width: 0; }
+    }
     @media (max-width: 820px) {
       body.login-body { padding: 18px; }
-      .container-login { max-width: 560px; min-height: auto; grid-template-columns: 1fr; border-radius: 23px; }
+      body.login-body > .container-login { width: min(560px, calc(100vw - 36px)) !important; max-width: 560px !important; min-height: auto; grid-template-columns: 1fr !important; border-radius: 23px; }
       .login-visual { min-height: 210px; padding: 24px; }
       .login-visual::before { background-position: center 54%; }
       .login-visual::after { background: linear-gradient(90deg, rgba(8,83,89,.58), rgba(8,83,89,.12)); }
@@ -148,7 +159,7 @@
     }
     @media (max-width: 420px) {
       body.login-body { padding: 12px; align-items: flex-start; }
-      .container-login { border-radius: 19px; margin: auto 0; }
+      body.login-body > .container-login { width: min(560px, calc(100vw - 24px)) !important; max-width: 560px !important; border-radius: 19px; margin: auto 0; }
       .login-visual { min-height: 165px; padding: 18px; }
       .visual-copy h3 { font-size: 20px; }
       .visual-copy p { font-size: 11px; line-height: 1.6; }
