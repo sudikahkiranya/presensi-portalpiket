@@ -226,7 +226,7 @@ button:disabled {
    ========================================================================== */
 .filter-wrapper {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 1.5fr);
+  grid-template-columns: minmax(0, 3fr) minmax(460px, 1.5fr);
   align-items: center;
   gap: 12px;
 
@@ -272,14 +272,11 @@ button:disabled {
 .statistik-wrapper {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: stretch;
-  justify-self: end;
-
   gap: 8px;
   width: 100%;
-  max-width: 460px;
+  max-width: none;
   min-width: 0;
-  margin: 0 0 0 auto;
+  margin: 0;
 }
 
 /* KARTU STATISTIK */
