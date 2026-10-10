@@ -472,6 +472,61 @@ function renderStatusBadge(statusTd, s, value) {
   statusTd.appendChild(wrapper);
 }
 
+
+function updateStatistik(data) {
+  let hadir = 0;
+  let tidakHadir = 0;
+  let prakerin = 0;
+
+  data.forEach(s => {
+    const status = String(s.statusMasuk ?? "")
+      .trim()
+      .toLowerCase();
+
+    // Status kosong atau belum presensi tidak dihitung.
+    if (!status || status === "belum presensi") {
+      return;
+    }
+
+    // Prakerin dihitung terpisah.
+    if (status.includes("prakerin") || status.includes("pkl")) {
+      prakerin++;
+      return;
+    }
+
+    // Tidak hadir = Sakit + Izin + Alpa.
+    if (["sakit", "izin", "alpa"].includes(status)) {
+      tidakHadir++;
+      return;
+    }
+
+    // Status yang menunjukkan siswa hadir.
+    if (
+      status.includes("tepat waktu") ||
+      status.includes("terlambat") ||
+      status.includes("hadir tidak presensi")
+    ) {
+      hadir++;
+    }
+  });
+
+  const jumlahDataEl = document.getElementById("jumlahData");
+  const jumlahHadirEl = document.getElementById("jumlahHadir");
+  const jumlahTidakHadirEl =
+    document.getElementById("jumlahTidakHadir");
+  const jumlahPrakerinEl =
+    document.getElementById("jumlahPrakerin");
+
+  if (jumlahDataEl) jumlahDataEl.textContent = data.length;
+  if (jumlahHadirEl) jumlahHadirEl.textContent = hadir;
+  if (jumlahTidakHadirEl) {
+    jumlahTidakHadirEl.textContent = tidakHadir;
+  }
+  if (jumlahPrakerinEl) {
+    jumlahPrakerinEl.textContent = prakerin;
+  }
+} 
+
 function applyFilter() {
   const kelas = document.getElementById("filterKelas")?.getAttribute("data-value") || "";
   const tingkat = document.getElementById("filterTingkat")?.getAttribute("data-value") || "";
@@ -493,6 +548,8 @@ function applyFilter() {
         return s.statusMasuk === status;
       })
       .filter(s => !nama || (s.nama && s.nama.toLowerCase().includes(nama)));
+  
+  updateStatistik(filtered);
 
   const startIndex = (currentPage - 1) * rowsPerPage;
   const pageData = filtered.slice(startIndex, startIndex + rowsPerPage);
