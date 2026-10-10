@@ -706,21 +706,84 @@ window.addEventListener("offline", () => {
 });
 
 function updatePendingBadge() {
-  let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
-  let pendingCount = queue.length;
-  const saveBtn = document.querySelector("#absenForm button[type='submit']");
+  let queue = JSON.parse(
+    localStorage.getItem("piket_pending_updates") || "[]"
+  );
+
+  const pendingCount = queue.length;
+
+  const saveBtn = document.querySelector(
+    "#absenForm button[type='submit']"
+  );
+
   if (!saveBtn) return;
 
+  // IKON DISKET - STATUS TERSIMPAN
+  const iconDisket = `
+    <svg xmlns="http://www.w3.org/2000/svg"
+         width="16"
+         height="16"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         aria-hidden="true">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+      <polyline points="17 21 17 13 7 13 7 21"></polyline>
+      <polyline points="7 3 7 8 15 8"></polyline>
+    </svg>
+  `;
+
+  // IKON REFRESH - STATUS SYNC
+  const iconSync = `
+    <svg xmlns="http://www.w3.org/2000/svg"
+         width="16"
+         height="16"
+         viewBox="0 0 24 24"
+         fill="none"
+         stroke="currentColor"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         aria-hidden="true">
+      <polyline points="23 4 23 10 17 10"></polyline>
+      <polyline points="1 20 1 14 7 14"></polyline>
+      <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"></path>
+      <path d="M20.49 15a9 9 0 0 1-14.13 3.36L1 14"></path>
+    </svg>
+  `;
+
+  // ATUR STATUS TOMBOL
+  saveBtn.disabled = pendingCount === 0;
+
+  saveBtn.style.opacity = pendingCount > 0 ? "1" : "0.5";
+
+  saveBtn.style.background = pendingCount > 0
+    ? "#dd9787"
+    : "#006D77";
+
+  // ATUR POSISI IKON DAN TEKS
+  saveBtn.style.display = "inline-flex";
+  saveBtn.style.alignItems = "center";
+  saveBtn.style.justifyContent = "center";
+  saveBtn.style.gap = "8px";
+
+  // PASTIKAN IKON TIDAK MENYUSUT
+  saveBtn.style.whiteSpace = "nowrap";
+
+  // TAMPILKAN IKON SESUAI STATUS
   if (pendingCount > 0) {
-    saveBtn.disabled = false;
-    saveBtn.style.opacity = "1";
-    saveBtn.style.background = "#dd9787";
-    saveBtn.innerHTML = `Sync (${pendingCount})`;
+    saveBtn.innerHTML = `
+      ${iconSync}
+      <span>Sync (${pendingCount})</span>
+    `;
   } else {
-    saveBtn.disabled = true;
-    saveBtn.style.opacity = "0.5";
-    saveBtn.style.background = "#006D77";
-    saveBtn.innerHTML = `Tersimpan`;
+    saveBtn.innerHTML = `
+      ${iconDisket}
+      <span>Tersimpan</span>
+    `;
   }
 }
 
