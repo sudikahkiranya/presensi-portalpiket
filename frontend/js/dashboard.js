@@ -525,6 +525,12 @@ function updateStatistik(data) {
   if (jumlahPrakerinEl) {
     jumlahPrakerinEl.textContent = prakerin;
   }
+
+  const boxPrakerin = document.getElementById("boxJumlahPrakerin");
+
+  if (boxPrakerin) {
+    boxPrakerin.style.display = prakerin > 0 ? "" : "none";
+  }
 } 
 
 function applyFilter() {

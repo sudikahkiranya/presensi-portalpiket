@@ -771,3 +771,52 @@ input[type="text"]:focus {
 #tbodySiswa td:has(.status-badge-btn) {
   vertical-align: middle;
 }
+
+.statistik-wrapper {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.jumlah-data-box {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  padding: 14px 10px;
+  background: #fff;
+  border: 1px solid #b8dce2;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.jumlah-data-box label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #087e8b;
+}
+
+.jumlah-data-box span {
+  display: block;
+  font-size: 24px;
+  font-weight: 800;
+  color: #cc4f19;
+}
+
+/* Tablet dan HP */
+@media (max-width: 768px) {
+  .statistik-wrapper {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+}
+
+/* HP dengan layar sangat kecil */
+@media (max-width: 360px) {
+  .statistik-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
