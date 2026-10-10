@@ -281,54 +281,38 @@ function initFilters(data = null) {
     );
   }
 
+
   // ==========================================
   // 3. FILTER STATUS MASUK DINAMIS
   // ==========================================
-  const statusLabelMap = {
-    "Kosong": "Kosong",
-    "Belum Presensi": "Belum Presensi",
-    "Alpa": "Alpa",
-    "Tepat Waktu": "Tepat Waktu",
-    "Terlambat": "Terlambat",
-    "Prakerin": "Prakerin",
-    "Sangat Terlambat": "Sangat Terlambat"
-  };
-
-  // "Kosong" mewakili data tanpa statusMasuk.
-  // Status lainnya diambil dari data tanggal aktif.
   const availableStatuses = new Set();
 
-  if (isDataReady) {
+  if (Array.isArray(data) && data.length > 0) {
     data.forEach(s => {
       const status = String(s.statusMasuk ?? "").trim();
 
-      if (!status) {
-        availableStatuses.add("Kosong");
-      } else if (
-        Object.prototype.hasOwnProperty.call(
-          statusLabelMap,
-          status
-        ) &&
-        status !== "Kosong"
-      ) {
+      if (status) {
         availableStatuses.add(status);
+      } else {
+        availableStatuses.add("Kosong");
       }
     });
   }
 
+  // Urutkan status secara alfabetis, tanpa daftar status hardcoded.
+  const sortedStatuses = [...availableStatuses].sort((a, b) =>
+    a.localeCompare(b, "id")
+  );
+
   const statusOptions = [
     { value: "", label: "Semua" },
-    ...Object.keys(statusLabelMap)
-      .filter(status => availableStatuses.has(status))
-      .map(status => ({
-        value: status,
-        label: status
-      }))
+    ...sortedStatuses.map(status => ({
+      value: status,
+      label: status
+    }))
   ];
 
   if (statusContainer) {
-    // Pertahankan pilihan jika masih tersedia.
-    // Jika tidak, reset ke "Semua".
     const selectedStatus = statusOptions.some(
       option => option.value === previousStatus
     ) ? previousStatus : "";
