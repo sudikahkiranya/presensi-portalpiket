@@ -896,3 +896,19 @@ input[type="text"]:focus {
 #tbodySiswa td:has(.status-badge-btn) {
   vertical-align: middle;
 }
+
+/* Animasi ikon saat proses sync */
+@keyframes spinSync {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sync-spinning {
+  animation: spinSync 1s linear infinite;
+  transform-origin: center;
+  flex-shrink: 0;
+}
