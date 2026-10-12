@@ -334,15 +334,42 @@
   </div>
 
   <script>
-    // Show/hide password; does not interfere with the existing auth.js.
-    document.getElementById('togglePassword').addEventListener('click', function () {
-      const password = document.getElementById('kodeAkses');
-      const isHidden = password.type === 'password';
-      password.type = isHidden ? 'text' : 'password';
-      this.setAttribute('aria-label', isHidden ? 'Sembunyikan password' : 'Tampilkan password');
-      this.setAttribute('title', isHidden ? 'Sembunyikan password' : 'Tampilkan password');
+    const password = document.getElementById('kodeAkses');
+    const toggle = document.getElementById('togglePassword');
+    const icon = document.getElementById('passwordEyeIcon');
+
+    const eye = `
+      <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path>
+      <circle cx="12" cy="12" r="3"></circle>
+    `;
+
+    const eyeOff = `
+      <path d="M3 3l18 18"></path>
+      <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"></path>
+      <path d="M9.9 5.2A11 11 0 0 1 12 5c6.5 0 10 7 10 7a15 15 0 0 1-4 4.8"></path>
+      <path d="M6.6 6.6C3.6 8.5 2 12 2 12s3.5 7 10 7c1 0 2-.2 2.9-.5"></path>
+    `;
+
+    toggle.addEventListener('click', function () {
+      const show = password.type === 'password';
+
+      password.type = show ? 'text' : 'password';
+      icon.innerHTML = show ? eyeOff : eye;
+
+      toggle.setAttribute(
+        'aria-label',
+        show ? 'Sembunyikan password' : 'Tampilkan password'
+      );
+
+      toggle.setAttribute(
+        'title',
+        show ? 'Sembunyikan password' : 'Tampilkan password'
+      );
+
+      toggle.setAttribute('aria-pressed', String(show));
     });
   </script>
+
   <script src="./js/auth.js"></script>
 </body>
 </html>
