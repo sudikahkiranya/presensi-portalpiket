@@ -668,6 +668,7 @@ function renderPagination(total) {
 }
 
 let syncTimer = null;
+let syncInProgress = false;
 
 function processStatusChange(rowIndex, newValue, tanggal) {
   const user = JSON.parse(localStorage.getItem("piket_user"));
@@ -701,32 +702,194 @@ function processStatusChange(rowIndex, newValue, tanggal) {
   syncTimer = setTimeout(() => triggerAutoSync(), 1500); 
 }
 
+
 async function triggerAutoSync() {
   if (!navigator.onLine) {
     showToast("Offline: Perubahan tersimpan di perangkat", "info", 2000);
     return;
   }
 
-  let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
-  if (queue.length === 0) return;
+  const result = await syncPendingUpdates(false);
+
+  if (result.success && result.synced > 0) {
+    showToast("Data tersimpan otomatis ke server", "success", 2000);
+  }
+}
+
+
+async function syncPendingUpdates(showOverlay = false) {
+  if (syncInProgress) {
+    return { success: false, synced: 0, busy: true };
+  }
+
+  let queue = JSON.parse(
+    localStorage.getItem("piket_pending_updates") || "[]"
+  );
+
+  if (queue.length === 0) {
+    updatePendingBadge();
+    return { success: true, synced: 0 };
+  }
+
+  if (!navigator.onLine) {
+    updatePendingBadge();
+    return { success: false, synced: 0, offline: true };
+  }
+
+  syncInProgress = true;
+  let synced = 0;
+  let failed = false;
+
+  if (showOverlay) {
+    showLoading(`Menyinkronkan ${queue.length} data ke server...`);
+  }
 
   try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "simpanStatusMasuk", payload: queue })
-    });
+    while (true) {
+      queue = JSON.parse(
+        localStorage.getItem("piket_pending_updates") || "[]"
+      );
 
-    const result = await response.json();
+      if (queue.length === 0) break;
 
-    if (result.success) {
-      localStorage.setItem("piket_pending_updates", "[]");
+      if (!navigator.onLine) {
+        failed = true;
+        break;
+      }
+
+      // Kirim satu data setiap request.
+      const item = queue[0];
+
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify({
+          action: "simpanStatusMasuk",
+          payload: [item]
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // Jangan menghapus antrean jika server gagal.
+      if (!result || result.success !== true) {
+        failed = true;
+        break;
+      }
+
+      // Ambil ulang antrean karena mungkin ada perubahan baru.
+      const currentQueue = JSON.parse(
+        localStorage.getItem("piket_pending_updates") || "[]"
+      );
+
+      // Hapus hanya versi data yang benar-benar dikirim.
+      const index = currentQueue.findIndex(current =>
+        Number(current.rowIndex) === Number(item.rowIndex) &&
+        current.timestamp === item.timestamp &&
+        current.statusMasuk === item.statusMasuk
+      );
+
+      if (index !== -1) {
+        currentQueue.splice(index, 1);
+
+        localStorage.setItem(
+          "piket_pending_updates",
+          JSON.stringify(currentQueue)
+        );
+
+        synced++;
+      }
+
+      // Update angka setelah setiap penyimpanan sukses.
       updatePendingBadge();
-      showToast("Data tersimpan otomatis ke server", "success", 2000);
+
+      if (showOverlay) {
+        const remaining = JSON.parse(
+          localStorage.getItem("piket_pending_updates") || "[]"
+        ).length;
+
+        const label = document.getElementById("loadingText");
+
+        if (label) {
+          label.textContent = remaining > 0
+            ? `Tersinkron ${synced}. Sisa ${remaining} data...`
+            : "Semua data berhasil disinkronkan!";
+        }
+      }
     }
   } catch (err) {
-    console.warn("[Auto-Sync Background] Server sibuk/koneksi terputus.");
+    console.warn("[Sync] Gagal menyinkronkan antrean:", err);
+    failed = true;
+  } finally {
+    syncInProgress = false;
+
+    if (showOverlay) hideLoading();
+
     updatePendingBadge();
+  }
+
+  const remaining = JSON.parse(
+    localStorage.getItem("piket_pending_updates") || "[]"
+  ).length;
+
+  return {
+    success: !failed && remaining === 0,
+    synced,
+    remaining
+  };
+}
+
+async function handleSubmit(e) {
+  if (e) e.preventDefault();
+
+  const queue = JSON.parse(
+    localStorage.getItem("piket_pending_updates") || "[]"
+  );
+
+  if (queue.length === 0) {
+    showToast(
+      "Tidak ada perubahan data yang perlu disinkronkan.",
+      "info"
+    );
+    return;
+  }
+
+  if (syncInProgress) {
+    showToast(
+      "Sinkronisasi sedang berjalan. Tunggu sebentar ya, bro!",
+      "info"
+    );
+    return;
+  }
+
+  const result = await syncPendingUpdates(true);
+
+  const remaining = JSON.parse(
+    localStorage.getItem("piket_pending_updates") || "[]"
+  ).length;
+
+  if (result.success) {
+    showToast(
+      `Berhasil menyinkronkan ${result.synced} data!`,
+      "success"
+    );
+  } else if (!navigator.onLine || result.offline) {
+    showToast(
+      `Offline. ${remaining} data tetap tersimpan di perangkat.`,
+      "error"
+    );
+  } else {
+    showToast(
+      `${result.synced} data berhasil disinkronkan. ` +
+      `${remaining} data masih antre dan bisa dicoba lagi.`,
+      "error"
+    );
   }
 }
 
@@ -824,38 +987,38 @@ function updatePendingBadge() {
   }
 }
 
-async function handleSubmit(e) {
-  if (e) e.preventDefault();
-  let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
+// async function handleSubmit(e) {
+//   if (e) e.preventDefault();
+//   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
 
-  if (queue.length === 0) {
-    showToast("Tidak ada perubahan data yang perlu disinkronkan.", "info");
-    return;
-  }
+//   if (queue.length === 0) {
+//     showToast("Tidak ada perubahan data yang perlu disinkronkan.", "info");
+//     return;
+//   }
 
-  showLoading(`Menyinkronkan ${queue.length} data ke server...`);
+//   showLoading(`Menyinkronkan ${queue.length} data ke server...`);
 
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({ action: "simpanStatusMasuk", payload: queue })
-    });
-    const result = await response.json();
+//   try {
+//     const response = await fetch(API_URL, {
+//       method: "POST",
+//       headers: { "Content-Type": "text/plain;charset=utf-8" },
+//       body: JSON.stringify({ action: "simpanStatusMasuk", payload: queue })
+//     });
+//     const result = await response.json();
 
-    hideLoading();
-    if (result.success) {
-      localStorage.setItem("piket_pending_updates", "[]");
-      updatePendingBadge();
-      showToast("Semua perubahan berhasil disinkronkan!", "success");
-    } else {
-      showToast("Gagal menyimpan data ke server", "error");
-    }
-  } catch (err) {
-    hideLoading();
-    showToast("Gagal terhubung ke server API", "error");
-  }
-}
+//     hideLoading();
+//     if (result.success) {
+//       localStorage.setItem("piket_pending_updates", "[]");
+//       updatePendingBadge();
+//       showToast("Semua perubahan berhasil disinkronkan!", "success");
+//     } else {
+//       showToast("Gagal menyimpan data ke server", "error");
+//     }
+//   } catch (err) {
+//     hideLoading();
+//     showToast("Gagal terhubung ke server API", "error");
+//   }
+// }
 
 let pollingTimer = null;
 const POLLING_INTERVAL = 30000;
