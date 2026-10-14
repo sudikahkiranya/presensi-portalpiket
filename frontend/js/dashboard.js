@@ -993,7 +993,10 @@ async function syncPendingUpdates(showOverlay = false) {
       // Request ini dikonfirmasi sukses oleh server walaupun antrean lokal sudah berubah.
       recordSuccessfulSync(item);
       synced++;
-      syncedNames.push(item.namaSiswa || item.nama || "Siswa");
+      const syncedName = item.namaSiswa || item.nama || "Siswa";
+      syncedNames.push(syncedName);
+      // Beri toast untuk setiap siswa tepat setelah server mengonfirmasi penyimpanan.
+      showToast(`Update data ${syncedName} berhasil disimpan.`, "success", 3500);
 
       // Update angka setelah setiap penyimpanan sukses, termasuk countdown pada panel.
       updatePendingBadge();
@@ -1049,10 +1052,7 @@ async function syncPendingUpdates(showOverlay = false) {
     localStorage.getItem("piket_pending_updates") || "[]"
   ).length;
 
-  // Tampilkan satu modal ringkasan setelah seluruh antrean selesai, baik autosave maupun simpan manual.
-  if (synced > 0 && !failed && remaining === 0) {
-    showSyncResultModal(syncedNames, synced);
-  }
+  // Notifikasi sukses sudah ditampilkan sebagai toast per siswa pada setiap respons sukses.
 
   // Tangani perubahan yang masuk tepat saat loop sebelumnya selesai.
   if (!failed && remaining > 0 && navigator.onLine) {
@@ -1097,7 +1097,7 @@ async function handleSubmit(e) {
   ).length;
 
   if (result.success) {
-    // Modal hasil ditampilkan oleh syncPendingUpdates setelah seluruh antrean selesai.
+    // Toast sukses sudah ditampilkan satu per siswa saat masing-masing data tersimpan.
   } else if (!navigator.onLine || result.offline) {
     showToast(
       `Offline. ${remaining} data tetap tersimpan di perangkat.`,
