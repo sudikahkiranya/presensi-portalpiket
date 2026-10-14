@@ -710,7 +710,20 @@ function setSyncStatus(state, label, caption, detail, showRetry = false) {
   const detailEl = document.getElementById("syncLastUpdated");
   const retry = document.getElementById("retrySyncButton");
   panel.dataset.state = state;
-  if (icon) icon.textContent = state === "saved" ? "✓" : state === "syncing" ? "↻" : (state === "offline" ? "×" : state === "error" ? "!" : "…");
+  if (icon) {
+    const iconNames = {
+      saved: "check",
+      syncing: "refresh-cw",
+      offline: "wifi-off",
+      error: "alert-circle",
+      pending: "clock"
+    };
+    const iconName = iconNames[state] || "clock";
+    icon.innerHTML = `<i data-lucide="${iconName}"></i>`;
+    if (window.lucide && typeof window.lucide.createIcons === "function") {
+      window.lucide.createIcons();
+    }
+  }
   if (labelEl) labelEl.textContent = label;
   if (captionEl) captionEl.textContent = caption || "";
   if (detailEl) {
@@ -733,12 +746,12 @@ function updateSyncStatus() {
       ? `${pendingForDate} perubahan menunggu koneksi`
       : `Sinkronisasi terakhir: ${lastText}`, "", pendingForDate > 0);
   } else if (syncInProgress) {
-    setSyncStatus("syncing", "Sinkronisasi sedang berlangsung", "Mengirim perubahan ke server", "", false);
+    setSyncStatus("syncing", "Menyimpan perubahan…", "Menyimpan perubahan ke server…", "", false);
   } else if (pendingForDate > 0) {
     setSyncStatus("pending", `Menunggu sinkronisasi (${pendingForDate})`,
       `Sinkronisasi terakhir: ${lastText}`, "", true);
   } else {
-    setSyncStatus("saved", "Tersinkron", `Sinkronisasi terakhir: ${lastText}`, "", false);
+    setSyncStatus("saved", "Tersimpan", `Sinkronisasi terakhir: ${lastText}`, "", false);
   }
 }
 
