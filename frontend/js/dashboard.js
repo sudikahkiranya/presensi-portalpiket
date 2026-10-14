@@ -713,7 +713,10 @@ function setSyncStatus(state, label, caption, detail, showRetry = false) {
   if (icon) icon.textContent = state === "saved" ? "✓" : state === "syncing" ? "↻" : (state === "offline" ? "×" : state === "error" ? "!" : "…");
   if (labelEl) labelEl.textContent = label;
   if (captionEl) captionEl.textContent = caption || "";
-  if (detailEl) detailEl.textContent = detail || "";
+  if (detailEl) {
+    detailEl.textContent = detail || "";
+    detailEl.hidden = !detail;
+  }
   if (retry) retry.hidden = !showRetry;
 }
 
@@ -722,36 +725,24 @@ function updateSyncStatus() {
   const date = getSelectedAttendanceDate();
   const pendingForDate = queue.filter(item => !item.tanggal || item.tanggal === date).length;
   const lastSync = lastSuccessfulSyncByDate[date];
+  const online = navigator.onLine;
+  const lastText = lastSync ? formatSyncDateTime(lastSync) : "#N/A";
 
-  if (!navigator.onLine) {
-    setSyncStatus("offline", "Offline", "Perubahan belum tersinkron",
-      pendingForDate ? `${pendingForDate} perubahan menunggu koneksi` : (lastSync ? formatSyncDateTime(lastSync) : "Belum ada sinkronisasi"),
-      pendingForDate > 0);
+  if (!online) {
+    setSyncStatus("offline", "Offline", pendingForDate
+      ? `${pendingForDate} perubahan menunggu koneksi`
+      : `Sinkronisasi terakhir: ${lastText}`, "", pendingForDate > 0);
   } else if (syncInProgress) {
-    setSyncStatus("syncing", "Menyinkronkan…", "Sinkronisasi sedang berlangsung",
-      pendingForDate ? `${pendingForDate} perubahan dalam antrean` : "Mengirim perubahan ke server");
+    setSyncStatus("syncing", "Sinkronisasi sedang berlangsung", "Mengirim perubahan ke server", "", false);
   } else if (pendingForDate > 0) {
-    setSyncStatus("pending", `Menunggu sinkronisasi (${pendingForDate})`, "Perubahan belum seluruhnya tersimpan",
-      lastSync ? `Terakhir berhasil: ${formatSyncDateTime(lastSync)}` : "Belum ada sinkronisasi berhasil", true);
+    setSyncStatus("pending", `Menunggu sinkronisasi (${pendingForDate})`,
+      `Sinkronisasi terakhir: ${lastText}`, "", true);
   } else {
-    setSyncStatus("saved", "Tersinkron", "Sinkronisasi terakhir",
-      lastSync ? formatSyncDateTime(lastSync) : "Belum ada sinkronisasi");
+    setSyncStatus("saved", "Tersinkron", `Sinkronisasi terakhir: ${lastText}`, "", false);
   }
 }
 
 function updateConnectionStatus() {
-  const el = document.getElementById("connectionStatus");
-  if (!el) return;
-  const label = el.querySelector(".connection-label");
-  el.classList.remove("is-offline", "is-checking");
-  if (navigator.onLine) {
-    if (label) label.textContent = "Online";
-    el.title = "Koneksi jaringan terdeteksi; server diverifikasi saat ada permintaan.";
-  } else {
-    el.classList.add("is-offline");
-    if (label) label.textContent = "Offline";
-    el.title = "Koneksi jaringan terputus.";
-  }
   updateSyncStatus();
 }
 
