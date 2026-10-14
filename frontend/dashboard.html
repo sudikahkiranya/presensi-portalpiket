@@ -11,14 +11,14 @@
   <link rel="stylesheet" href="./css/style.css">
 
   <style>
-    .sync-status-panel{display:inline-flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;width:max-content;min-width:0;max-width:100%;box-sizing:border-box;padding:9px 13px;border:1px solid #c7e3d0;border-radius:12px;background:#f1faf4;color:#21663a;font-size:12px;line-height:1.35}
+    .sync-status-panel{display:inline-flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;width:max-content;min-width:0;min-height:56px;max-width:100%;box-sizing:border-box;padding:9px 13px;border:1px solid #c7e3d0;border-radius:12px;background:#f1faf4;color:#21663a;font-size:12px;line-height:1.35}
     .sync-status-main{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;white-space:nowrap}
     #syncStatusIcon svg{width:17px;height:17px;stroke-width:2.2}
     .sync-status-icon{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;flex:0 0 17px;border-radius:50%;background:#d9f0e0;color:#21854a;font-size:12px;font-weight:700}
     .sync-mini-spinner{display:block;width:10px;height:10px;box-sizing:border-box;border:1.5px solid rgba(217,154,23,.25);border-top-color:#d99a17;border-radius:50%;animation:syncRotate .75s linear infinite}
     .sync-status-panel[data-state="syncing"] .sync-status-icon{background:#ffedc2;color:#9a6700}
     .sync-status-dot{width:7px;height:7px;flex:0 0 7px;margin-left:1px;border-radius:50%;background:#22a447;animation:syncOnlinePulse 2.2s ease-out infinite}
-    .sync-status-detail{display:block;color:#52745d;font-size:11px;white-space:nowrap}
+    .sync-status-detail{display:block;min-height:15px;line-height:15px;color:#52745d;font-size:11px;white-space:nowrap}.sync-status-detail:empty::after{content:"\00a0";visibility:hidden}
     .sync-status-detail span{display:inline}
     .sync-status-panel[data-state="pending"],.sync-status-panel[data-state="syncing"]{border-color:#f0d9a7;background:#fff9eb;color:#8a5b08}
     .sync-status-panel[data-state="pending"] .sync-status-icon,.sync-status-panel[data-state="syncing"] #syncStatusIcon svg{animation:syncRotate 1.2s linear infinite}

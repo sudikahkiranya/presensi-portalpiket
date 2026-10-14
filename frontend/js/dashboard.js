@@ -732,8 +732,9 @@ function setSyncStatus(state, label, caption, detail, showRetry = false) {
     }
   }
   if (labelEl) labelEl.textContent = label;
-  // Saat menyimpan, cukup tampilkan teks utama dan spinner; hindari deskripsi berulang.
-  if (captionEl) captionEl.textContent = state === "syncing" ? "" : (caption || "");
+  // Pertahankan area caption tetap ada agar tinggi panel tidak berubah antarstatus.
+  // Saat menyimpan, isinya dikosongkan secara visual tanpa menghilangkan ruangnya.
+  if (captionEl) captionEl.textContent = state === "syncing" ? "\u00a0" : (caption || "\u00a0");
   if (detailEl) {
     detailEl.textContent = detail || "";
     detailEl.hidden = !detail;
