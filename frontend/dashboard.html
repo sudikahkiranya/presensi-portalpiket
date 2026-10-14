@@ -9,6 +9,31 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./css/style.css">
+
+  <style>
+    .connection-status{display:inline-flex;align-items:center;justify-content:flex-end;gap:6px;margin-top:3px;font-size:11px;line-height:1.3;color:#21854a;white-space:nowrap}
+    .connection-dot{width:7px;height:7px;flex:0 0 7px;border-radius:50%;background:#22a447;box-shadow:0 0 0 0 rgba(34,164,71,.35);animation:connectionPulse 2.2s ease-out infinite}
+    .connection-status.is-offline{color:#b42318}.connection-status.is-offline .connection-dot{background:#d92d20;box-shadow:none;animation:none}
+    .connection-status.is-checking{color:#64748b}.connection-status.is-checking .connection-dot{background:#94a3b8;box-shadow:none;animation:none}
+    @keyframes connectionPulse{0%{box-shadow:0 0 0 0 rgba(34,164,71,.35)}70%{box-shadow:0 0 0 5px rgba(34,164,71,0)}100%{box-shadow:0 0 0 0 rgba(34,164,71,0)}}
+    .sync-status-panel{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;min-width:220px;max-width:310px;box-sizing:border-box;padding:10px 14px;border:1px solid #c7e3d0;border-radius:12px;background:#f1faf4;color:#21663a;font-size:12px;line-height:1.35}
+    .sync-status-main{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600}
+    .sync-status-icon{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;border-radius:50%;background:#d9f0e0;color:#21854a;font-size:12px;font-weight:700}
+    .sync-status-dot{width:7px;height:7px;margin-left:1px;border-radius:50%;background:#22a447}
+    .sync-status-detail{display:flex;flex-direction:column;gap:1px;color:#52745d;font-size:11px}.sync-status-detail span:last-child{font-weight:500}
+    .sync-status-panel[data-state="pending"],.sync-status-panel[data-state="syncing"]{border-color:#f0d9a7;background:#fff9eb;color:#8a5b08}
+    .sync-status-panel[data-state="pending"] .sync-status-icon,.sync-status-panel[data-state="syncing"] .sync-status-icon{background:#ffedc2;color:#9a6700}
+    .sync-status-panel[data-state="pending"] .sync-status-dot,.sync-status-panel[data-state="syncing"] .sync-status-dot{background:#d99a17}
+    .sync-status-panel[data-state="error"],.sync-status-panel[data-state="offline"]{border-color:#f2c8c5;background:#fff4f3;color:#a12a22}
+    .sync-status-panel[data-state="error"] .sync-status-icon,.sync-status-panel[data-state="offline"] .sync-status-icon{background:#fce1df;color:#b42318}
+    .sync-status-panel[data-state="error"] .sync-status-dot,.sync-status-panel[data-state="offline"] .sync-status-dot{background:#d92d20}
+    .sync-status-panel[data-state="syncing"] .sync-status-icon{animation:syncRotate 1.1s linear infinite}
+    .sync-retry-button{padding:4px 9px;border:1px solid currentColor;border-radius:7px;background:transparent;color:inherit;font:inherit;font-weight:600;cursor:pointer}
+    .sync-retry-button[hidden]{display:none!important}@keyframes syncRotate{to{transform:rotate(360deg)}}
+    @media(max-width:760px){.sync-status-panel{min-width:0;max-width:100%;width:100%}.right-action{width:100%}.connection-status{font-size:10px}}
+    @media(prefers-reduced-motion:reduce){.connection-dot,.sync-status-panel[data-state="syncing"] .sync-status-icon{animation:none}}
+  </style>
+
 </head>
 <body class="dashboard-body">
 
@@ -72,7 +97,11 @@
     <div style="display: flex; align-items: center; gap: 12px;">
       <div style="text-align: right;">
         <div style="font-weight: 600; font-size: 13px;" id="petugasPiket">👤 -</div>
-        <div style="font-size: 12px; color: #006D77;" id="roleUser">🟢 -</div>
+        <div style="font-size: 12px; color: #006D77;" id="roleUser">🟣 -</div>
+        <div id="connectionStatus" class="connection-status" role="status" aria-live="polite">
+          <span class="connection-dot" aria-hidden="true"></span>
+          <span class="connection-label">Memeriksa koneksi…</span>
+        </div>
       </div>
       <button onclick="logout()" title="Logout" aria-label="Logout" class="btn-logout">
         <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -172,14 +201,18 @@
         </div>
 
         <div class="right-action">
-          <button type="submit">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-              <polyline points="17 21 17 13 7 13 7 21"></polyline>
-              <polyline points="7 3 7 8 15 8"></polyline>
-            </svg>
-            Tersimpan
-          </button>
+          <div id="syncStatusPanel" class="sync-status-panel" data-state="saved" role="status" aria-live="polite">
+            <div class="sync-status-main">
+              <span id="syncStatusIcon" class="sync-status-icon" aria-hidden="true">✓</span>
+              <span id="syncStatusLabel">Tersinkron</span>
+              <span id="syncStatusDot" class="sync-status-dot" aria-hidden="true"></span>
+            </div>
+            <div class="sync-status-detail">
+              <span id="syncStatusCaption">Sinkronisasi terakhir</span>
+              <span id="syncLastUpdated">Belum ada sinkronisasi</span>
+            </div>
+            <button type="button" id="retrySyncButton" class="sync-retry-button" onclick="handleSubmit(event)" hidden>Coba lagi</button>
+          </div>
         </div>
       </div>
 

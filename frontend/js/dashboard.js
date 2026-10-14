@@ -64,6 +64,7 @@ function initFormPiket() {
 
   setPetugasPiket(user.nama);
   setRoleUser(user.role);
+  initSyncStatus();
   updatePendingBadge();
 
   if (user.role === "Admin") {
@@ -187,6 +188,7 @@ async function fetchData(selectedDate) {
 
     initFilters(window.dataSiswa);
     applyFilter();
+    updateSyncStatus();
 
     hideLoading();
 
@@ -670,6 +672,110 @@ function renderPagination(total) {
 let syncTimer = null;
 let syncInProgress = false;
 
+
+// ============================================================
+// STATUS KONEKSI & SINKRONISASI
+// ============================================================
+let lastSuccessfulSyncByDate = {};
+
+function getSelectedAttendanceDate() {
+  const user = JSON.parse(localStorage.getItem("piket_user") || "null");
+  if (user && user.role === "Admin") {
+    const dateInput = document.getElementById("selectedDate");
+    if (dateInput && dateInput.value) return dateInput.value;
+    const savedDate = sessionStorage.getItem("piket_selected_date");
+    if (savedDate) return savedDate;
+  }
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().split("T")[0];
+}
+
+function formatSyncDateTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString("id-ID", {
+    day:"2-digit", month:"short", year:"numeric",
+    hour:"2-digit", minute:"2-digit", second:"2-digit", hour12:false
+  }).replace(/\./g, ":");
+}
+
+function setSyncStatus(state, label, caption, detail, showRetry = false) {
+  const panel = document.getElementById("syncStatusPanel");
+  if (!panel) return;
+  const icon = document.getElementById("syncStatusIcon");
+  const labelEl = document.getElementById("syncStatusLabel");
+  const captionEl = document.getElementById("syncStatusCaption");
+  const detailEl = document.getElementById("syncLastUpdated");
+  const retry = document.getElementById("retrySyncButton");
+  panel.dataset.state = state;
+  if (icon) icon.textContent = state === "saved" ? "✓" : state === "syncing" ? "↻" : (state === "offline" ? "×" : state === "error" ? "!" : "…");
+  if (labelEl) labelEl.textContent = label;
+  if (captionEl) captionEl.textContent = caption || "";
+  if (detailEl) detailEl.textContent = detail || "";
+  if (retry) retry.hidden = !showRetry;
+}
+
+function updateSyncStatus() {
+  const queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
+  const date = getSelectedAttendanceDate();
+  const pendingForDate = queue.filter(item => !item.tanggal || item.tanggal === date).length;
+  const lastSync = lastSuccessfulSyncByDate[date];
+
+  if (!navigator.onLine) {
+    setSyncStatus("offline", "Offline", "Perubahan belum tersinkron",
+      pendingForDate ? `${pendingForDate} perubahan menunggu koneksi` : (lastSync ? formatSyncDateTime(lastSync) : "Belum ada sinkronisasi"),
+      pendingForDate > 0);
+  } else if (syncInProgress) {
+    setSyncStatus("syncing", "Menyinkronkan…", "Sinkronisasi sedang berlangsung",
+      pendingForDate ? `${pendingForDate} perubahan dalam antrean` : "Mengirim perubahan ke server");
+  } else if (pendingForDate > 0) {
+    setSyncStatus("pending", `Menunggu sinkronisasi (${pendingForDate})`, "Perubahan belum seluruhnya tersimpan",
+      lastSync ? `Terakhir berhasil: ${formatSyncDateTime(lastSync)}` : "Belum ada sinkronisasi berhasil", true);
+  } else {
+    setSyncStatus("saved", "Tersinkron", "Sinkronisasi terakhir",
+      lastSync ? formatSyncDateTime(lastSync) : "Belum ada sinkronisasi");
+  }
+}
+
+function updateConnectionStatus() {
+  const el = document.getElementById("connectionStatus");
+  if (!el) return;
+  const label = el.querySelector(".connection-label");
+  el.classList.remove("is-offline", "is-checking");
+  if (navigator.onLine) {
+    if (label) label.textContent = "Online";
+    el.title = "Koneksi jaringan terdeteksi; server diverifikasi saat ada permintaan.";
+  } else {
+    el.classList.add("is-offline");
+    if (label) label.textContent = "Offline";
+    el.title = "Koneksi jaringan terputus.";
+  }
+  updateSyncStatus();
+}
+
+function recordSuccessfulSync(item) {
+  const date = (item && item.tanggal) || getSelectedAttendanceDate();
+  lastSuccessfulSyncByDate[date] = new Date().toISOString();
+  try {
+    localStorage.setItem("piket_last_successful_sync_by_date", JSON.stringify(lastSuccessfulSyncByDate));
+  } catch (err) {
+    console.warn("[Sync] Tidak dapat menyimpan riwayat waktu sinkronisasi.", err);
+  }
+  updateSyncStatus();
+}
+
+function initSyncStatus() {
+  try {
+    lastSuccessfulSyncByDate = JSON.parse(localStorage.getItem("piket_last_successful_sync_by_date") || "{}") || {};
+  } catch (err) {
+    lastSuccessfulSyncByDate = {};
+  }
+  updateConnectionStatus();
+  updateSyncStatus();
+}
+
 function processStatusChange(rowIndex, newValue, tanggal) {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   const piketID = user ? user.nama : "Petugas";
@@ -697,6 +803,7 @@ function processStatusChange(rowIndex, newValue, tanggal) {
 
   localStorage.setItem("piket_pending_updates", JSON.stringify(queue));
   updatePendingBadge();
+  updateSyncStatus();
 
   clearTimeout(syncTimer);
   syncTimer = setTimeout(() => triggerAutoSync(), 1500); 
@@ -737,6 +844,7 @@ async function syncPendingUpdates(showOverlay = false) {
   }
 
   syncInProgress = true;
+  updateSyncStatus();
   let synced = 0;
   let failed = false;
 
@@ -803,6 +911,7 @@ async function syncPendingUpdates(showOverlay = false) {
           JSON.stringify(currentQueue)
         );
 
+        recordSuccessfulSync(item);
         synced++;
       }
 
@@ -832,6 +941,8 @@ async function syncPendingUpdates(showOverlay = false) {
     if (showOverlay) hideLoading();
 
     updatePendingBadge();
+    updateConnectionStatus();
+    updateSyncStatus();
   }
 
   const remaining = JSON.parse(
@@ -894,97 +1005,18 @@ async function handleSubmit(e) {
 }
 
 window.addEventListener("online", () => {
+  updateConnectionStatus();
   showToast("Koneksi terhubung kembali. Menyingkronkan data...", "info");
   triggerAutoSync();
 });
 
 window.addEventListener("offline", () => {
+  updateConnectionStatus();
   showToast("Koneksi terputus. Mode Offline aktif.", "error");
 });
 
 function updatePendingBadge() {
-  let queue = JSON.parse(
-    localStorage.getItem("piket_pending_updates") || "[]"
-  );
-
-  const pendingCount = queue.length;
-
-  const saveBtn = document.querySelector(
-    "#absenForm button[type='submit']"
-  );
-
-  if (!saveBtn) return;
-
-  // IKON DISKET - STATUS TERSIMPAN
-  const iconDisket = `
-    <svg xmlns="http://www.w3.org/2000/svg"
-         width="16"
-         height="16"
-         viewBox="0 0 24 24"
-         fill="none"
-         stroke="currentColor"
-         stroke-width="2"
-         stroke-linecap="round"
-         stroke-linejoin="round"
-         aria-hidden="true">
-      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
-      <polyline points="17 21 17 13 7 13 7 21"></polyline>
-      <polyline points="7 3 7 8 15 8"></polyline>
-    </svg>
-  `;
-
-  // IKON REFRESH - STATUS SYNC
-  const iconSync = `
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    class="sync-spinning"
-    width="16"
-    height="16"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    stroke-width="2"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    aria-hidden="true"
-  >
-    <polyline points="23 4 23 10 17 10"></polyline>
-    <polyline points="1 20 1 14 7 14"></polyline>
-    <path d="M3.51 9a9 9 0 0 1 14.13-3.36L23 10"></path>
-    <path d="M20.49 15a9 9 0 0 1-14.13 3.36L1 14"></path>
-  </svg>
-`;
-
-  // ATUR STATUS TOMBOL
-  saveBtn.disabled = pendingCount === 0;
-
-  saveBtn.style.opacity = pendingCount > 0 ? "1" : "0.5";
-
-  saveBtn.style.background = pendingCount > 0
-    ? "#dd9787"
-    : "#006D77";
-
-  // ATUR POSISI IKON DAN TEKS
-  saveBtn.style.display = "inline-flex";
-  saveBtn.style.alignItems = "center";
-  saveBtn.style.justifyContent = "center";
-  saveBtn.style.gap = "8px";
-
-  // PASTIKAN IKON TIDAK MENYUSUT
-  saveBtn.style.whiteSpace = "nowrap";
-
-  // TAMPILKAN IKON SESUAI STATUS
-  if (pendingCount > 0) {
-    saveBtn.innerHTML = `
-      ${iconSync}
-      <span>Sync (${pendingCount})</span>
-    `;
-  } else {
-    saveBtn.innerHTML = `
-      ${iconDisket}
-      <span>Tersimpan</span>
-    `;
-  }
+  updateSyncStatus();
 }
 
 // async function handleSubmit(e) {
