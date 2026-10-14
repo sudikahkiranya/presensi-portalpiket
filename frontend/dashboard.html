@@ -20,6 +20,8 @@
     .sync-status-detail span{display:inline}
     .sync-status-panel[data-state="pending"],.sync-status-panel[data-state="syncing"]{border-color:#f0d9a7;background:#fff9eb;color:#8a5b08}
     .sync-status-panel[data-state="pending"] .sync-status-icon,.sync-status-panel[data-state="syncing"] #syncStatusIcon svg{animation:syncRotate 1.2s linear infinite}
+    .sync-status-panel[data-state="syncing"] .sync-status-icon{animation:syncRotate 1.2s linear infinite}
+    .sync-status-panel[data-state="syncing"] #syncStatusIcon svg{animation:syncRotate 1.2s linear infinite}
     .sync-status-panel[data-state="syncing"] .sync-status-icon{background:#ffedc2;color:#9a6700}
     .sync-status-panel[data-state="pending"] .sync-status-dot,.sync-status-panel[data-state="syncing"] .sync-status-dot{background:#d99a17;animation:none}
     .sync-status-panel[data-state="error"],.sync-status-panel[data-state="offline"]{border-color:#f2c8c5;background:#fff4f3;color:#a12a22}

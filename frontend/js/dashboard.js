@@ -718,10 +718,21 @@ function setSyncStatus(state, label, caption, detail, showRetry = false) {
       error: "alert-circle",
       pending: "clock"
     };
+    const fallbackIcons = {
+      saved: "✓",
+      syncing: "⟳",
+      offline: "×",
+      error: "!",
+      pending: "◷"
+    };
     const iconName = iconNames[state] || "clock";
-    icon.innerHTML = `<i data-lucide="${iconName}"></i>`;
+
     if (window.lucide && typeof window.lucide.createIcons === "function") {
+      icon.innerHTML = `<i data-lucide="${iconName}"></i>`;
       window.lucide.createIcons();
+    } else {
+      // Fallback supaya ikon tetap terlihat jika library gagal dimuat.
+      icon.textContent = fallbackIcons[state] || "◷";
     }
   }
   if (labelEl) labelEl.textContent = label;
