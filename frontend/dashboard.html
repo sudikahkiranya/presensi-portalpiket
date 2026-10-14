@@ -57,7 +57,8 @@
 <!-- NOTIF MODAL -->
 <div id="notifModal" class="modal-overlay">
   <div class="modal-box">
-    <h3>✅ Rekap Presensi Hari Ini selesai dibuat</h3>
+    <h3 id="notifTitle">✅ Rekap Presensi Hari Ini selesai dibuat</h3>
+    <p id="notifMessage" hidden></p>
     <p><a id="pdfLink" href="#" target="_blank">Lihat Rekap PDF</a></p>
     <div style="margin-top:15px; display:flex; flex-direction:column; gap:8px;">
       <button type="button" id="btnKirimWA" onclick="kirimRekapGrupWA()">

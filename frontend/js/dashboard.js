@@ -846,6 +846,7 @@ function processStatusChange(rowIndex, newValue, tanggal) {
   if (existingIdx > -1) {
     queue[existingIdx].statusMasuk = newValue;
     queue[existingIdx].timestamp = timestamp;
+    if (targetSiswa) queue[existingIdx].namaSiswa = targetSiswa.nama || targetSiswa.Nama || targetSiswa.namaSiswa || queue[existingIdx].namaSiswa || "Siswa";
     if (tanggal) queue[existingIdx].tanggal = tanggal;
   } else {
     queue.push({
@@ -853,6 +854,7 @@ function processStatusChange(rowIndex, newValue, tanggal) {
       statusMasuk: newValue,
       piketID: piketID,
       tanggal: tanggal || (targetSiswa ? targetSiswa.tanggal : ""),
+      namaSiswa: targetSiswa ? (targetSiswa.nama || targetSiswa.Nama || targetSiswa.namaSiswa || "Siswa") : "Siswa",
       timestamp: timestamp
     });
   }
@@ -911,6 +913,7 @@ async function syncPendingUpdates(showOverlay = false) {
 
   syncInProgress = true;
   let synced = 0;
+  const syncedNames = [];
   let failed = false;
   updateSyncStatus();
 
@@ -938,7 +941,7 @@ async function syncPendingUpdates(showOverlay = false) {
         "syncing",
         totalRemaining > 1 ? `Menyimpan ${totalRemaining} data...` : "Menyimpan 1 data...",
         "",
-        "",
+        `Memproses: ${item.namaSiswa || item.nama || "data siswa"}`,
         false
       );
 
@@ -990,6 +993,7 @@ async function syncPendingUpdates(showOverlay = false) {
       // Request ini dikonfirmasi sukses oleh server walaupun antrean lokal sudah berubah.
       recordSuccessfulSync(item);
       synced++;
+      syncedNames.push(item.namaSiswa || item.nama || "Siswa");
 
       // Update angka setelah setiap penyimpanan sukses, termasuk countdown pada panel.
       updatePendingBadge();
@@ -1045,6 +1049,11 @@ async function syncPendingUpdates(showOverlay = false) {
     localStorage.getItem("piket_pending_updates") || "[]"
   ).length;
 
+  // Tampilkan satu modal ringkasan setelah seluruh antrean selesai, baik autosave maupun simpan manual.
+  if (synced > 0 && !failed && remaining === 0) {
+    showSyncResultModal(syncedNames, synced);
+  }
+
   // Tangani perubahan yang masuk tepat saat loop sebelumnya selesai.
   if (!failed && remaining > 0 && navigator.onLine) {
     queueMicrotask(() => triggerAutoSync());
@@ -1053,7 +1062,8 @@ async function syncPendingUpdates(showOverlay = false) {
   return {
     success: !failed && remaining === 0,
     synced,
-    remaining
+    remaining,
+    syncedNames
   };
 }
 
@@ -1087,10 +1097,7 @@ async function handleSubmit(e) {
   ).length;
 
   if (result.success) {
-    showToast(
-      `Berhasil menyinkronkan ${result.synced} data!`,
-      "success"
-    );
+    // Modal hasil ditampilkan oleh syncPendingUpdates setelah seluruh antrean selesai.
   } else if (!navigator.onLine || result.offline) {
     showToast(
       `Offline. ${remaining} data tetap tersimpan di perangkat.`,
@@ -1278,7 +1285,43 @@ function logout() {
   window.location.replace("index.html");
 }
 
-function closeNotif() { document.getElementById("notifModal")?.classList.remove("active"); }
+function showSyncResultModal(names = [], count = 0) {
+  const modal = document.getElementById("notifModal");
+  const title = document.getElementById("notifTitle");
+  const message = document.getElementById("notifMessage");
+  const pdfLink = document.getElementById("pdfLink");
+  const waButton = document.getElementById("btnKirimWA");
+  if (!modal) {
+    showToast(`Berhasil menyimpan ${count} data.`, "success");
+    return;
+  }
+  if (title) title.textContent = count === 1 ? "✅ Data berhasil disimpan" : `✅ ${count} data berhasil disimpan`;
+  if (message) {
+    const uniqueNames = [...new Set(names.filter(Boolean))];
+    message.textContent = uniqueNames.length === 1
+      ? `Update data ${uniqueNames[0]} berhasil disimpan.`
+      : uniqueNames.length > 1
+        ? `Berhasil menyimpan data: ${uniqueNames.join(", ")}.`
+        : `Berhasil menyimpan ${count} data.`;
+  }
+  if (pdfLink) pdfLink.parentElement.hidden = true;
+  if (waButton) waButton.hidden = true;
+  modal.dataset.mode = "sync-result";
+  modal.classList.add("active");
+}
+
+function closeNotif() {
+  const modal = document.getElementById("notifModal");
+  if (!modal) return;
+  if (modal.dataset.mode === "sync-result") {
+    const pdfLink = document.getElementById("pdfLink");
+    const waButton = document.getElementById("btnKirimWA");
+    if (pdfLink) pdfLink.parentElement.hidden = false;
+    if (waButton) waButton.hidden = false;
+    delete modal.dataset.mode;
+  }
+  modal.classList.remove("active");
+}
 function closeError() { document.getElementById("errorModal")?.classList.remove("active"); }
 function closeConfirm() { document.getElementById("confirmModal")?.classList.remove("active"); }
 
