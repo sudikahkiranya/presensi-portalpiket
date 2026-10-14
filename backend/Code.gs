@@ -23,7 +23,10 @@ function doPost(e) {
       case "kirimRekapGrupPiketDirect":
         responseData = kirimRekapGrupPiketDirect(data.tanggal, data.namaPetugas, data.pdfUrl);
         break;
-      default:
+      case "cetakRekapPdf":
+        responseData = cetakRekapPdfDirect(data.tanggal, data.namaPetugas);
+        break;
+      default:  
         responseData = { success: false, message: "Action POST tidak dikenali." };
     }
 
@@ -40,22 +43,74 @@ function doPost(e) {
 
 function doGet(e) {
   try {
-    const action = e.parameter.action;
+    const action = e.parameter ? e.parameter.action : "";
     let responseData = {};
 
     switch (action) {
       case "getSiswaHariIni":
         responseData = getSiswaHariIni();
         break;
+
       case "getSiswaByTanggal":
         responseData = getSiswaByTanggal(e.parameter.tanggal);
         break;
+
       case "cekStatusKosongHariIni":
-        responseData = cekStatusKosongHariIni(e.parameter.tanggal);
+        responseData = { 
+          success: true, 
+          result: cekStatusKosongHariIni(e.parameter.tanggal) 
+        };
         break;
-      case "getDashboardKonfirmasiWaliKelas":
-        responseData = getDashboardKonfirmasiWaliKelas();
+
+      case "buatRekapPresensiHarian":
+        try {
+          // 1. Panggil pembuat rekap (berjalan di background jika async)
+          var pdfUrlResult = buatRekapPresensiHarian(e.parameter.namaPetugas, e.parameter.tanggal);
+          
+          // 2. Jika return-nya Promise (Async), langsung flush & tangkap link dari Sheet
+          if (pdfUrlResult && typeof pdfUrlResult.then === 'function') {
+            pdfUrlResult.catch(function(err) {
+              Logger.log("❌ Error Background PDF: " + err);
+            });
+
+            // Beri dorongan sekali agar tugas langsung terdaftar di V8 Engine
+            SpreadsheetApp.flush();
+
+            // Ambil URL file PDF terbaru dari log sheet
+            var latestUrl = getLatestRekapUrl();
+            if (latestUrl) {
+              responseData = { success: true, result: latestUrl };
+            } else {
+              // Fallback jika belum sempat tercatat dalam hitungan milidetik
+              responseData = { 
+                success: true, 
+                result: "https://drive.google.com/drive/folders/16TQT8GmnrYzmqam-UK59G4q6rfx6Lkoa" 
+              };
+            }
+          } else {
+            responseData = { success: true, result: pdfUrlResult };
+          }
+        } catch (err) {
+          responseData = { success: false, message: err.message || err.toString() };
+        }
         break;
+
+      case "kirimRekapGrupWA":
+        try {
+          const petugasWA = e.parameter.namaPetugas || "Petugas Piket";
+          const tglWA = e.parameter.tanggal || "";
+          const pdfWA = e.parameter.pdfUrl || "";
+          
+          responseData = kirimRekapPresensiWA(tglWA, petugasWA, pdfWA);
+        } catch (err) {
+          responseData = { success: false, message: err.message || err.toString() };
+        }
+        break;
+
+      case "tarikDataEngine":
+        responseData = pemicuTarikDataPool();
+        break;
+
       default:
         responseData = { success: false, message: "Action GET tidak dikenali." };
     }
@@ -68,6 +123,91 @@ function doGet(e) {
     return ContentService
       .createTextOutput(JSON.stringify({ success: false, message: err.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+/**
+ * MEMBACA KONFIGURASI SISTEM DARI SHEET 'config_sistem' (KEY-VALUE VERTIKAL)
+ * Dilengkapi CacheService (10 menit) untuk performa instan.
+ * @return {object} Key-Value konfigurasi sistem
+ */
+function getSystemConfig() {
+  try {
+    const cache = CacheService.getScriptCache();
+    const cachedConfig = cache.get("system_config");
+
+    // 1. Jika config tersimpan di cache, langsung gunakan data cache (Super Fast!)
+    if (cachedConfig) {
+      return JSON.parse(cachedConfig);
+    }
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("config_sistem");
+    if (!sheet) throw new Error("Sheet 'config_sistem' tidak ditemukan!");
+
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return {};
+
+    // 2. Baca Kolom A (Key) dan Kolom B (Value)
+    const data = sheet.getRange("A2:B" + lastRow).getValues();
+    const config = {};
+
+    data.forEach(row => {
+      const key = String(row[0] || "").trim();
+      const val = String(row[1] || "").trim();
+      if (key) {
+        config[key] = val;
+      }
+    });
+
+    // 3. Ekstraksi Otomatis Google Drive File ID dari logo_sekolah_url
+    if (config.logo_sekolah_url) {
+      const urlStr = config.logo_sekolah_url;
+      let fileId = "";
+
+      if (urlStr.includes("/d/")) {
+        fileId = urlStr.split("/d/")[1].split("/")[0];
+      } else if (urlStr.includes("id=")) {
+        fileId = urlStr.split("id=")[1].split("&")[0];
+      } else if (!urlStr.startsWith("http")) {
+        fileId = urlStr; // Jika yang diinput langsung File ID
+      }
+
+      config.logo_sekolah_id = fileId;
+    }
+
+    // 4. Simpan hasil parsing ke CacheService selama 10 menit (600 detik)
+    cache.put("system_config", JSON.stringify(config), 600);
+
+    return config;
+
+  } catch (err) {
+    Logger.log("❌ Error getSystemConfig: " + err.message);
+    return {};
+  }
+}
+
+/**
+ * HELPER OPSIONAL: MEMBERSIHKAN CACHE CONFIG
+ * Panggil fungsi ini jika kamu baru saja mengubah isi sheet 'config_sistem' 
+ * agar perubahan langsung terasa tanpa menunggu 10 menit.
+ */
+function clearSystemConfigCache() {
+  const cache = CacheService.getScriptCache();
+  cache.remove("system_config");
+  Logger.log("🧹 Cache config_sistem berhasil dibersihkan!");
+}
+
+// 💡 HELPER FUNCTION UNTUK MINTA ENGINE POOL JALANKAN UPDATE
+function pemicuTarikDataPool() {
+  try {
+    // 🔥 Tambahkan ?action=triggerSyncFromWeb di akhir URL
+    const URL_POOL_WEBAPP = "https://script.google.com/macros/s/AKfycbw7WOTtW3AIv0dP_8U_NYl-khh2rP7MQhPMc23Pisq8nPnrXSOJ27PqFDtGm-Mj8kTR6w/exec?action=triggerSyncFromWeb";
+    
+    const response = UrlFetchApp.fetch(URL_POOL_WEBAPP);
+    return JSON.parse(response.getContentText());
+  } catch (err) {
+    return { success: false, message: "Gagal memicu Engine Pool: " + err.toString() };
   }
 }
 
@@ -107,18 +247,137 @@ function verifikasiLoginPiket(idInput, kodeInput) {
 }
 
 /**
- * HELPER: MENGAMBIL SPREADSHEET PRESENSI TA YANG AKTIF
+ * 💡 HELPER MASTER: Ambil Config Seluruh Semester dengan Caching (1 Jam)
+ * Disesuaikan dengan struktur kolom config_semester
  */
-function getActivePresensiSpreadsheet() {
-  const activeSemester = getActiveSemesterConfig();
+/**
+ * 💡 1. AMBIL CONFIG ALL SEMESTERS (Mendukung Tipe Cell Date Google Sheets)
+ */
+function getAllSemestersConfig() {
+  const cache = CacheService.getScriptCache();
+  const cachedData = cache.get("ALL_SEMESTERS_CONFIG");
+
+  if (cachedData) {
+    return JSON.parse(cachedData);
+  }
+
+  const ssMaster = SpreadsheetApp.getActiveSpreadsheet(); 
+  const sheet = ssMaster.getSheetByName("config_semester");
+  if (!sheet) return [];
+
+  // Gunakan getValues() untuk mengambil nilai asli/objek Date
+  const rawData = sheet.getDataRange().getValues();
+  const displayData = sheet.getDataRange().getDisplayValues();
+  
+  rawData.shift();     // Hapus Header
+  displayData.shift(); // Hapus Header
+
+  const tz = ssMaster.getSpreadsheetTimeZone() || Session.getScriptTimeZone();
+
+  const semesters = rawData.map((row, idx) => {
+    const displayRow = displayData[idx];
+
+    // Helper sakti: mengubah tipe Date object / String apapun ke Integer YYYYMMDD
+    const cellToDateNum = (rawVal, displayVal) => {
+      let dateObj = null;
+
+      if (rawVal instanceof Date && !isNaN(rawVal.getTime())) {
+        dateObj = rawVal;
+      } else if (displayVal && typeof displayVal === "string") {
+        const clean = displayVal.trim();
+        if (clean.includes("/")) {
+          const [d, m, y] = clean.split("/");
+          return Number(`${y}${String(m).padStart(2, "0")}${String(d).padStart(2, "0")}`);
+        } else if (clean.includes("-")) {
+          const [y, m, d] = clean.split("-");
+          return Number(`${y}${String(m).padStart(2, "0")}${String(d).padStart(2, "0")}`);
+        }
+      }
+
+      if (dateObj) {
+        // Format ke "yyyyMMdd" menggunakan TimeZone spreadsheet
+        const formatted = Utilities.formatDate(dateObj, tz, "yyyyMMdd");
+        return Number(formatted);
+      }
+
+      return 0;
+    };
+
+    return {
+      id_semester: displayRow[0],
+      tahun_ajaran: displayRow[1],
+      nama_semester: displayRow[2],
+      startNum: cellToDateNum(row[3], displayRow[3]), // Kolom D: tanggal_mulai
+      endNum: cellToDateNum(row[4], displayRow[4]),   // Kolom E: tanggal_selesai
+      status: String(displayRow[5] || "").toUpperCase().trim(),
+      file_id_spreadsheet: String(displayRow[6] || "").trim()
+    };
+  });
+
+  // Simpan di Cache RAM selama 1 jam
+  cache.put("ALL_SEMESTERS_CONFIG", JSON.stringify(semesters), 3600);
+  return semesters;
+}
+
+/**
+ * 💡 LOADER SPREADSHEET DENGAN CONSOLE LOGGING DETIL
+ */
+function getPresensiSpreadsheet(tanggal) {
+  const semesters = getAllSemestersConfig();
+  Logger.log("=========================================");
+  Logger.log("🔍 [DEBUG] Parameter Tanggal Diterima: " + tanggal);
+  Logger.log("📚 [DEBUG] Total Config Semester Terload: " + semesters.length);
+
+  if (tanggal && semesters.length > 0) {
+    let targetNum = 0;
+
+    if (typeof tanggal === "string") {
+      let clean = tanggal.trim();
+      if (clean.includes("-")) { // Format ISO: YYYY-MM-DD
+        const [y, m, d] = clean.split("-");
+        targetNum = Number(`${y}${String(m).padStart(2, "0")}${String(d).padStart(2, "0")}`);
+      } else if (clean.includes("/")) { // Format Indo: DD/MM/YYYY
+        const [d, m, y] = clean.split("/");
+        targetNum = Number(`${y}${String(m).padStart(2, "0")}${String(d).padStart(2, "0")}`);
+      }
+    }
+
+    Logger.log("🔢 [DEBUG] Parsed Target Date Integer: " + targetNum);
+
+    if (targetNum > 0) {
+      const matched = semesters.find(sem => {
+        const isMatch = targetNum >= sem.startNum && targetNum <= sem.endNum;
+        Logger.log(`   -> Cek Semester: ID [${sem.id_semester}] | Range: [${sem.startNum} s/d ${sem.endNum}] | Status Match: ${isMatch}`);
+        return isMatch;
+      });
+
+      if (matched && matched.file_id_spreadsheet) {
+        Logger.log("✅ [DEBUG] MATCH FOUND! Buka Spreadsheet Semester ID: " + matched.id_semester + " | File ID: " + matched.file_id_spreadsheet);
+        return SpreadsheetApp.openById(matched.file_id_spreadsheet);
+      } else {
+        Logger.log("⚠️ [DEBUG] Tanggal cocok dengan semester, tapi file_id_spreadsheet KOSONG di config!");
+      }
+    }
+  }
+
+  // Fallback
+  Logger.log("⚠️ [DEBUG] NO MATCH FOUND / FALLBACK! Membuka Spreadsheet Semester Aktif...");
+  const activeSemester = semesters.find(s => s.status === "AKTIF");
   if (!activeSemester || !activeSemester.file_id_spreadsheet) {
     throw new Error("⚠️ Tidak ada Semester Aktif atau File ID Spreadsheet belum di-set di DB Master.");
   }
+
+  Logger.log("📌 [DEBUG] Buka Spreadsheet Semester Aktif: " + activeSemester.id_semester + " | File ID: " + activeSemester.file_id_spreadsheet);
   return SpreadsheetApp.openById(activeSemester.file_id_spreadsheet);
 }
 
+/* ==========================================================================
+   FUNGSI OPERASIONAL (Sudah Disesuaikan ke getPresensiSpreadsheet)
+   ========================================================================== */
+
 function getSiswaHariIni() {
-  const ss = getActivePresensiSpreadsheet();
+  // Tanpa parameter = Langsung fallback super cepat ke Semester Aktif
+  const ss = getPresensiSpreadsheet();
   const sheet = ss.getSheetByName("master_presensi");
   if (!sheet) return [];
 
@@ -136,7 +395,6 @@ function getSiswaHariIni() {
   const endRow = results[results.length - 1].getRow();
   const totalRows = (endRow - startRow) + 1;
 
-  // 💡 PERBAIKAN: Ambil 12 kolom penuh (A-L)
   const chunkData = sheet.getRange(startRow, 1, totalRows, 12).getDisplayValues();
   const resultData = [];
 
@@ -162,29 +420,50 @@ function getSiswaHariIni() {
   return resultData;
 }
 
+/**
+ * 💡 GET SISWA BY TANGGAL DENGAN LOGGING DETIL
+ */
 function getSiswaByTanggal(tanggal) {
-  const ss = getActivePresensiSpreadsheet();
+  if (!tanggal) return [];
+
+  let filterTanggal = "";
+  if (typeof tanggal === "string") {
+    if (tanggal.includes("-")) {
+      const [y, m, d] = tanggal.split("-");
+      filterTanggal = `${String(d).padStart(2, "0")}/${String(m).padStart(2, "0")}/${y}`;
+    } else {
+      filterTanggal = tanggal.trim();
+    }
+  }
+
+  Logger.log("🎯 [DEBUG] Mencari String Tanggal di Sheet: '" + filterTanggal + "'");
+
+  const ss = getPresensiSpreadsheet(tanggal);
+  Logger.log("📖 [DEBUG] Nama Spreadsheet Terbuka: " + ss.getName());
+
   const sheet = ss.getSheetByName("master_presensi");
-  if (!sheet) return [];
+  if (!sheet) {
+    Logger.log("❌ [DEBUG] ERROR: Sheet 'master_presensi' TIDAK DITEMUKAN di Spreadsheet ini!");
+    return [];
+  }
 
   const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return [];
-
-  let filterTanggal = tanggal;
-  if (tanggal && tanggal.includes("-")) {
-    const [y, m, d] = tanggal.split("-");
-    filterTanggal = `${d}/${m}/${y}`;
+  if (lastRow < 2) {
+    Logger.log("⚠️ [DEBUG] Sheet 'master_presensi' KOSONG (Last Row < 2)");
+    return [];
   }
 
   const finder = sheet.getRange("A2:A").createTextFinder(filterTanggal).matchEntireCell(true);
   const results = finder.findAll();
+  
+  Logger.log("📊 [DEBUG] Hasil Pencarian TextFinder: Ditemukan " + results.length + " baris data.");
+
   if (results.length === 0) return [];
 
   const startRow = results[0].getRow();
   const endRow = results[results.length - 1].getRow();
   const totalRows = (endRow - startRow) + 1;
 
-  // 💡 PERBAIKAN: Ambil 12 kolom penuh (A-L)
   const chunkData = sheet.getRange(startRow, 1, totalRows, 12).getDisplayValues();
   const resultData = [];
 
@@ -196,14 +475,14 @@ function getSiswaByTanggal(tanggal) {
         tanggal: row[0],
         idSiswa: row[1],
         nama: row[2],
-        kelas: row[3],       // id_rombel
-        tingkat: row[4],     // tingkat
-        jamMasuk: row[6],    // jam_masuk
+        kelas: row[3],       
+        tingkat: row[4],     
+        jamMasuk: row[6],    
         statusMasuk: row[7] || "",
-        jamPulang: row[8],   // jam_pulang
+        jamPulang: row[8],   
         statusPulang: row[9] || "",
-        idPiket: row[10],    // id_piket
-        keterangan: row[11]  // keterangan
+        idPiket: row[10],    
+        keterangan: row[11]  
       });
     }
   }
@@ -213,7 +492,9 @@ function getSiswaByTanggal(tanggal) {
 function simpanStatusMasuk(payload) {
   if (!payload || !Array.isArray(payload) || payload.length === 0) return { success: true };
 
-  const ss = getActivePresensiSpreadsheet();
+  // Ambil tanggal sampel dari payload jika ada untuk menentukan spreadsheet
+  const sampleTanggal = payload[0]?.tanggal;
+  const ss = getPresensiSpreadsheet(sampleTanggal);
   const sheet = ss.getSheetByName("master_presensi");
   if (!sheet) throw new Error("Sheet master_presensi tidak ditemukan.");
 
@@ -222,7 +503,6 @@ function simpanStatusMasuk(payload) {
   const maxRow = Math.max(...rowIndexes);
   const numRows = (maxRow - minRow) + 1;
 
-  // Range dari Kolom G (7) sampai K (11) = 5 Kolom
   const range = sheet.getRange(minRow, 7, numRows, 5); 
   const values = range.getValues();
 
@@ -234,574 +514,1050 @@ function simpanStatusMasuk(payload) {
     const piketID = item.piketID || "";
 
     if (["Sakit", "Izin", "Alpa", "Libur"].includes(newStatus)) {
-      values[arrayIndex][0] = ""; // Kosongkan jam_masuk (Kolom G)
+      values[arrayIndex][0] = ""; 
     }
-    values[arrayIndex][1] = newStatus; // status_masuk (Kolom H)
-    values[arrayIndex][4] = piketID;    // id_piket (Kolom K)
+    values[arrayIndex][1] = newStatus; 
+    values[arrayIndex][4] = piketID;    
   });
 
   range.setValues(values);
   return { success: true };
 }
 
+/**
+ * Memeriksa jumlah data presensi yang belum memiliki Status Masuk / masih "Belum Presensi" pada tanggal tertentu.
+ * DIOPTIMASI: Menggunakan Sheets API (Super Fast)
+ */
 function cekStatusKosongHariIni(tanggal) {
-  const ss = getActivePresensiSpreadsheet();
-  const sheet = ss.getSheetByName("master_presensi");
-  if (!sheet) return 0;
-
-  const lastRow = sheet.getLastRow();
-  const lastCol = sheet.getLastColumn();
-  if (lastRow < 2) return 0;
-
-  const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
-  const header = data[0].map(h => String(h).trim().toLowerCase());
-  
-  const idxTanggal = header.indexOf("tanggal");
-  const idxStatusMasuk = header.indexOf("status_masuk");
-
-  if (idxTanggal === -1 || idxStatusMasuk === -1) return 0;
-
-  let tanggalStr;
-  if (typeof tanggal === "string") {
-    if (tanggal.includes("-")) {
-      const p = tanggal.split("-");
-      // 💡 Tambahkan padStart agar hari & bulan selalu 2 digit (misal: 05/09/2026)
-      const d = String(p[2]).padStart(2, "0");
-      const m = String(p[1]).padStart(2, "0");
-      const y = p[0];
-      tanggalStr = `${d}/${m}/${y}`;
-    } else {
-      tanggalStr = tanggal;
-    }
-  } else if (tanggal instanceof Date) {
-    tanggalStr = Utilities.formatDate(tanggal, Session.getScriptTimeZone(), "dd/MM/yyyy");
-  } else {
-    throw new Error("Parameter tanggal tidak valid");
-  }
-
-  let jumlahKosong = 0;
-  for (let i = data.length - 1; i >= 1; i--) {
-    const row = data[i];
-    const tglCell = row[idxTanggal];
-    const tgl = tglCell instanceof Date 
-      ? Utilities.formatDate(tglCell, Session.getScriptTimeZone(), "dd/MM/yyyy")
-      : String(tglCell || "").trim();
-
-    if (tgl === tanggalStr) {
-      const status = String(row[idxStatusMasuk] || "").trim();
-      if (!status) jumlahKosong++;
-    } else if (jumlahKosong > 0) {
-      break;
-    }
-  }
-  return jumlahKosong;
-}
-
-/* =========================================================
-   HELPER & WALI KELAS NOTIFICATION FUNCTIONS
-========================================================= */
-
-function buatBufferKonfirmasiWaliKelas(namaPetugas) {
-  const BUFFER_ID = "1lLcUABGJxYFjt7j1XmsYPGsHN0N6LtCyuH2Gkdf77co";
-  const BUFFER_SHEET = "BufferWaliKelas";
-  const WALI_SHEET = "DataWaliKelas";
-
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheetPresensi = ss.getSheetByName("MasterPresensi");
-
-  const bufferSS = SpreadsheetApp.openById(BUFFER_ID);
-  const sheetWali = bufferSS.getSheetByName(WALI_SHEET);
-  const bufferSheet = bufferSS.getSheetByName(BUFFER_SHEET);
-
-  if (!sheetPresensi || !sheetWali || !bufferSheet) {
-    return { success: false, message: "Sheet data wali kelas / buffer tidak ditemukan." };
-  }
-
-  const tz = Session.getScriptTimeZone();
-  const now = new Date();
-  const todayStr = Utilities.formatDate(now, tz, "dd/MM/yyyy");
-  const timestamp = Utilities.formatDate(now, tz, "dd/MM/yyyy HH:mm:ss");
-  const batchId = "WK-" + Utilities.formatDate(now, tz, "yyyyMMdd-HHmmss");
-
-  const dataPresensi = sheetPresensi.getDataRange().getValues();
-  const headerP = dataPresensi[0];
-  const idxTanggal = headerP.indexOf("Tanggal");
-  const idxNama    = headerP.indexOf("Nama");
-  const idxKelas   = headerP.indexOf("Kelas");
-  const idxStatus  = headerP.indexOf("Status Masuk");
-
-  const kosongMap = {};
-  for (let i = dataPresensi.length - 1; i >= 1; i--) {
-    const row = dataPresensi[i];
-    const tgl = String(row[idxTanggal] || "").trim();
-    if (tgl !== todayStr) break;
-
-    const status = String(row[idxStatus] || "").trim();
-    if (status) continue;
-
-    const kelas = String(row[idxKelas] || "").trim().toUpperCase();
-    const nama  = String(row[idxNama] || "").trim();
-    if (!kelas || !nama) continue;
-
-    if (!kosongMap[kelas]) kosongMap[kelas] = [];
-    kosongMap[kelas].push(nama);
-  }
-
-  const daftarKosong = Object.keys(kosongMap);
-  daftarKosong.forEach(kelas => {
-    kosongMap[kelas].sort((a, b) => a.localeCompare(b, "id", { sensitivity: "base" }));
-  });
-
-  if (daftarKosong.length === 0) {
-    return { success: false, message: "Tidak ada status presensi kosong hari ini." };
-  }
-
-  const existingMap = {};
-  if (bufferSheet.getLastRow() >= 2) {
-    const dataBuffer = bufferSheet.getRange(2, 1, bufferSheet.getLastRow() - 1, 13).getValues();
-    for (let i = dataBuffer.length - 1; i >= 0; i--) {
-      const row = dataBuffer[i];
-      const valTgl = row[2];
-      const tgl = valTgl instanceof Date ? Utilities.formatDate(valTgl, tz, "dd/MM/yyyy") : String(valTgl || "").trim();
-      if (tgl !== todayStr) continue;
-
-      const kelas = String(row[4] || "").trim().toUpperCase();
-      const status = String(row[8] || "").trim().toLowerCase();
-      if (!kelas) continue;
-      if (!existingMap[kelas]) existingMap[kelas] = status;
-    }
-  }
-
-  const dataWali = sheetWali.getDataRange().getValues();
-  const headerW = dataWali[0];
-  const idxNamaWali  = headerW.indexOf("Nama");
-  const idxKelasWali = headerW.indexOf("Kelas");
-  const idxNoHp      = headerW.indexOf("No HP");
-
-  const rowsToInsert = [];
-  let totalSkip = 0;
-
-  for (let i = 1; i < dataWali.length; i++) {
-    const row = dataWali[i];
-    const namaWali = String(row[idxNamaWali] || "").trim();
-    const noHp = normalisasiWa(row[idxNoHp]);
-    const kelasCell = String(row[idxKelasWali] || "").trim();
-    if (!namaWali || !noHp || !kelasCell) continue;
-
-    const kelasList = kelasCell.split(",").map(k => k.trim().toUpperCase());
-    kelasList.forEach(kelas => {
-      const siswaKosong = kosongMap[kelas];
-      if (!siswaKosong || siswaKosong.length === 0) return;
-
-      const statusLama = existingMap[kelas];
-      if (["pending", "berhasil", "sent", "terkirim"].includes(statusLama)) {
-        totalSkip++;
-        return;
-      }
-
-      const jumlahKosong = siswaKosong.length;
-      const tanggalLengkap = formatTanggalLengkap(now);
-      const pesan =
-        `Semangat pagi 👋\n\n` +
-        `Berikut daftar siswa kelas *${kelas}* yang status presensinya masih kosong pada hari *${tanggalLengkap}*:\n\n` +
-        siswaKosong.map((n, idx) => `${idx + 1}. ${n}`).join("\n") +
-        `\n\nSilakan konfirmasi di grup piket sebelum pukul *14.30 WIB*.\n\n` +
-        `Apabila tidak ada konfirmasi, status presensi akan otomatis tercatat *Alpa* oleh sistem.\n\n` +
-        `Terima kasih.`;
-
-      rowsToInsert.push([
-        timestamp, batchId, todayStr, namaWali, kelas,
-        jumlahKosong, noHp, pesan, "Pending", "", "", 0,
-        namaPetugas || "Portal Piket"
-      ]);
-      existingMap[kelas] = "pending";
-    });
-  }
-
-  if (rowsToInsert.length > 0) {
-    bufferSheet.getRange(bufferSheet.getLastRow() + 1, 1, rowsToInsert.length, rowsToInsert[0].length).setValues(rowsToInsert);
-  }
-
-  return {
-    success: true,
-    total: rowsToInsert.length,
-    skip: totalSkip,
-    message: rowsToInsert.length > 0 ? `${rowsToInsert.length} pesan dibuat, ${totalSkip} dilewati.` : `Tidak ada pesan baru. ${totalSkip} sudah tersedia.`
-  };
-}
-
-function normalisasiWa(nohp) {
-  let hp = String(nohp || "").replace(/\D/g, "");
-  if (!hp) return "";
-  if (hp.startsWith("0")) hp = "62" + hp.substring(1);
-  if (!hp.startsWith("62")) hp = "62" + hp;
-  return hp;
-}
-
-function getDashboardKonfirmasiWaliKelas() {
-  const BUFFER_ID   = "1lLcUABGJxYFjt7j1XmsYPGsHN0N6LtCyuH2Gkdf77co";
-  const MASTER_SHEET = "MasterPresensi";
-  const BUFFER_SHEET = "BufferWaliKelas";
-
-  const tz = Session.getScriptTimeZone();
-  const todayStr = Utilities.formatDate(new Date(), tz, "dd/MM/yyyy");
-
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheetMaster = ss.getSheetByName(MASTER_SHEET);
-  const bufferSS = SpreadsheetApp.openById(BUFFER_ID);
-  const sheetBuffer = bufferSS.getSheetByName(BUFFER_SHEET);
-
-  if (!sheetMaster) return { success: false, message: "Sheet MasterPresensi tidak ditemukan." };
-
-  const data = sheetMaster.getDataRange().getValues();
-  const header = data[0];
-  const idxTanggal = header.indexOf("Tanggal");
-  const idxKelas   = header.indexOf("Kelas");
-  const idxStatus  = header.indexOf("Status Masuk");
-
-  const kosongMap = {};
-  for (let i = data.length - 1; i >= 1; i--) {
-    const row = data[i];
-    const tgl = String(row[idxTanggal] || "").trim();
-    if (tgl !== todayStr) break;
-
-    const status = String(row[idxStatus] || "").trim();
-    if (status) continue;
-
-    const kelas = String(row[idxKelas] || "").trim().toUpperCase();
-    if (!kelas) continue;
-    kosongMap[kelas] = (kosongMap[kelas] || 0) + 1;
-  }
-
-  const statusMap = {};
-  if (sheetBuffer && sheetBuffer.getLastRow() >= 2) {
-    const dataBuffer = sheetBuffer.getRange(2, 1, sheetBuffer.getLastRow() - 1, 13).getValues();
-    for (let i = dataBuffer.length - 1; i >= 0; i--) {
-      const row = dataBuffer[i];
-      const valTgl = row[2];
-      const tgl = valTgl instanceof Date ? Utilities.formatDate(valTgl, tz, "dd/MM/yyyy") : String(valTgl).trim();
-      if (tgl !== todayStr) continue;
-
-      const kelas = String(row[4] || "").trim().toUpperCase();
-      const status = String(row[8] || "Pending").trim();
-      if (!kelas) continue;
-      if (!statusMap[kelas]) statusMap[kelas] = status;
-    }
-  }
-
-  const allKelas = Object.keys(kosongMap).sort();
-  if (allKelas.length === 0) {
-    return { success: true, totalKelas: 0, totalKosong: 0, canGenerate: false, data: [] };
-  }
-
-  let totalKosong = 0;
-  let canGenerate = false;
-
-  const rows = allKelas.map(kelas => {
-    const jumlah = kosongMap[kelas];
-    totalKosong += jumlah;
-
-    let status = statusMap[kelas] || "Belum Dibuat";
-    let statusClass = "pending";
-    const s = status.toLowerCase();
-
-    if (s === "berhasil" || s === "sent") {
-      statusClass = "success";
-      status = "Terkirim";
-    } else if (s === "gagal" || s === "failed") {
-      statusClass = "error";
-      status = "Gagal";
-      canGenerate = true;
-    } else if (s === "pending") {
-      statusClass = "pending";
-      status = "Pending";
-    } else if (s === "belum dibuat") {
-      statusClass = "neutral";
-      status = "Belum Dibuat";
-      canGenerate = true;
-    }
-
-    return { kelas: kelas, jumlah: jumlah, status: status, statusClass: statusClass };
-  });
-
-  return { success: true, totalKelas: rows.length, totalKosong: totalKosong, canGenerate: canGenerate, data: rows };
-}
-
-function prosesKirimWaliKelas() {
-  const BUFFER_ID = "1lLcUABGJxYFjt7j1XmsYPGsHN0N6LtCyuH2Gkdf77co";
-  const SHEET_NAME = "BufferWaliKelas";
-
-  const ss = SpreadsheetApp.openById(BUFFER_ID);
-  const sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet || sheet.getLastRow() < 2) return { success: false, message: "Tidak ada data pesan untuk dikirim." };
-
-  const data = sheet.getRange(2, 1, sheet.getLastRow() - 1, 13).getValues();
-  const rowsToProcess = [];
-
-  for (let i = 0; i < data.length; i++) {
-    const status = String(data[i][8] || "").trim().toLowerCase();
-    if (["pending", "failed", "gagal"].includes(status)) {
-      rowsToProcess.push({
-        rowIndex: i + 2,
-        noHp: data[i][6],
-        pesan: data[i][7],
-        retry: Number(data[i][11] || 0)
-      });
-    }
-  }
-
-  if (rowsToProcess.length === 0) return { success: true, message: "Tidak ada pesan Pending/Failed." };
-
-  const tz = Session.getScriptTimeZone();
-  let sukses = 0, gagal = 0;
-
-  rowsToProcess.forEach(item => {
-    const hasil = kirimOneSenderWaliKelas_(item.noHp, item.pesan);
-    const waktu = Utilities.formatDate(new Date(), tz, "dd/MM/yyyy HH:mm:ss");
-
-    if (hasil.success) {
-      sheet.getRange(item.rowIndex, 9).setValue("Berhasil");
-      sheet.getRange(item.rowIndex, 10).setValue(waktu);
-      sheet.getRange(item.rowIndex, 11).setValue(hasil.response);
-      sukses++;
-    } else {
-      sheet.getRange(item.rowIndex, 9).setValue("Gagal");
-      sheet.getRange(item.rowIndex, 10).setValue(waktu);
-      sheet.getRange(item.rowIndex, 11).setValue(hasil.response);
-      sheet.getRange(item.rowIndex, 12).setValue(item.retry + 1);
-      gagal++;
-    }
-    Utilities.sleep(1200);
-  });
-
-  return { success: true, sukses: sukses, gagal: gagal, total: rowsToProcess.length, message: `${sukses} berhasil, ${gagal} gagal dari ${rowsToProcess.length} pesan.` };
-}
-
-function kirimOneSenderWaliKelas_(idTujuan, ucapan) {
-  idTujuan = String(idTujuan || "").trim();
-  ucapan   = String(ucapan || "").trim();
-
-  if (!idTujuan || !ucapan) return { success: false, response: "Data tidak lengkap." };
-
-  const url = "https://wa5717.oneapi.my.id/api/v1/messages";
-  const token = "u3bc8fd0cb829466.f144ce696aea4ec78567cf4eab20bfd2";
-  const isGroup = idTujuan.includes("@g.us");
-
-  const payload = {
-    recipient_type: isGroup ? "group" : "individual",
-    to: idTujuan,
-    type: "text",
-    text: { body: ucapan }
-  };
-
-  const options = {
-    method: "post",
-    headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
-    payload: JSON.stringify(payload),
-    muteHttpExceptions: true
-  };
-
   try {
-    const res = UrlFetchApp.fetch(url, options);
-    const code = res.getResponseCode();
-    return { success: code >= 200 && code < 300, response: res.getContentText() };
-  } catch (err) {
-    return { success: false, response: err.toString() };
-  }
-}
+    const startTime = new Date().getTime();
 
-function formatTanggalLengkap(dateObj) {
-  const d = dateObj || new Date();
-  const hariList = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-  const bulanList = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-  return `${hariList[d.getDay()]}, ${d.getDate()} ${bulanList[d.getMonth()]} ${d.getFullYear()}`;
-}
+    // 1. Ambil config semester (ID File & ID Semester)
+    const config = getSemesterConfig(tanggal);
+    if (!config) return 0;
 
-function kirimRekapGrupPiketDirect(tanggal, namaPetugas, pdfUrl) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sheetMaster = ss.getSheetByName("MasterPresensi");
-  const sheetWali = ss.getSheetByName("WaliKelas") || SpreadsheetApp.openById("1lLcUABGJxYFjt7j1XmsYPGsHN0N6LtCyuH2Gkdf77co").getSheetByName("WaliKelas");
+    const targetSpreadsheetId = (config.file_id_spreadsheet && String(config.file_id_spreadsheet).trim() !== "")
+      ? config.file_id_spreadsheet.trim()
+      : SpreadsheetApp.getActiveSpreadsheet().getId();
 
-  if (!sheetMaster) return { success: false, message: "Sheet MasterPresensi tidak ditemukan." };
+    const sheetName = SHEETS.MASTER_PRESENSI || "master_presensi";
 
-  const tz = Session.getScriptTimeZone();
-  let dateObj = (tanggal && tanggal.includes("-")) ? new Date(tanggal.split("-")[0], tanggal.split("-")[1]-1, tanggal.split("-")[2]) : new Date();
-
-  const tanggalSheet = Utilities.formatDate(dateObj, tz, "dd/MM/yyyy");
-  const tanggalDisplay = formatTanggalLengkap(dateObj);
-  const idGrupPiket = "6285659953357-1469965723@g.us";
-
-  const waliMap = {};
-  if (sheetWali) {
-    const dataWali = sheetWali.getDataRange().getValues();
-    const headerW = dataWali.shift() || [];
-    const idxKelas = headerW.indexOf("Kelas");
-    const idxNama  = headerW.indexOf("Nama Wali Kelas");
-
-    if (idxKelas !== -1 && idxNama !== -1) {
-      dataWali.forEach(row => {
-        const kelas = String(row[idxKelas] || "").trim().toUpperCase();
-        const nama  = String(row[idxNama] || "").trim();
-        if (kelas && nama) waliMap[kelas] = nama;
-      });
-    }
-  }
-
-  const data = sheetMaster.getDataRange().getValues();
-  const header = data.shift();
-  const idxTanggal = header.indexOf("Tanggal");
-  const idxKelas   = header.indexOf("Kelas");
-  const idxTingkat = header.indexOf("Tingkat");
-  const idxStatus  = header.indexOf("Status Masuk");
-
-  const mapTingkat = {};
-  let totalSiswaGlobal = 0, totalHadirGlobal = 0, totalTidakHadirGlobal = 0, totalPrakerinGlobal = 0, totalTidakScanGlobal = 0;
-  let totalTerlambatGlobal = 0, totalSangatGlobal = 0, totalSangatSekaliGlobal = 0;
-  let totalAlpaGlobal = 0, totalSakitGlobal = 0, totalIzinGlobal = 0;
-
-  data.forEach(row => {
-    const tgl = String(row[idxTanggal] || "").trim();
-    if (tgl !== tanggalSheet) return;
-
-    const kelas = String(row[idxKelas] || "").trim().toUpperCase();
-    let tingkat = String(row[idxTingkat] || "").trim().toUpperCase();
-    const st = String(row[idxStatus] || "").trim();
-    if (!kelas) return;
-
-    if (!tingkat) {
-      if (kelas.includes(" X-") || kelas.includes(" X ")) tingkat = "X";
-      else if (kelas.includes(" XI-") || kelas.includes(" XI ")) tingkat = "XI";
-      else if (kelas.includes(" XII-") || kelas.includes(" XII ")) tingkat = "XII";
-      else tingkat = "LAINNYA";
-    }
-
-    if (!mapTingkat[tingkat]) mapTingkat[tingkat] = {};
-    if (!mapTingkat[tingkat][kelas]) {
-      mapTingkat[tingkat][kelas] = { total: 0, hadir: 0, tidakScan: 0, terlambat: 0, sangatTerlambat: 0, sangatSekali: 0, tidakHadir: 0, alpa: 0, sakit: 0, izin: 0, prakerin: 0, libur: 0 };
-    }
-
-    const rec = mapTingkat[tingkat][kelas];
-    rec.total++;
-    totalSiswaGlobal++;
-
-    if (["Tepat Waktu", "Terlambat", "Sangat Terlambat", "Sangat Terlambat Sekali", "Hadir Tidak Presensi"].includes(st)) {
-      rec.hadir++;
-      totalHadirGlobal++;
-      if (st === "Hadir Tidak Presensi") { rec.tidakScan++; totalTidakScanGlobal++; }
-      else if (st === "Terlambat") { rec.terlambat++; totalTerlambatGlobal++; }
-      else if (st === "Sangat Terlambat") { rec.sangatTerlambat++; totalSangatGlobal++; }
-      else if (st === "Sangat Terlambat Sekali") { rec.sangatSekali++; totalSangatSekaliGlobal++; }
-    } else if (["Sakit", "Izin", "Alpa"].includes(st)) {
-      rec.tidakHadir++;
-      totalTidakHadirGlobal++;
-      if (st === "Alpa") { rec.alpa++; totalAlpaGlobal++; }
-      if (st === "Sakit") { rec.sakit++; totalSakitGlobal++; }
-      if (st === "Izin") { rec.izin++; totalIzinGlobal++; }
-    } else if (st.toLowerCase().includes("prakerin") || st.toLowerCase().includes("pkl")) {
-      rec.prakerin++;
-      totalPrakerinGlobal++;
-    } else if (st === "Libur") {
-      rec.libur++;
-    }
-  });
-
-  const daftarTingkat = Object.keys(mapTingkat).sort();
-  if (daftarTingkat.length === 0 || totalSiswaGlobal === 0) {
-    return { success: false, message: "Tidak ada data presensi untuk tanggal ini." };
-  }
-
-  const daftarPesanKirim = [];
-  const persenHadirGlobal = Math.round((totalHadirGlobal / totalSiswaGlobal) * 100);
-  const persenTHGlobal    = Math.round((totalTidakHadirGlobal / totalSiswaGlobal) * 100);
-  const persenPrakerinGlobal = Math.round((totalPrakerinGlobal / totalSiswaGlobal) * 100);
-
-  let pesanSummary = `Rekap Presensi Siswa, ${tanggalDisplay}\n`;
-  pesanSummary += `Piket: ${namaPetugas || "Portal Piket"}\n`;
-  pesanSummary += `===============================\n\n`;
-  pesanSummary += `👥 *Total Siswa:* ${totalSiswaGlobal} Siswa\n`;
-  pesanSummary += `✅ *Total Hadir:* ${totalHadirGlobal} Siswa (${persenHadirGlobal}%)\n`;
-  pesanSummary += `❌ *Total Tidak Hadir:* ${totalTidakHadirGlobal} Siswa (${persenTHGlobal}%)\n`;
-  if (totalPrakerinGlobal > 0) pesanSummary += `💼 *Prakerin:* ${totalPrakerinGlobal} Siswa (${persenPrakerinGlobal}%)\n`;
-
-  pesanSummary += `\n*Rincian Ketidakhadiran:*\n`;
-  if (totalTidakHadirGlobal === 0) {
-    pesanSummary += `• Seluruh Siswa Hadir 🌟\n\n`;
-  } else {
-    pesanSummary += `• ${totalAlpaGlobal} Alpa\n• ${totalSakitGlobal} Sakit\n• ${totalIzinGlobal} Izin\n\n`;
-  }
-
-  pesanSummary += `*Rincian Kehadiran:*\n`;
-  pesanSummary += `• ${totalTidakScanGlobal > 0 ? `${totalTidakScanGlobal} Siswa Tidak Scan` : "Seluruh Siswa Scan 🌟"}\n`;
-  
-  const totalLateGlobal = totalTerlambatGlobal + totalSangatGlobal + totalSangatSekaliGlobal;
-  if (totalLateGlobal === 0) {
-    pesanSummary += `• Seluruh Siswa Tepat Waktu 🌟\n\n`;
-  } else {
-    pesanSummary += `• ${totalTerlambatGlobal} Terlambat\n• ${totalSangatGlobal} Sangat Terlambat\n• ${totalSangatSekaliGlobal} Sangat Terlambat Sekali\n\n`;
-  }
-
-  pesanSummary += `===============================\n`;
-  if (pdfUrl) pesanSummary += `📄 *PDF Rekap:* ${pdfUrl}\n`;
-  pesanSummary += `🌐 *Portal Monitoring:* s.id/PresensiMedCom-Monitoring`;
-
-  daftarPesanKirim.push(pesanSummary);
-
-  daftarTingkat.forEach(tingkat => {
-    const mapKelas = mapTingkat[tingkat];
-    const daftarKelas = Object.keys(mapKelas).sort();
-    const kelasAktif = daftarKelas.filter(k => mapKelas[k].hadir > 0);
-    if (kelasAktif.length === 0) return;
-
-    let pesan = "";
-    kelasAktif.forEach((kelas, idx) => {
-      const rec = mapKelas[kelas];
-      const namaWali = waliMap[kelas] ? ` (${waliMap[kelas]})` : "";
-      let pesanScan = (rec.tidakScan === 0) ? "Seluruh Siswa Scan 🌟" : `*${rec.tidakScan} SISWA TIDAK SCAN*`;
-
-      let pesanTerlambat = "";
-      const totalLate = rec.terlambat + rec.sangatTerlambat + rec.sangatSekali;
-      if (totalLate === 0) {
-        pesanTerlambat = "Seluruh Siswa Tepat Waktu 🌟";
+    // 2. Format tanggal acuan ke format DD/MM/YYYY
+    let dateObj;
+    if (!tanggal) {
+      dateObj = new Date();
+    } else if (tanggal instanceof Date) {
+      dateObj = tanggal;
+    } else {
+      const strTgl = String(tanggal).trim();
+      if (strTgl.includes("-")) {
+        const parts = strTgl.split("-");
+        dateObj = (parts[0].length === 4)
+          ? new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+          : new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+      } else if (strTgl.includes("/")) {
+        const parts = strTgl.split("/");
+        dateObj = (parts[2].length === 4)
+          ? new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]))
+          : new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
       } else {
-        const arrLate = [];
-        if (rec.terlambat > 0) arrLate.push(`${rec.terlambat} Terlambat`);
-        if (rec.sangatTerlambat > 0) arrLate.push(`${rec.sangatTerlambat} Sangat Terlambat`);
-        if (rec.sangatSekali > 0) arrLate.push(`${rec.sangatSekali} Sangat Terlambat Sekali`);
-        pesanTerlambat = arrLate.join(", ");
+        dateObj = new Date(strTgl);
+      }
+    }
+
+    const formattedDate = Utilities.formatDate(dateObj, TZ || "Asia/Jakarta", "dd/MM/yyyy");
+
+    // 3. AMBIL DATA VIA SHEETS API (Gantinya getDataRange().getValues())
+    const range = `'${sheetName}'!A:J`; // Hanya ambil Kolom A sampai J
+    const response = Sheets.Spreadsheets.Values.get(targetSpreadsheetId, range);
+    const data = response.values;
+
+    if (!data || data.length <= 1) return 0;
+
+    // 4. Cari indeks kolom dari Header
+    const header = data[0].map(val => String(val).toLowerCase().trim());
+    const rows = data.slice(1);
+
+    const colTanggal = header.indexOf("tanggal");
+    let colStatus = header.indexOf("status_masuk");
+    if (colStatus === -1) colStatus = header.indexOf("status masuk");
+
+    if (colTanggal === -1 || colStatus === -1) return 0;
+
+    // 5. Filter & Hitung yang kosong / "belum presensi"
+    let kosongCount = 0;
+
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r[colTanggal]) continue;
+
+      let rDateStr = "";
+      // Jika Sheets API mengembalikan format date atau string
+      if (r[colTanggal] instanceof Date) {
+        rDateStr = Utilities.formatDate(r[colTanggal], TZ || "Asia/Jakarta", "dd/MM/yyyy");
+      } else {
+        rDateStr = String(r[colTanggal]).trim();
       }
 
-      let rincianTidakHadir = "";
-      if (rec.tidakHadir > 0) {
-        const arrTH = [];
-        if (rec.alpa > 0) arrTH.push(`*${rec.alpa} ALPA*`);
-        if (rec.sakit > 0) arrTH.push(`${rec.sakit} Sakit`);
-        if (rec.izin > 0) arrTH.push(`${rec.izin} Izin`);
-        rincianTidakHadir = `\n• ${arrTH.join(", ")}`;
+      if (rDateStr === formattedDate) {
+        const valStatus = String(r[colStatus] || "").trim().toLowerCase();
+        if (valStatus === "" || valStatus === "belum presensi") {
+          kosongCount++;
+        }
       }
+    }
 
-      let rawPersen = rec.total > 0 ? (rec.hadir / rec.total) * 100 : 0;
-      let persenStr = (rawPersen === 100) ? "100% 🌟" : `${rawPersen.toFixed(1)}%`;
+    const elapsed = (new Date().getTime() - startTime) / 1000;
+    Logger.log(`⚡ [Sheets API] Cek status kosong ${formattedDate}: ${kosongCount} siswa (Waktu: ${elapsed} detik)`);
 
-      pesan += `*${kelas}*${namaWali}\n`;
-      pesan += `*Total Hadir:* ${rec.hadir} Siswa\n`;
-      pesan += `• ${pesanScan}\n`;
-      pesan += `• ${pesanTerlambat}\n`;
-      pesan += `*Total Tidak Hadir:* ${rec.tidakHadir} Siswa${rincianTidakHadir}\n`;
-      pesan += `*Persentase Kehadiran:* ${persenStr}`;
+    return kosongCount;
 
-      if (idx < kelasAktif.length - 1) pesan += `\n\n`;
+  } catch (e) {
+    Logger.log(`❌ Error pada cekStatusKosongHariIni: ${e.message}`);
+    return 0;
+  }
+}
+
+/**
+ * Membaca sheet 'wali_kelas' dan mengembalikan Map: id_rombel -> nama_wali_kelas
+ */
+function getMapWaliKelas() {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("wali_kelas");
+    const mapWali = {};
+    if (!sheet) return mapWali;
+    const data = sheet.getDataRange().getValues();
+    if (data.length < 2) return mapWali;
+    for (let i = 1; i < data.length; i++) {
+      const idRombel = String(data[i][0] || "").trim();
+      const namaWali = String(data[i][1] || "").trim();
+      if (idRombel) mapWali[idRombel] = namaWali;
+    }
+    return mapWali;
+  } catch (e) {
+    Logger.log("⚠️ Warning getMapWaliKelas: " + e.message);
+    return {};
+  }
+}
+
+/**
+ * Konversi ID Rombel (contoh: AKN-A26) -> Nama Kelas Resmi (contoh: AKN X-A)
+ */
+function formatNamaKelas(idRombel, tingkatOptional) {
+  if (!idRombel || typeof idRombel !== "string") return "-";
+  const parts = idRombel.trim().split("-");
+  if (parts.length < 2) return idRombel;
+
+  const jurusan = parts[0].toUpperCase();
+  const subPart = parts[1].toUpperCase();
+  const subKelas = subPart.replace(/[0-9]/g, "").trim();
+  const angkatanCode = subPart.replace(/[^0-9]/g, "").trim();
+
+  let tingkat = tingkatOptional;
+  if (!tingkat && angkatanCode) {
+    const angkatanNum = parseInt(angkatanCode, 10);
+    if (angkatanNum === 26) tingkat = "X";
+    else if (angkatanNum === 25) tingkat = "XI";
+    else if (angkatanNum === 24) tingkat = "XII";
+  }
+
+  if (jurusan && tingkat && subKelas) {
+    return `${jurusan} ${tingkat}-${subKelas}`;
+  }
+  return idRombel;
+}
+
+/**
+ * Engine Merger PDF Native menggunakan pdf-lib (dengan Polyfill setTimeout untuk Apps Script)
+ */
+async function mergePdfBlobs(pdfBlobs) {
+  try {
+    if (!pdfBlobs || pdfBlobs.length === 0) return null;
+    if (pdfBlobs.length === 1) return pdfBlobs[0];
+
+    Logger.log("🔄 Memuat engine pdf-lib dari CDN...");
+
+    // 1. Polyfill setTimeout & clearTimeout khusus untuk Google Apps Script Environment
+    if (typeof setTimeout === "undefined") {
+      this.setTimeout = function (callback, ms) {
+        if (ms && ms > 0) Utilities.sleep(ms);
+        callback();
+        return 1;
+      };
+      this.clearTimeout = function () {};
+    }
+
+    // 2. Fetch library pdf-lib
+    const cdnUrl = "https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js";
+    const jsContent = UrlFetchApp.fetch(cdnUrl).getContentText();
+    
+    // Evaluasi ke runtime GAS
+    eval(jsContent);
+
+    // 3. Buat dokumen PDF gabungan baru
+    const mergedPdf = await PDFLib.PDFDocument.create();
+
+    // 4. Salin halaman dari setiap PDF (Landscape + Portrait)
+    for (let i = 0; i < pdfBlobs.length; i++) {
+      const blob = pdfBlobs[i];
+      const bytes = new Uint8Array(blob.getBytes());
+      
+      const pdfData = await PDFLib.PDFDocument.load(bytes);
+      const pageIndices = pdfData.getPageIndices();
+      const copiedPages = await mergedPdf.copyPages(pdfData, pageIndices);
+      
+      copiedPages.forEach((page) => mergedPdf.addPage(page));
+    }
+
+    // 5. Export ke Blob PDF tunggal
+    const mergedBytes = await mergedPdf.save();
+    const resultBlob = Utilities.newBlob([...new Int8Array(mergedBytes)], "application/pdf");
+
+    Logger.log("✅ Engine berhasil menggabungkan PDF Landscape + Portrait!");
+    return resultBlob;
+
+  } catch (e) {
+    Logger.log("❌ Error Engine PDF Merger: " + e.message);
+    return pdfBlobs[0];
+  }
+}
+
+
+/**
+ * Main Function: Generator Laporan Presensi Harian
+ */
+// =========================================================================
+// FUNGSI UTAMA: BUAT REKAP PRESENSI HARIAN (SYNCHRONOUS FOR GAS COMPATIBILITY)
+// =========================================================================
+async function buatRekapPresensiHarian(namaPetugas, tanggal) {
+  try {
+    const startTime = new Date().getTime();
+
+    // 1. Cek status kosong
+    const jumlahKosong = cekStatusKosongHariIni(tanggal);
+    if (jumlahKosong > 0) {
+      throw new Error(`Gagal membuat rekap! Masih ada ${jumlahKosong} siswa yang belum presensi hari ini.`);
+    }
+
+    // 2. Ambil Config Semester & Folder Drive
+    const config = getSemesterConfig(tanggal);
+    if (!config) throw new Error("Konfigurasi semester tidak ditemukan!");
+
+    const targetSpreadsheetId = (config.file_id_spreadsheet && String(config.file_id_spreadsheet).trim() !== "")
+      ? config.file_id_spreadsheet.trim()
+      : SpreadsheetApp.getActiveSpreadsheet().getId();
+
+    const sheetMasterName = SHEETS.MASTER_PRESENSI || "master_presensi";
+    const folderId = "16TQT8GmnrYzmqam-UK59G4q6rfx6Lkoa";
+    const folder = DriveApp.getFolderById(folderId);
+
+    // 3. Normalisasi Tanggal
+    let dateObj;
+    if (!tanggal) dateObj = new Date();
+    else if (tanggal instanceof Date) dateObj = tanggal;
+    else {
+      const strTgl = String(tanggal).trim();
+      if (strTgl.includes("-")) {
+        const parts = strTgl.split("-");
+        dateObj = (parts[0].length === 4)
+          ? new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]))
+          : new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]));
+      } else if (strTgl.includes("/")) {
+        const parts = strTgl.split("/");
+        dateObj = (parts[2].length === 4)
+          ? new Date(Number(parts[2]), Number(parts[1]) - 1, Number(parts[0]))
+          : new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      } else {
+        dateObj = new Date(strTgl);
+      }
+    }
+
+    const formattedDate = Utilities.formatDate(dateObj, TZ || "Asia/Jakarta", "dd/MM/yyyy");
+    const displayDate = typeof formatTanggalIndonesia === 'function' ? formatTanggalIndonesia(dateObj) : formattedDate;
+
+    // 4. Ambil Data Master
+    const rangeMaster = `'${sheetMasterName}'!A:L`;
+    const resMaster = Sheets.Spreadsheets.Values.get(targetSpreadsheetId, rangeMaster);
+    const dataMaster = resMaster.values;
+    if (!dataMaster || dataMaster.length <= 1) throw new Error("Data master presensi kosong!");
+
+    const header = dataMaster[0].map(val => String(val).toLowerCase().trim());
+    const rows = dataMaster.slice(1);
+
+    const colTanggal  = header.indexOf("tanggal");
+    const colNama     = header.indexOf("nama");
+    const colKelas    = header.indexOf("id_rombel");
+    const colTingkat  = header.indexOf("tingkat");
+    const colStatus   = header.indexOf("status_masuk");
+    let colJam        = header.indexOf("jam_masuk");
+    if (colJam === -1) colJam = header.indexOf("waktu");
+    if (colJam === -1) colJam = header.indexOf("timestamp");
+
+    if (colTanggal === -1 || colKelas === -1 || colNama === -1 || colTingkat === -1 || colStatus === -1) {
+      throw new Error(`Kolom header tidak cocok pada sheet '${sheetMasterName}'!`);
+    }
+
+    const hariIni = rows.filter(r => {
+      if (!r[colTanggal]) return false;
+      let rDateStr = (r[colTanggal] instanceof Date)
+        ? Utilities.formatDate(r[colTanggal], TZ || "Asia/Jakarta", "dd/MM/yyyy")
+        : String(r[colTanggal]).trim();
+      return rDateStr === formattedDate;
     });
 
-    if (pesan.trim()) daftarPesanKirim.push(pesan.trim());
+    if (hariIni.length === 0) {
+      throw new Error("Tidak ada data presensi untuk tanggal " + formattedDate);
+    }
+
+    // 5. Agregasi Data
+    const statusGroups = {
+      "Hadir": ["Tepat Waktu", "Terlambat", "Hadir Tidak Presensi"],
+      "Tidak Hadir": ["Sakit", "Izin", "Alpa"],
+      "Lainnya": ["Daring", "Prakerin", "Libur"]
+    };
+    const statusList = [].concat.apply([], Object.values(statusGroups));
+
+    function normalizeStatus(st) {
+      st = String(st || "").trim();
+      if (st === "Terlambat" || st === "Sangat Terlambat" || st === "Sangat Terlambat Sekali") {
+        return "Terlambat";
+      }
+      return st;
+    }
+
+    let tingkatRekap = {}, kelasRekap = {}, siswaByKelas = {};
+    let totalRekap = {};
+    statusList.forEach(s => { totalRekap[s] = 0; });
+
+    hariIni.forEach(r => {
+      const tingkat = r[colTingkat] || "-";
+      const kelas = r[colKelas] || "-";
+      const nama = r[colNama] || "-";
+      const rawStatus = String(r[colStatus] || "-").trim();
+      const st = normalizeStatus(rawStatus);
+      const jamMasuk = colJam !== -1 ? String(r[colJam] || "-").trim() : "-";
+
+      if (!tingkatRekap[tingkat]) {
+        tingkatRekap[tingkat] = {};
+        statusList.forEach(s => { tingkatRekap[tingkat][s] = 0; });
+      }
+      if (tingkatRekap[tingkat][st] !== undefined) tingkatRekap[tingkat][st]++;
+
+      if (!kelasRekap[kelas]) {
+        kelasRekap[kelas] = { tingkat: tingkat };
+        statusList.forEach(s => { kelasRekap[kelas][s] = 0; });
+      }
+      if (kelasRekap[kelas][st] !== undefined) kelasRekap[kelas][st]++;
+
+      if (!siswaByKelas[kelas]) siswaByKelas[kelas] = [];
+      siswaByKelas[kelas].push({
+        nama: nama,
+        jam_masuk: jamMasuk,
+        status: rawStatus
+      });
+
+      if (totalRekap[st] !== undefined) totalRekap[st]++;
+    });
+
+    // 6. Build HTML Landscape & Portrait
+    const htmlLandscape = buildHtmlLandscape({ displayDate, namaPetugas, tingkatRekap, kelasRekap, totalRekap, statusGroups, statusList });
+    const htmlPortrait = buildHtmlPortrait({ displayDate, siswaByKelas, kelasRekap, statusGroups });
+
+    // 7. Render Blobs
+    const blobLandscape = Utilities.newBlob(htmlLandscape, "text/html").getAs("application/pdf");
+    const blobPortrait = Utilities.newBlob(htmlPortrait, "text/html").getAs("application/pdf");
+
+    // 8. Merge Blobs ke dalam 1 File PDF Final
+    const mergedBlob = await mergePdfBlobs([blobLandscape, blobPortrait]);
+    const finalPdfBlob = mergedBlob.setName("Rekap Presensi " + formattedDate.replace(/\//g, "-") + ".pdf");
+
+    // =========================================================
+    // 📍 DISINI TEMPAT MENYIMPAN KODE TERSEBUT:
+    // =========================================================
+    const file = folder.createFile(finalPdfBlob);
+    const fileUrl = file.getUrl(); // <-- Ambil URL File Google Drive yang baru dibuat
+
+    // 9. Catat Log ke Sheet
+    const timestampStr = Utilities.formatDate(new Date(), TZ || "Asia/Jakarta", "yyyy-MM-dd HH:mm:ss");
+    const ssMaster = SpreadsheetApp.getActiveSpreadsheet();
+    const masterSpreadsheetId = ssMaster.getId();
+    const sheetLaporanName = SHEETS.LAPORAN_PRESENSI || "laporan_presensi";
+
+    let sheetLaporan = ssMaster.getSheetByName(sheetLaporanName);
+    if (!sheetLaporan) {
+      sheetLaporan = ssMaster.insertSheet(sheetLaporanName);
+      sheetLaporan.appendRow(["timestamp", "user", "file_laporan"]);
+      SpreadsheetApp.flush();
+    }
+
+    const valueRange = Sheets.newValueRange();
+    valueRange.values = [[timestampStr, namaPetugas, fileUrl]];
+    Sheets.Spreadsheets.Values.append(
+      valueRange, masterSpreadsheetId, `'${sheetLaporanName}'!A:C`,
+      { valueInputOption: "USER_ENTERED", insertDataOption: "INSERT_ROWS" }
+    );
+
+    const elapsed = (new Date().getTime() - startTime) / 1000;
+    Logger.log(`⚡ [Merged PDF] Berhasil buat PDF gabungan (Waktu: ${elapsed}s)`);
+
+    // 📍 KEMBALIKAN fileUrl SEBAGAI HASIL AKHIR DARI FUNGSI
+    return fileUrl; 
+
+  } catch (e) {
+    Logger.log(`❌ Error pada buatRekapPresensiHarian: ${e.message}`);
+    throw e;
+  }
+}
+
+// ==========================================
+// RENDERER 1: HTML LANDSCAPE (HAL 1 & LAMPIRAN 1 - CONTINUOUS)
+// ==========================================
+function buildHtmlLandscape(data) {
+  const { displayDate, namaPetugas, tingkatRekap, kelasRekap, totalRekap, statusGroups, statusList } = data;
+
+  const totalSiswaGlobal = Object.values(totalRekap).reduce((a, b) => a + b, 0);
+  const totalHadirGlobal = statusGroups["Hadir"].reduce((sum, s) => sum + (totalRekap[s] || 0), 0);
+  const totalTidakHadirGlobal = statusGroups["Tidak Hadir"].reduce((sum, s) => sum + (totalRekap[s] || 0), 0);
+  const totalLainnyaGlobal = statusGroups["Lainnya"].reduce((sum, s) => sum + (totalRekap[s] || 0), 0);
+
+  const persenHadirGlobal = totalSiswaGlobal ? ((totalHadirGlobal / totalSiswaGlobal) * 100).toFixed(1) : "0.0";
+  const persenTidakHadirGlobal = totalSiswaGlobal ? ((totalTidakHadirGlobal / totalSiswaGlobal) * 100).toFixed(1) : "0.0";
+  const persenLainnyaGlobal = totalSiswaGlobal ? ((totalLainnyaGlobal / totalSiswaGlobal) * 100).toFixed(1) : "0.0";
+
+  return '<html><head><style>' +
+    '@page { size: A4 landscape; margin: 8mm 10mm; }' +
+    'body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 9.5px; color: #000; margin: 0; padding: 0; }' +
+    '.header-title { text-align: center; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #000; }' +
+    '.header-title h2 { font-size: 16px; margin: 0 0 3px 0; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 800; }' +
+    '.header-title p { font-size: 10px; margin: 0; color: #334155; font-weight: 700; }' +
+    '.summary-wrap { display: table; width: 100%; table-layout: fixed; margin-bottom: 14px; border-spacing: 6px; }' +
+    '.summary-box { display: table-cell; border-radius: 6px; padding: 8px; text-align: center; vertical-align: middle; }' +
+    '.summary-box .title { font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 800; display: block; margin-bottom: 2px; }' +
+    '.summary-box .val { font-size: 14px; font-weight: 800; }' +
+    '.box-total { background-color: #f8fafc; border: 2px solid #64748b; color: #0f172a; }' +
+    '.box-hadir { background-color: #f0fdf4; border: 2px solid #16a34a; color: #15803d; }' +
+    '.box-tidak { background-color: #fef2f2; border: 2px solid #dc2626; color: #b91c1c; }' +
+    '.box-khusus { background-color: #fffbeb; border: 2px solid #d97706; color: #b45309; }' +
+    'h3.section-title { font-size: 11px; margin: 12px 0 6px 0; color: #000; border-left: 4px solid #0284c7; padding-left: 8px; font-weight: 800; }' +
+    'table { border-collapse: collapse; width: 100%; font-size: 9.5px; margin-bottom: 12px; border: 1px solid #1e293b; }' +
+    'th, td { padding: 5px 4px; text-align: center; vertical-align: middle; border: 1px solid #1e293b; }' +
+    'th { background-color: #e2e8f0; color: #000; font-weight: 800; font-size: 8.5px; text-transform: uppercase; letter-spacing: 0.3px; }' +
+    '.total-row { font-weight: 800; background-color: #cbd5e1 !important; color: #000; }' +
+    '.total-row td { border-top: 2px solid #000; }' +
+    '.signature-wrap { width: 220px; margin-left: auto; margin-top: 20px; text-align: center; page-break-inside: avoid; }' +
+    '.signature-title { font-size: 10px; color: #000; margin-bottom: 45px; font-weight: 600; }' +
+    '.signature-name { font-size: 11px; font-weight: 800; color: #000; }' +
+    'td.col-kelas { white-space: nowrap !important; text-align: left !important; padding-left: 6px !important; font-weight: 700; }' +
+    'th.col-summary, td.col-summary { width: 48px !important; }' +
+    '.txt-danger { color: #dc2626; font-weight: 700; }' +
+    '.txt-warning { color: #d97706; font-weight: 700; }' +
+    '.txt-success { color: #16a34a; font-weight: 800; }' +
+    '</style></head><body>' +
+
+    '<!-- 1. HEADER UTAMA -->' +
+    '<div class="header-title"><h2>Presensi Siswa SMK MedikaCom</h2><p>' + displayDate + '</p></div>' +
+    '<div class="summary-wrap">' +
+      '<div class="summary-box box-total"><span class="title">Total Siswa</span><span class="val">' + totalSiswaGlobal + '</span></div>' +
+      '<div class="summary-box box-hadir"><span class="title">Hadir</span><span class="val">' + totalHadirGlobal + ' <small>(' + persenHadirGlobal + '%)</small></span></div>' +
+      '<div class="summary-box box-tidak"><span class="title">Tidak Hadir</span><span class="val">' + totalTidakHadirGlobal + ' <small>(' + persenTidakHadirGlobal + '%)</small></span></div>' +
+      '<div class="summary-box box-khusus"><span class="title">Status Khusus</span><span class="val">' + totalLainnyaGlobal + ' <small>(' + persenLainnyaGlobal + '%)</small></span></div>' +
+    '</div>' +
+
+    '<!-- 2. REKAP PER TINGKAT -->' +
+    '<h3 class="section-title">Rekap Presensi Seluruh Tingkat</h3>' +
+    '<table><thead>' +
+    '<tr><th rowspan="2">Tingkat</th><th rowspan="2">Jumlah Siswa</th><th colspan="3">Hadir</th><th rowspan="2">Jumlah Hadir</th><th rowspan="2">% Hadir</th><th colspan="3">Tidak Hadir</th><th rowspan="2">Jumlah Tidak Hadir</th><th rowspan="2">% Tidak Hadir</th><th colspan="3">Status Khusus</th><th rowspan="2">% Khusus</th></tr>' +
+    '<tr><th>Tepat Waktu</th><th>Terlambat</th><th>Tidak Presensi</th><th>Sakit</th><th>Izin</th><th>Alpa</th><th>Daring</th><th>Prakerin</th><th>Libur</th></tr>' +
+    '</thead><tbody>' +
+    Object.keys(tingkatRekap).map((tingkat) => {
+      const row = tingkatRekap[tingkat];
+      const jmlSiswa = Object.values(row).reduce((a, b) => a + b, 0);
+      const jmlHadir = statusGroups.Hadir.reduce((sum, s) => sum + (row[s] || 0), 0);
+      const jmlTH = statusGroups["Tidak Hadir"].reduce((sum, s) => sum + (row[s] || 0), 0);
+      const jmlKhusus = statusGroups.Lainnya.reduce((sum, s) => sum + (row[s] || 0), 0);
+      return '<tr><td><strong>' + tingkat + '</strong></td><td>' + jmlSiswa + '</td><td>' + (row["Tepat Waktu"] || 0) + '</td><td>' + (row["Terlambat"] || 0) + '</td><td>' + (row["Hadir Tidak Presensi"] || 0) + '</td><td><strong>' + jmlHadir + '</strong></td><td>' + (jmlSiswa ? ((jmlHadir / jmlSiswa) * 100).toFixed(1) : "-") + '%</td><td>' + (row["Sakit"] || 0) + '</td><td>' + (row["Izin"] || 0) + '</td><td>' + (row["Alpa"] || 0) + '</td><td><strong>' + jmlTH + '</strong></td><td>' + (jmlSiswa ? ((jmlTH / jmlSiswa) * 100).toFixed(1) : "-") + '%</td><td>' + (row["Daring"] || 0) + '</td><td>' + (row["Prakerin"] || 0) + '</td><td>' + (row["Libur"] || 0) + '</td><td>' + (jmlSiswa ? ((jmlKhusus / jmlSiswa) * 100).toFixed(1) : "-") + '%</td></tr>';
+    }).join('') +
+    '<tr class="total-row"><td>JUMLAH</td><td>' + totalSiswaGlobal + '</td><td>' + (totalRekap["Tepat Waktu"] || 0) + '</td><td>' + (totalRekap["Terlambat"] || 0) + '</td><td>' + (totalRekap["Hadir Tidak Presensi"] || 0) + '</td><td>' + totalHadirGlobal + '</td><td>' + persenHadirGlobal + '%</td><td>' + (totalRekap["Sakit"] || 0) + '</td><td>' + (totalRekap["Izin"] || 0) + '</td><td>' + (totalRekap["Alpa"] || 0) + '</td><td>' + totalTidakHadirGlobal + '</td><td>' + persenTidakHadirGlobal + '%</td><td>' + (totalRekap["Daring"] || 0) + '</td><td>' + (totalRekap["Prakerin"] || 0) + '</td><td>' + (totalRekap["Libur"] || 0) + '</td><td>' + persenLainnyaGlobal + '%</td></tr>' +
+    '</tbody></table>' +
+
+    '<!-- 3. LANGSUNG MENYAMBUNG: LAMPIRAN 1 (REKAP PER KELAS) -->' +
+    '<h3 class="section-title">Rekap Presensi Seluruh Kelas</h3>' +
+    '<table><thead>' +
+    '<tr><th rowspan="2">No</th><th rowspan="2">Kelas</th><th rowspan="2">Jumlah Siswa</th><th colspan="3">Hadir</th><th rowspan="2">Jumlah Hadir</th><th rowspan="2">% Hadir</th><th colspan="3">Tidak Hadir</th><th rowspan="2">Jumlah Tidak Hadir</th><th rowspan="2">% Tidak Hadir</th><th colspan="3">Status Khusus</th><th rowspan="2">% Khusus</th></tr>' +
+    '<tr><th>Tepat Waktu</th><th>Terlambat</th><th>Tidak Presensi</th><th>Sakit</th><th>Izin</th><th>Alpa</th><th>Daring</th><th>Prakerin</th><th>Libur</th></tr>' +
+    '</thead><tbody>' +
+    Object.keys(kelasRekap).map((kelasKey, i) => {
+      const row = kelasRekap[kelasKey];
+      const jmlSiswa = statusList.reduce((sum, s) => sum + (Number(row[s]) || 0), 0);
+      const jmlHadir = statusGroups.Hadir.reduce((sum, s) => sum + (Number(row[s]) || 0), 0);
+      const jmlTH = statusGroups["Tidak Hadir"].reduce((sum, s) => sum + (Number(row[s]) || 0), 0);
+      const jmlKhusus = statusGroups.Lainnya.reduce((sum, s) => sum + (Number(row[s]) || 0), 0);
+
+      const namaKelasFormatted = formatNamaKelas(kelasKey, row.tingkat);
+      const strTerlambat = (row["Terlambat"] || 0) > 0 ? `<span class="txt-danger">${row["Terlambat"]}</span>` : '0';
+      const strTidakPresensi = (row["Hadir Tidak Presensi"] || 0) > 0 ? `<span class="txt-warning">${row["Hadir Tidak Presensi"]}</span>` : '0';
+      const strAlpa = (row["Alpa"] || 0) > 0 ? `<span class="txt-danger">${row["Alpa"]}</span>` : '0';
+
+      const persenHadirVal = jmlSiswa ? ((jmlHadir / jmlSiswa) * 100).toFixed(1) : "0.0";
+      const strPersenHadir = parseFloat(persenHadirVal) === 100.0 ? `<span class="txt-success">${persenHadirVal}%</span>` : `${persenHadirVal}%`;
+
+      return '<tr><td>' + (i + 1) + '</td><td class="col-kelas">' + namaKelasFormatted + '</td><td class="col-summary">' + jmlSiswa + '</td><td>' + (row["Tepat Waktu"] || 0) + '</td><td>' + strTerlambat + '</td><td>' + strTidakPresensi + '</td><td class="col-summary"><strong>' + jmlHadir + '</strong></td><td>' + strPersenHadir + '</td><td>' + (row["Sakit"] || 0) + '</td><td>' + (row["Izin"] || 0) + '</td><td>' + strAlpa + '</td><td class="col-summary"><strong>' + jmlTH + '</strong></td><td>' + (jmlSiswa ? ((jmlTH / jmlSiswa) * 100).toFixed(1) : "0.0") + '%</td><td>' + (row["Daring"] || 0) + '</td><td>' + (row["Prakerin"] || 0) + '</td><td>' + (row["Libur"] || 0) + '</td><td>' + (jmlSiswa ? ((jmlKhusus / jmlSiswa) * 100).toFixed(1) : "0.0") + '%</td></tr>';
+    }).join('') +
+    '<tr class="total-row"><td colspan="2">JUMLAH</td><td>' + totalSiswaGlobal + '</td><td>' + (totalRekap["Tepat Waktu"] || 0) + '</td><td>' + (totalRekap["Terlambat"] || 0) + '</td><td>' + (totalRekap["Hadir Tidak Presensi"] || 0) + '</td><td>' + totalHadirGlobal + '</td><td>' + persenHadirGlobal + '%</td><td>' + (totalRekap["Sakit"] || 0) + '</td><td>' + (totalRekap["Izin"] || 0) + '</td><td>' + (totalRekap["Alpa"] || 0) + '</td><td>' + totalTidakHadirGlobal + '</td><td>' + persenTidakHadirGlobal + '%</td><td>' + (totalRekap["Daring"] || 0) + '</td><td>' + (totalRekap["Prakerin"] || 0) + '</td><td>' + (totalRekap["Libur"] || 0) + '</td><td>' + persenLainnyaGlobal + '%</td></tr>' +
+    '</tbody></table>' +
+
+    '<!-- 4. TANDA TANGAN PETUGAS PIKET DI PALING AKHIR MOVED HERE -->' +
+    '<div class="signature-wrap"><div class="signature-title">Petugas Piket,</div><div class="signature-name">' + namaPetugas + '</div></div>' +
+
+    '</body></html>';
+}
+
+// ==========================================
+// RENDERER 2: HTML PORTRAIT (LAMPIRAN 2 - NORMAL CASE STATUS & BIGGER SIGNATURE SPACE)
+// ==========================================
+function buildHtmlPortrait(data) {
+  const { displayDate, siswaByKelas, kelasRekap, statusGroups } = data;
+  const mapWali = getMapWaliKelas();
+
+  let html = '<html><head><style>' +
+    '@page { size: A4 portrait; margin: 8mm 10mm; }' +
+    'body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; font-size: 9px; color: #000; margin: 0; padding: 0; }' +
+    
+    '/* Container Utama */' +
+    '.page-container { width: 100%; margin: 0; }' +
+
+    '/* Header Grid Dua Kolom (Judul Kiri, Ringkasan Kanan) */' +
+    '.header-grid { display: table; width: 100%; margin-bottom: 14px; padding: 6px 10px 4px 10px; box-sizing: border-box; }' +
+    '.header-left { display: table-cell; vertical-align: middle; text-align: left; }' +
+    '.header-left h3 { font-size: 13.5px; font-weight: 800; margin: 0 0 3px 0; text-transform: uppercase; letter-spacing: 0.4px; }' +
+    '.header-left p { font-size: 9px; font-weight: 600; margin: 0 0 1px 0; color: #334155; }' +
+    
+    '.header-right { display: table-cell; vertical-align: middle; text-align: right; }' +
+
+    '/* Footnote Box/Ringkasan Header Compact Auto-fit */' +
+    '.footnote-wrap { display: inline-block; padding: 5px 9px; background-color: #f8fafc; border: 1px dashed #64748b; border-radius: 5px; font-size: 8px; line-height: 1.5; text-align: left; }' +
+    '.footnote-title { font-weight: 800; color: #0f172a; margin-bottom: 2px; text-transform: uppercase; font-size: 7.5px; letter-spacing: 0.3px; }' +
+    '.footnote-row { margin-bottom: 1px; }' +
+    '.sub-alert-warn { font-size: 7.5px; color: #b45309; background-color: #fef3c7; border: 1px solid #fde047; padding: 0px 4px; border-radius: 3px; font-weight: 700; margin-left: 3px; display: inline-block; }' +
+    '.sub-alert-danger { font-size: 7.5px; color: #b91c1c; background-color: #fef2f2; border: 1px solid #fca5a5; padding: 0px 4px; border-radius: 3px; font-weight: 700; margin-left: 3px; display: inline-block; }' +
+
+    '/* Wrapper khusus Tabel + TTD Rata Tengah sebagai satu kesatuan */' +
+    '.table-section { display: table; margin: 0 auto; text-align: left; }' +
+
+    '/* Tabel Data Siswa */' +
+    'table { border-collapse: collapse; width: auto; font-size: 9px; margin-bottom: 10px; border: 1px solid #1e293b; }' +
+    'th, td { padding: 3.5px 7px; text-align: center; vertical-align: middle; border: 1px solid #1e293b; white-space: nowrap; font-size: 9px; }' +
+    'th { background-color: #e2e8f0; color: #000; font-weight: 800; text-transform: uppercase; letter-spacing: 0.3px; }' +
+
+    '/* Status Badge/Pill (text-transform: none agar tidak uppercase) */' +
+    '.badge-status { padding: 1.5px 6px; border-radius: 3px; font-weight: 800; font-size: 8px; text-transform: none !important; display: inline-block; }' +
+    '.badge-tepat { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; }' +
+    '.badge-terlambat { background-color: #fef9c3; color: #a16207; border: 1px solid #fde047; }' +
+    '.badge-sangat-terlambat { background-color: #ffedd5; color: #c2410c; border: 1px solid #fdba74; }' +
+    '.badge-sangat-terlambat-sekali { background-color: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }' +
+    '.badge-tidak-presensi { background-color: #fff7ed; color: #ea580c; border: 1px solid #ffedd5; }' +
+    '.badge-sakit-izin { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }' +
+    '.badge-alpa { background-color: #fef2f2; color: #991b1b; border: 1px solid #f87171; }' +
+    '.badge-khusus { background-color: #f3e8ff; color: #6b21a8; border: 1px solid #e9d5ff; }' +
+
+    '/* TTD Nempel di Kanan Bawah Tabel (Jarak TTD Dinaikkan ke 55px) */' +
+    '.signature-wrap { width: 160px; margin-left: auto; margin-right: 20px; text-align: center; page-break-inside: avoid; }' +
+    '.signature-title { font-size: 8.5px; color: #000; margin-bottom: 55px; font-weight: 600; line-height: 1.3; }' +
+    '.signature-name { font-size: 9px; font-weight: 800; color: #000; }' +
+    '</style></head><body>';
+
+  const classKeys = Object.keys(siswaByKelas);
+
+  classKeys.forEach((idRombel, idx) => {
+    const listSiswa = siswaByKelas[idRombel] || [];
+    const namaKelasFormatted = formatNamaKelas(idRombel, kelasRekap[idRombel] ? kelasRekap[idRombel].tingkat : undefined);
+    const namaWaliKelas = mapWali[idRombel] || "-";
+
+    const totalSiswaKelas = listSiswa.length;
+    let countHadir = 0, countTerlambatTotal = 0, countTidakPresensi = 0;
+    let countTidakHadir = 0, countAlpa = 0;
+
+    listSiswa.forEach(s => {
+      const st = (s.status || "").toLowerCase();
+      if (st.includes("terlambat") || st === "tepat waktu" || st === "hadir tidak presensi") {
+        countHadir++;
+        if (st.includes("terlambat")) countTerlambatTotal++;
+        if (st === "hadir tidak presensi") countTidakPresensi++;
+      } else if (st === "sakit" || st === "izin" || st === "alpa") {
+        countTidakHadir++;
+        if (st === "alpa") countAlpa++;
+      }
+    });
+
+    const pctHadir = totalSiswaKelas ? ((countHadir / totalSiswaKelas) * 100).toFixed(1) : "0.0";
+    const pctTidakHadir = totalSiswaKelas ? ((countTidakHadir / totalSiswaKelas) * 100).toFixed(1) : "0.0";
+
+    if (idx > 0) {
+      html += '<div style="page-break-before: always; break-before: page;"></div>';
+    }
+
+    html += '<div class="page-container">' +
+      '<!-- HEADER DUA KOLOM -->' +
+      '<div class="header-grid">' +
+        '<div class="header-left">' +
+          '<h3>REKAP PRESENSI KELAS ' + namaKelasFormatted + '</h3>' +
+          '<p>Hari, Tanggal: ' + displayDate + '</p>' +
+          '<p>Wali Kelas: ' + namaWaliKelas + '</p>' +
+        '</div>' +
+        '<div class="header-right">' +
+          '<div class="footnote-wrap">' +
+            '<div class="footnote-title">📌 Ringkasan Kehadiran:</div>' +
+            '<div class="footnote-row"><strong>Hadir:</strong> ' + countHadir + ' Siswa (' + pctHadir + '%)';
+            
+    if (countTerlambatTotal > 0) {
+      html += '<span class="sub-alert-warn">⚠️ ' + countTerlambatTotal + ' Terlambat</span>';
+    }
+    if (countTidakPresensi > 0) {
+      html += '<span class="sub-alert-warn">⚠️ ' + countTidakPresensi + ' Tidak Presensi</span>';
+    }
+
+    html += '</div>' +
+            '<div class="footnote-row"><strong>Tidak Hadir:</strong> ' + countTidakHadir + ' Siswa (' + pctTidakHadir + '%)';
+
+    if (countAlpa > 0) {
+      html += '<span class="sub-alert-danger">🚨 ' + countAlpa + ' Alpa</span>';
+    }
+
+    html += '</div></div>' +
+        '</div>' +
+      '</div>' +
+
+      '<!-- WRAPPER TABEL + TTD KE SIKU KANAN TABEL -->' +
+      '<div class="table-section">' +
+        '<table><thead><tr>' +
+          '<th style="width: 28px;">No</th>' +
+          '<th style="text-align: left; padding-left: 6px;">Nama Siswa</th>' +
+          '<th style="width: 75px;">Jam Masuk</th>' +
+          '<th style="width: 130px;">Status Presensi</th>' +
+        '</tr></thead><tbody>';
+
+    listSiswa.forEach((siswa, sIdx) => {
+      const jamMasuk = siswa.jam_masuk || "-";
+      const statusRaw = siswa.status || "-";
+      let badgeClass = "badge-sakit-izin";
+
+      const stLower = statusRaw.toLowerCase();
+      if (stLower === "tepat waktu") badgeClass = "badge-tepat";
+      else if (stLower === "terlambat") badgeClass = "badge-terlambat";
+      else if (stLower === "sangat terlambat") badgeClass = "badge-sangat-terlambat";
+      else if (stLower === "sangat terlambat sekali") badgeClass = "badge-sangat-terlambat-sekali";
+      else if (stLower === "hadir tidak presensi") badgeClass = "badge-tidak-presensi";
+      else if (stLower === "alpa") badgeClass = "badge-alpa";
+      else if (stLower === "daring" || stLower === "prakerin" || stLower === "libur") badgeClass = "badge-khusus";
+
+      html += '<tr>' +
+        '<td>' + (sIdx + 1) + '</td>' +
+        '<td style="text-align: left; padding-left: 6px;"><strong>' + siswa.nama + '</strong></td>' +
+        '<td>' + jamMasuk + '</td>' +
+        '<td><span class="badge-status ' + badgeClass + '">' + statusRaw + '</span></td>' +
+      '</tr>';
+    });
+
+    html += '</tbody></table>' +
+
+        '<!-- TTD NEMPEL DI KANAN TABEL -->' +
+        '<div class="signature-wrap">' +
+          '<div class="signature-title">Wali Kelas,</div>' +
+          '<div class="signature-name">' + namaWaliKelas + '</div>' +
+        '</div>' +
+      '</div>' + // Close .table-section
+
+    '</div>'; // Close .page-container
   });
 
-  let suksesKirim = 0, gagalKirim = 0;
-  daftarPesanKirim.forEach((teksPesan, index) => {
-    const hasil = kirimOneSenderWaliKelas_(idGrupPiket, teksPesan);
-    if (hasil.success) suksesKirim++;
-    else gagalKirim++;
-    if (index < daftarPesanKirim.length - 1) Utilities.sleep(5000);
-  });
+  html += '</body></html>';
+  return html;
+}
 
-  return { success: suksesKirim > 0, message: suksesKirim > 0 ? `${suksesKirim} rekap pesan berhasil dikirim ke WhatsApp!` : "Gagal mengirim rekap pesan." };
+function getLatestRekapUrl() {
+  try {
+    const ssMaster = SpreadsheetApp.getActiveSpreadsheet();
+    const sheetLaporanName = SHEETS.LAPORAN_PRESENSI || "laporan_presensi";
+    const sheet = ssMaster.getSheetByName(sheetLaporanName);
+    
+    if (!sheet) return null;
+    
+    const lastRow = sheet.getLastRow();
+    if (lastRow <= 1) return null; // Belum ada data selain header
+    
+    // Ambil URL di kolom C (file_laporan) pada baris terakhir
+    const fileUrl = sheet.getRange(lastRow, 3).getValue();
+    return String(fileUrl).trim();
+  } catch (e) {
+    Logger.log("Error getLatestRekapUrl: " + e.message);
+    return null;
+  }
+}
+
+/**
+ * Helper untuk mengetes rekap & validasi status kosong hari ini (22/09/2026)
+ */
+function tesBuatRekapHariIni() {
+  try {
+    const hariIniStr = Utilities.formatDate(new Date(), TZ || "Asia/Jakarta", "yyyy-MM-dd");
+    Logger.log(`🔄 [1/2] Mengecek status kosong untuk hari ini (${hariIniStr})...`);
+
+    // 1. Tes Cek Status Kosong
+    const jumlahKosong = cekStatusKosongHariIni(hariIniStr);
+    Logger.log(`📊 Hasil Cek Kosong: Ada ${jumlahKosong} siswa yang belum presensi / kosong.`);
+
+    // 2. Tes Generate Rekap PDF
+    Logger.log(`🔄 [2/2] Memulai generate rekap PDF hari ini...`);
+    const namaPetugas = "Admin Piket (Test Hari Ini)";
+    const urlPdf = buatRekapPresensiHarian(namaPetugas, hariIniStr);
+
+    Logger.log(`✅ SUKSES! Link PDF Rekap Hari Ini (${hariIniStr}):`);
+    Logger.log(urlPdf);
+
+  } catch (e) {
+    Logger.log(`❌ Gagal jalankan tes: ${e.message}`);
+  }
+}
+
+/**
+ * Format Date ke String Indonesia (e.g. Senin, 21 September 2026)
+ */
+function formatTanggalIndonesia(date) {
+  const hari = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  const bulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+  return hari[date.getDay()] + ", " + date.getDate() + " " + bulan[date.getMonth()] + " " + date.getFullYear();
+}
+
+/**
+ * HELPER CONVERT ID_ROMBEL + TINGKAT -> NAMA KELAS DISPLAY
+ * Contoh: ("AKN-A25", "XI") -> "AKN XI-A"
+ */
+function formatNamaKelas(idRombel, tingkat) {
+  if (!idRombel || typeof idRombel !== "string") return "-";
+  const parts = idRombel.trim().split("-");
+  const jurusan = parts[0] || "";
+  const subPart = parts[1] || "";
+  const subKelas = subPart.replace(/[0-9]/g, "").trim(); 
+  const tkt = tingkat || "";
+
+  if (jurusan && tkt && subKelas) {
+    return `${jurusan.toUpperCase()} ${tkt.toUpperCase()}-${subKelas.toUpperCase()}`;
+  }
+  return idRombel;
+}
+
+/**
+ * MENGOLAH DATA MASTER & MENGIRIM REKAP KE GRUP WA PIKET
+ */
+function kirimRekapPresensiWA(tanggal, namaPetugas, pdfUrlInput) {
+  try {
+    const config = getSystemConfig();
+    const ss = getPresensiSpreadsheet(tanggal);
+    
+    const sheetMasterName = (typeof SHEETS !== 'undefined' && SHEETS.MASTER_PRESENSI) ? SHEETS.MASTER_PRESENSI : "master_presensi";
+    const sheetMaster = ss.getSheetByName(sheetMasterName);
+
+    if (!sheetMaster) {
+      return { success: false, message: `Sheet '${sheetMasterName}' tidak ditemukan.` };
+    }
+
+    const idGrupPiket = config.wa_group_id_piket;
+    if (!idGrupPiket) {
+      return { success: false, message: "Gagal! 'wa_group_id_piket' belum diisi pada sheet 'config_sistem'." };
+    }
+
+    const pdfUrl = pdfUrlInput || (typeof getLatestRekapUrl === 'function' ? getLatestRekapUrl() : "") || "";
+
+    let dateObj;
+    if (tanggal && String(tanggal).includes("-")) {
+      const p = String(tanggal).split("-");
+      dateObj = (p[0].length === 4) 
+        ? new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]))
+        : new Date(Number(p[2]), Number(p[1]) - 1, Number(p[0]));
+    } else {
+      dateObj = new Date();
+    }
+
+    const tz = (typeof TZ !== 'undefined') ? TZ : Session.getScriptTimeZone() || "Asia/Jakarta";
+    const tanggalSheet = Utilities.formatDate(dateObj, tz, "dd/MM/yyyy");
+    const tanggalDisplay = (typeof formatTanggalIndonesia === 'function') ? formatTanggalIndonesia(dateObj) : tanggalSheet;
+
+    /* =====================================
+       1. MAPPING WALI KELAS (Key: id_rombel)
+    ===================================== */
+    const sheetWaliName = (typeof SHEETS !== 'undefined' && SHEETS.WALI_KELAS) ? SHEETS.WALI_KELAS : "wali_kelas";
+    const sheetWali = ss.getSheetByName(sheetWaliName);
+    const waliMap = {}; // Key-nya id_rombel (contoh: "AKN-A25")
+
+    if (sheetWali) {
+      const dataWali = sheetWali.getDataRange().getValues();
+      if (dataWali.length > 1) {
+        const headerW = dataWali.shift();
+        const headerWClean = headerW.map(h => String(h || "").toLowerCase().trim());
+        
+        const idxKelas = headerWClean.indexOf("id_rombel") !== -1 
+          ? headerWClean.indexOf("id_rombel") 
+          : headerWClean.indexOf("kelas");
+          
+        const idxNama = headerWClean.indexOf("nama_wali_kelas") !== -1 
+          ? headerWClean.indexOf("nama_wali_kelas") 
+          : headerWClean.indexOf("nama wali kelas");
+
+        if (idxKelas !== -1 && idxNama !== -1) {
+          dataWali.forEach(row => {
+            const rombel = String(row[idxKelas] || "").trim().toUpperCase();
+            const nama   = String(row[idxNama] || "").trim();
+            if (rombel && nama) {
+              waliMap[rombel] = nama;
+            }
+          });
+        }
+      }
+    }
+
+    /* =====================================
+       2. AMBIL & HITUNG DATA MASTER
+    ===================================== */
+    const rangeMaster = `'${sheetMasterName}'!A:L`;
+    const resMaster = Sheets.Spreadsheets.Values.get(ss.getId(), rangeMaster);
+    const dataMaster = resMaster ? resMaster.values : null;
+
+    if (!dataMaster || dataMaster.length <= 1) {
+      return { success: false, message: "Data master presensi kosong!" };
+    }
+
+    const header = dataMaster[0].map(h => String(h).toLowerCase().trim());
+    const rows = dataMaster.slice(1);
+
+    const idxTanggal = header.indexOf("tanggal");
+    const idxKelas   = header.indexOf("id_rombel") !== -1 ? header.indexOf("id_rombel") : header.indexOf("kelas");
+    const idxTingkat = header.indexOf("tingkat");
+    const idxStatus  = header.indexOf("status_masuk");
+
+    if (idxTanggal === -1 || idxKelas === -1 || idxStatus === -1) {
+      return { success: false, message: "Header kolom pada master presensi tidak lengkap." };
+    }
+
+    const mapTingkat = {};
+    let totalSiswaGlobal = 0, totalHadirGlobal = 0, totalTidakHadirGlobal = 0;
+    let totalPrakerinGlobal = 0, totalTidakScanGlobal = 0;
+    let totalTerlambatGlobal = 0, totalSangatGlobal = 0, totalSangatSekaliGlobal = 0;
+    let totalAlpaGlobal = 0, totalSakitGlobal = 0, totalIzinGlobal = 0;
+
+    rows.forEach(row => {
+      let tgl = row[idxTanggal];
+      let tglStr = (tgl instanceof Date) ? Utilities.formatDate(tgl, tz, "dd/MM/yyyy") : String(tgl || "").trim();
+      if (tglStr !== tanggalSheet) return;
+
+      const idRombel = String(row[idxKelas] || "").trim().toUpperCase();
+      let tingkat = idxTingkat !== -1 ? String(row[idxTingkat] || "").trim().toUpperCase() : "";
+      const st = String(row[idxStatus] || "").trim();
+
+      if (!idRombel) return;
+
+      if (!tingkat) {
+        if (idRombel.includes(" X-") || idRombel.includes(" X ")) tingkat = "X";
+        else if (idRombel.includes(" XI-") || idRombel.includes(" XI ")) tingkat = "XI";
+        else if (idRombel.includes(" XII-") || idRombel.includes(" XII ")) tingkat = "XII";
+        else tingkat = "LAINNYA";
+      }
+
+      if (!mapTingkat[tingkat]) mapTingkat[tingkat] = {};
+      if (!mapTingkat[tingkat][idRombel]) {
+        mapTingkat[tingkat][idRombel] = {
+          total: 0, hadir: 0, tidakScan: 0, terlambat: 0, sangatTerlambat: 0, sangatSekali: 0,
+          tidakHadir: 0, alpa: 0, sakit: 0, izin: 0, prakerin: 0, libur: 0
+        };
+      }
+
+      const rec = mapTingkat[tingkat][idRombel];
+      rec.total++;
+      totalSiswaGlobal++;
+
+      if (["Tepat Waktu", "Terlambat", "Sangat Terlambat", "Sangat Terlambat Sekali", "Hadir Tidak Presensi"].includes(st)) {
+        rec.hadir++;
+        totalHadirGlobal++;
+
+        if (st === "Hadir Tidak Presensi") {
+          rec.tidakScan++;
+          totalTidakScanGlobal++;
+        } else if (st === "Terlambat") {
+          rec.terlambat++;
+          totalTerlambatGlobal++;
+        } else if (st === "Sangat Terlambat") {
+          rec.sangatTerlambat++;
+          totalSangatGlobal++;
+        } else if (st === "Sangat Terlambat Sekali") {
+          rec.sangatSekali++;
+          totalSangatSekaliGlobal++;
+        }
+      } else if (["Sakit", "Izin", "Alpa"].includes(st)) {
+        rec.tidakHadir++;
+        totalTidakHadirGlobal++;
+        if (st === "Alpa") { rec.alpa++; totalAlpaGlobal++; }
+        if (st === "Sakit") { rec.sakit++; totalSakitGlobal++; }
+        if (st === "Izin") { rec.izin++; totalIzinGlobal++; }
+      } else if (st.toLowerCase().includes("prakerin") || st.toLowerCase().includes("pkl")) {
+        rec.prakerin++;
+        totalPrakerinGlobal++;
+      } else if (st === "Libur") {
+        rec.libur++;
+      }
+    });
+
+    const daftarTingkat = Object.keys(mapTingkat).sort();
+    if (daftarTingkat.length === 0 || totalSiswaGlobal === 0) {
+      return { success: false, message: "Tidak ada data presensi untuk tanggal ini." };
+    }
+
+    const daftarPesanKirim = [];
+
+    /* =====================================
+       3. PESAN 1: SUMMARY GLOBAL UTAMA
+    ===================================== */
+    const persenHadirGlobal    = Math.round((totalHadirGlobal / totalSiswaGlobal) * 100);
+    const persenTHGlobal       = Math.round((totalTidakHadirGlobal / totalSiswaGlobal) * 100);
+    const persenPrakerinGlobal = Math.round((totalPrakerinGlobal / totalSiswaGlobal) * 100);
+
+    let pesanSummary = `Rekap Presensi Siswa, ${tanggalDisplay}\n`;
+    pesanSummary += `Piket: ${namaPetugas || "Portal Piket"}\n`;
+    pesanSummary += `===============================\n\n`;
+    pesanSummary += `👥 *Total Siswa:* ${totalSiswaGlobal} Siswa\n`;
+    pesanSummary += `✅ *Total Hadir:* ${totalHadirGlobal} Siswa (${persenHadirGlobal}%)\n`;
+    pesanSummary += `❌ *Total Tidak Hadir:* ${totalTidakHadirGlobal} Siswa (${persenTHGlobal}%)\n`;
+    
+    if (totalPrakerinGlobal > 0) {
+      pesanSummary += `💼 *Prakerin:* ${totalPrakerinGlobal} Siswa (${persenPrakerinGlobal}%)\n`;
+    }
+    
+    pesanSummary += `\n*Rincian Ketidakhadiran:*\n`;
+    if (totalTidakHadirGlobal === 0) {
+      pesanSummary += `• Seluruh Siswa Hadir 🌟\n\n`;
+    } else {
+      pesanSummary += `• ${totalAlpaGlobal} Alpa\n`;
+      pesanSummary += `• ${totalSakitGlobal} Sakit\n`;
+      pesanSummary += `• ${totalIzinGlobal} Izin\n\n`;
+    }
+
+    pesanSummary += `*Rincian Kehadiran:*\n`;
+    const scanStr = totalTidakScanGlobal > 0 ? `${totalTidakScanGlobal} Siswa Tidak Scan` : "Seluruh Siswa Scan 🌟";
+    pesanSummary += `• ${scanStr}\n`;
+    
+    const totalLateGlobal = totalTerlambatGlobal + totalSangatGlobal + totalSangatSekaliGlobal;
+    if (totalLateGlobal === 0) {
+      pesanSummary += `• Seluruh Siswa Tepat Waktu 🌟\n\n`;
+    } else {
+      pesanSummary += `• ${totalTerlambatGlobal} Terlambat\n`;
+      pesanSummary += `• ${totalSangatGlobal} Sangat Terlambat\n`;
+      pesanSummary += `• ${totalSangatSekaliGlobal} Sangat Terlambat Sekali\n\n`;
+    }
+
+    pesanSummary += `===============================\n`;
+    if (pdfUrl) pesanSummary += `📄 *PDF Rekap:* ${pdfUrl}\n`;
+    pesanSummary += `🌐 *Portal Monitoring:* s.id/PresensiMedCom-Monitoring`;
+
+    daftarPesanKirim.push(pesanSummary);
+
+    /* =====================================
+       4. PESAN RINCIAN PER KELAS (FORMAT DENGAN WALI & NAMA KELAS)
+    ===================================== */
+    daftarTingkat.forEach(tingkat => {
+      const mapKelas = mapTingkat[tingkat];
+      const daftarKelas = Object.keys(mapKelas).sort();
+      const kelasAktif = daftarKelas.filter(k => mapKelas[k].hadir > 0);
+      if (kelasAktif.length === 0) return;
+
+      let pesan = "";
+      kelasAktif.forEach((idRombel, idx) => {
+        const rec = mapKelas[idRombel];
+        
+        // 🔥 GUnakan formatNamaKelas agar id_rombel "AKN-A25" berubah jadi "AKN XI-A"
+        const namaDisplayKelas = formatNamaKelas(idRombel, tingkat);
+        
+        // 🔥 Cari Wali Kelas berdasarkan id_rombel ("AKN-A25")
+        const namaWaliStr = waliMap[idRombel] ? ` (${waliMap[idRombel]})` : "";
+        
+        let pesanScan = (rec.tidakScan === 0) ? "Seluruh Siswa Scan 🌟" : `*${rec.tidakScan} SISWA TIDAK SCAN*`;
+
+        let pesanTerlambat = "";
+        const totalLate = rec.terlambat + rec.sangatTerlambat + rec.sangatSekali;
+        if (totalLate === 0) {
+          pesanTerlambat = "Seluruh Siswa Tepat Waktu 🌟";
+        } else {
+          const arrLate = [];
+          if (rec.terlambat > 0) arrLate.push(`${rec.terlambat} Terlambat`);
+          if (rec.sangatTerlambat > 0) arrLate.push(`${rec.sangatTerlambat} Sangat Terlambat`);
+          if (rec.sangatSekali > 0) arrLate.push(`${rec.sangatSekali} Sangat Terlambat Sekali`);
+          pesanTerlambat = arrLate.join(", ");
+        }
+
+        let rincianTidakHadir = "";
+        if (rec.tidakHadir > 0) {
+          const arrTH = [];
+          if (rec.alpa > 0) arrTH.push(`*${rec.alpa} ALPA*`);
+          if (rec.sakit > 0) arrTH.push(`${rec.sakit} Sakit`);
+          if (rec.izin > 0) arrTH.push(`${rec.izin} Izin`);
+          rincianTidakHadir = `\n• ${arrTH.join(", ")}`;
+        }
+
+        let rawPersen = rec.total > 0 ? (rec.hadir / rec.total) * 100 : 0;
+        let persenStr = (rawPersen === 100) ? "100% 🌟" : `${rawPersen.toFixed(1)}%`;
+
+        pesan += `*${namaDisplayKelas}*${namaWaliStr}\n`;
+        pesan += `*Total Hadir:* ${rec.hadir} Siswa\n`;
+        pesan += `• ${pesanScan}\n`;
+        pesan += `• ${pesanTerlambat}\n`;
+        pesan += `*Total Tidak Hadir:* ${rec.tidakHadir} Siswa${rincianTidakHadir}\n`;
+        pesan += `*Persentase Kehadiran:* ${persenStr}`;
+
+        if (idx < kelasAktif.length - 1) {
+          pesan += `\n\n`;
+        }
+      });
+
+      if (pesan.trim()) {
+        daftarPesanKirim.push(pesan.trim());
+      }
+    });
+
+    /* =====================================
+       5. KIRIM VIA ENGINE sendWA (JEDA SINKRON)
+    ===================================== */
+    let suksesKirim = 0;
+    let gagalKirim = 0;
+
+    for (let i = 0; i < daftarPesanKirim.length; i++) {
+      const teksPesan = daftarPesanKirim[i];
+      const hasil = sendWA(idGrupPiket, teksPesan);
+      if (hasil && hasil.success) {
+        suksesKirim++;
+      } else {
+        gagalKirim++;
+      }
+
+      if (i < daftarPesanKirim.length - 1) {
+        Utilities.sleep(5000); // Jeda 5 detik
+      }
+    }
+
+    if (suksesKirim > 0) {
+      return { 
+        success: true, 
+        message: `${suksesKirim} dari ${daftarPesanKirim.length} rekap pesan berhasil dikirim beruntutan ke WhatsApp!` 
+      };
+    } else {
+      return { 
+        success: false, 
+        message: "Gagal mengirim rekap pesan ke WhatsApp." 
+      };
+    }
+
+  } catch (err) {
+    Logger.log("❌ Error kirimRekapPresensiWA: " + err.message);
+    return { 
+      success: false, 
+      message: err.message || err.toString() 
+    };
+  }
 }

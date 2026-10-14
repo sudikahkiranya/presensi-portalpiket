@@ -189,6 +189,7 @@ async function fetchData(selectedDate) {
     initFilters(window.dataSiswa);
     applyFilter();
     updateSyncStatus();
+    refreshServerSyncStatus(dateVal);
 
     hideLoading();
 
@@ -677,6 +678,8 @@ let syncInProgress = false;
 // STATUS KONEKSI & SINKRONISASI
 // ============================================================
 let lastSuccessfulSyncByDate = {};
+let serverSyncStatusByDate = {};
+let syncStatusRequestId = 0;
 
 function getSelectedAttendanceDate() {
   const user = JSON.parse(localStorage.getItem("piket_user") || "null");
@@ -720,7 +723,7 @@ function setSyncStatus(state, label, caption, detail, showRetry = false) {
     };
     const fallbackIcons = {
       saved: "✓",
-      syncing: "⟳",
+      syncing: "↻",
       offline: "×",
       error: "!",
       pending: "◷"
@@ -747,10 +750,11 @@ function setSyncStatus(state, label, caption, detail, showRetry = false) {
 function updateSyncStatus() {
   const queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   const date = getSelectedAttendanceDate();
-  const pendingForDate = queue.filter(item => !item.tanggal || item.tanggal === date).length;
-  const lastSync = lastSuccessfulSyncByDate[date];
+  const pendingForDate = queue.filter(item => !item.tanggal || normalizeDateKey(item.tanggal) === normalizeDateKey(date)).length;
+  const serverStatus = serverSyncStatusByDate[normalizeDateKey(date)];
+  const lastSync = serverStatus?.timestamp || null;
   const online = navigator.onLine;
-  const lastText = lastSync ? formatSyncDateTime(lastSync) : "#N/A";
+  const lastText = lastSync ? formatSyncDateTime(lastSync) : (serverStatus ? serverStatus.formatted : "Memuat riwayat…");
 
   if (!online) {
     setSyncStatus("offline", "Offline", pendingForDate
@@ -766,29 +770,56 @@ function updateSyncStatus() {
   }
 }
 
+// Samakan format tanggal agar YYYY-MM-DD dari input cocok dengan DD/MM/YYYY dari master/log.
+function normalizeDateKey(value) {
+  if (!value) return "";
+  const raw = String(value).trim();
+  let match = raw.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (match) return `${match[1]}-${String(match[2]).padStart(2, "0")}-${String(match[3]).padStart(2, "0")}`;
+  match = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (match) return `${match[3]}-${String(match[2]).padStart(2, "0")}-${String(match[1]).padStart(2, "0")}`;
+  return raw;
+}
+
+async function refreshServerSyncStatus(date = getSelectedAttendanceDate()) {
+  if (!date) return;
+  const requestId = ++syncStatusRequestId;
+  try {
+    const response = await fetch(`${API_URL}?action=getSinkronisasiTerakhir&tanggal=${encodeURIComponent(date)}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const result = await response.json();
+    if (!result || result.success !== true) throw new Error(result?.message || "Respons riwayat tidak valid");
+    serverSyncStatusByDate[normalizeDateKey(date)] = {
+      timestamp: result.timestamp || null,
+      formatted: result.formatted || "Belum ada perubahan tersimpan"
+    };
+    // Hindari respons tanggal lama menimpa status tanggal yang sedang dipilih.
+    if (requestId === syncStatusRequestId && date === getSelectedAttendanceDate()) updateSyncStatus();
+  } catch (err) {
+    console.warn("[Sync] Gagal mengambil riwayat dari log_presensi:", err);
+    serverSyncStatusByDate[normalizeDateKey(date)] = { timestamp: null, error: true, formatted: "Riwayat belum dapat dimuat" };
+    if (requestId === syncStatusRequestId && date === getSelectedAttendanceDate()) {
+      setSyncStatus("error", "Riwayat tidak tersedia", "Gagal membaca log_presensi", "", true);
+    }
+  }
+}
+
 function updateConnectionStatus() {
   updateSyncStatus();
 }
 
 function recordSuccessfulSync(item) {
+  // Sumber kebenaran riwayat sekarang adalah log server, bukan localStorage.
   const date = (item && item.tanggal) || getSelectedAttendanceDate();
-  lastSuccessfulSyncByDate[date] = new Date().toISOString();
-  try {
-    localStorage.setItem("piket_last_successful_sync_by_date", JSON.stringify(lastSuccessfulSyncByDate));
-  } catch (err) {
-    console.warn("[Sync] Tidak dapat menyimpan riwayat waktu sinkronisasi.", err);
-  }
+  refreshServerSyncStatus(date);
   updateSyncStatus();
 }
 
 function initSyncStatus() {
-  try {
-    lastSuccessfulSyncByDate = JSON.parse(localStorage.getItem("piket_last_successful_sync_by_date") || "{}") || {};
-  } catch (err) {
-    lastSuccessfulSyncByDate = {};
-  }
+  // Jangan memakai cache localStorage sebagai waktu sinkronisasi resmi.
   updateConnectionStatus();
   updateSyncStatus();
+  refreshServerSyncStatus(getSelectedAttendanceDate());
 }
 
 function processStatusChange(rowIndex, newValue, tanggal) {
