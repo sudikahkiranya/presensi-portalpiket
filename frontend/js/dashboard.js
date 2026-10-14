@@ -721,21 +721,10 @@ function setSyncStatus(state, label, caption, detail, showRetry = false) {
       error: "alert-circle",
       pending: "clock"
     };
-    const fallbackIcons = {
-      saved: "✓",
-      syncing: "↻",
-      offline: "×",
-      error: "!",
-      pending: "◷"
-    };
     const iconName = iconNames[state] || "clock";
-
+    icon.innerHTML = `<i data-lucide="${iconName}"></i>`;
     if (window.lucide && typeof window.lucide.createIcons === "function") {
-      icon.innerHTML = `<i data-lucide="${iconName}"></i>`;
       window.lucide.createIcons();
-    } else {
-      // Fallback supaya ikon tetap terlihat jika library gagal dimuat.
-      icon.textContent = fallbackIcons[state] || "◷";
     }
   }
   if (labelEl) labelEl.textContent = label;
@@ -761,10 +750,22 @@ function updateSyncStatus() {
       ? `${pendingForDate} perubahan menunggu koneksi`
       : `Sinkronisasi terakhir: ${lastText}`, "", pendingForDate > 0);
   } else if (syncInProgress) {
-    setSyncStatus("syncing", "Menyimpan perubahan…", "Menyimpan perubahan ke server…", "", false);
+    // Hitung antrean terkini setiap kali status berubah, termasuk data baru
+    // yang ditambahkan pengguna saat request penyimpanan sedang berjalan.
+    const activeCount = Math.max(queue.length, 1);
+    setSyncStatus(
+      "syncing",
+      `Menyimpan ${activeCount} data...`,
+      activeCount > 1
+        ? `Data sedang diproses · ${activeCount} data masih berada dalam antrean penyimpanan`
+        : "Sedang menyimpan perubahan ke server...",
+      "",
+      false
+    );
   } else if (pendingForDate > 0) {
-    setSyncStatus("pending", `Menunggu sinkronisasi (${pendingForDate})`,
-      `Sinkronisasi terakhir: ${lastText}`, "", true);
+    // Perubahan sudah masuk antrean lokal, tetapi belum mulai dikirim ke server.
+    setSyncStatus("pending", `Belum tersimpan (${pendingForDate} data)`,
+      `Perubahan tersimpan sementara di perangkat · Terakhir: ${lastText}`, "", true);
   } else {
     setSyncStatus("saved", "Tersimpan", `Sinkronisasi terakhir: ${lastText}`, "", false);
   }
@@ -809,9 +810,9 @@ function updateConnectionStatus() {
 }
 
 function recordSuccessfulSync(item) {
-  // Sumber kebenaran riwayat sekarang adalah log server, bukan localStorage.
+  // Riwayat resmi dibaca dari server. Refresh tanggal item agar cache tanggal itu ikut terbarui.
   const date = (item && item.tanggal) || getSelectedAttendanceDate();
-  refreshServerSyncStatus(date);
+  void refreshServerSyncStatus(date);
   updateSyncStatus();
 }
 
@@ -890,9 +891,9 @@ async function syncPendingUpdates(showOverlay = false) {
   }
 
   syncInProgress = true;
-  updateSyncStatus();
   let synced = 0;
   let failed = false;
+  updateSyncStatus();
 
   if (showOverlay) {
     showLoading(`Menyinkronkan ${queue.length} data ke server...`);
@@ -911,8 +912,16 @@ async function syncPendingUpdates(showOverlay = false) {
         break;
       }
 
-      // Kirim satu data setiap request.
+      // Kirim satu data setiap request dan tampilkan countdown antrean.
       const item = queue[0];
+      const totalRemaining = queue.length;
+      setSyncStatus(
+        "syncing",
+        totalRemaining > 1 ? `Menyimpan ${totalRemaining} data...` : "Menyimpan 1 data...",
+        totalRemaining > 1 ? `Sisa ${totalRemaining} data dalam proses penyimpanan` : "Sedang menyimpan perubahan terakhir ke server",
+        "",
+        false
+      );
 
       const response = await fetch(API_URL, {
         method: "POST",
@@ -957,12 +966,28 @@ async function syncPendingUpdates(showOverlay = false) {
           JSON.stringify(currentQueue)
         );
 
-        recordSuccessfulSync(item);
-        synced++;
       }
 
-      // Update angka setelah setiap penyimpanan sukses.
+      // Request ini dikonfirmasi sukses oleh server walaupun antrean lokal sudah berubah.
+      recordSuccessfulSync(item);
+      synced++;
+
+      // Update angka setelah setiap penyimpanan sukses, termasuk countdown pada panel.
       updatePendingBadge();
+      const remainingNow = JSON.parse(
+        localStorage.getItem("piket_pending_updates") || "[]"
+      ).length;
+      if (remainingNow > 0) {
+        setSyncStatus(
+          "syncing",
+          `Menyimpan ${remainingNow} data...`,
+          `Berhasil menyimpan ${synced} data · Sisa ${remainingNow} data`,
+          "",
+          false
+        );
+      } else {
+        setSyncStatus("syncing", "Menyelesaikan penyimpanan...", "Memperbarui riwayat sinkronisasi", "", false);
+      }
 
       if (showOverlay) {
         const remaining = JSON.parse(
@@ -989,6 +1014,12 @@ async function syncPendingUpdates(showOverlay = false) {
     updatePendingBadge();
     updateConnectionStatus();
     updateSyncStatus();
+  }
+
+  // Pastikan indikator FE langsung membaca ulang log setelah batch selesai.
+  // Jangan hanya mengandalkan refresh per item yang berjalan asynchronous.
+  if (synced > 0) {
+    await refreshServerSyncStatus(getSelectedAttendanceDate());
   }
 
   const remaining = JSON.parse(
