@@ -714,21 +714,26 @@ function setSyncStatus(state, label, caption, detail, showRetry = false) {
   const retry = document.getElementById("retrySyncButton");
   panel.dataset.state = state;
   if (icon) {
-    const iconNames = {
-      saved: "check",
-      syncing: "refresh-cw",
-      offline: "wifi-off",
-      error: "alert-circle",
-      pending: "clock"
-    };
-    const iconName = iconNames[state] || "clock";
-    icon.innerHTML = `<i data-lucide="${iconName}"></i>`;
-    if (window.lucide && typeof window.lucide.createIcons === "function") {
-      window.lucide.createIcons();
+    if (state === "syncing") {
+      // Spinner mini menggantikan ikon besar saat proses penyimpanan.
+      icon.innerHTML = '<span class="sync-mini-spinner" aria-hidden="true"></span>';
+    } else {
+      const iconNames = {
+        saved: "check",
+        offline: "wifi-off",
+        error: "alert-circle",
+        pending: "clock"
+      };
+      const iconName = iconNames[state] || "clock";
+      icon.innerHTML = `<i data-lucide="${iconName}"></i>`;
+      if (window.lucide && typeof window.lucide.createIcons === "function") {
+        window.lucide.createIcons();
+      }
     }
   }
   if (labelEl) labelEl.textContent = label;
-  if (captionEl) captionEl.textContent = caption || "";
+  // Saat menyimpan, cukup tampilkan teks utama dan spinner; hindari deskripsi berulang.
+  if (captionEl) captionEl.textContent = state === "syncing" ? "" : (caption || "");
   if (detailEl) {
     detailEl.textContent = detail || "";
     detailEl.hidden = !detail;
@@ -931,7 +936,7 @@ async function syncPendingUpdates(showOverlay = false) {
       setSyncStatus(
         "syncing",
         totalRemaining > 1 ? `Menyimpan ${totalRemaining} data...` : "Menyimpan 1 data...",
-        totalRemaining > 1 ? `Sisa ${totalRemaining} data dalam proses penyimpanan` : "Sedang menyimpan perubahan terakhir ke server",
+        "",
         "",
         false
       );
@@ -994,12 +999,12 @@ async function syncPendingUpdates(showOverlay = false) {
         setSyncStatus(
           "syncing",
           `Menyimpan ${remainingNow} data...`,
-          `Berhasil menyimpan ${synced} data · Sisa ${remainingNow} data`,
+          "",
           "",
           false
         );
       } else {
-        setSyncStatus("syncing", "Menyelesaikan penyimpanan...", "Memperbarui riwayat sinkronisasi", "", false);
+        setSyncStatus("syncing", "Menyimpan...", "", "", false);
       }
 
       if (showOverlay) {
