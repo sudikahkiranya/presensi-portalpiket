@@ -65,8 +65,6 @@ function initFormPiket() {
   setPetugasPiket(user.nama);
   setRoleUser(user.role);
   initSyncStatus();
-  const pendingAtStartup = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
-  if (pendingAtStartup.length) scheduleAutoRetry(1200);
   updatePendingBadge();
 
   if (user.role === "Admin") {
@@ -674,9 +672,6 @@ function renderPagination(total) {
 
 let syncTimer = null;
 let syncInProgress = false;
-let syncRetryTimer = null;
-let lastSyncError = "";
-const SYNC_RETRY_DELAY = 5000;
 
 
 // ============================================================
@@ -750,20 +745,30 @@ function updateSyncStatus() {
   const online = navigator.onLine;
   const lastText = lastSync ? formatSyncDateTime(lastSync) : (serverStatus ? serverStatus.formatted : "Memuat riwayat…");
 
-  // Counter mengikuti antrean unik terkini, termasuk perubahan baru saat request berjalan.
   if (!online) {
-    setSyncStatus("offline", "Offline", queue.length
-      ? `${queue.length} data menunggu koneksi · Akan dicoba otomatis saat online`
-      : `Sinkronisasi terakhir: ${lastText}`, "", false);
+    setSyncStatus("offline", "Offline", pendingForDate
+      ? `${pendingForDate} perubahan menunggu koneksi`
+      : `Sinkronisasi terakhir: ${lastText}`, "", pendingForDate > 0);
   } else if (syncInProgress) {
-    const count = queue.length;
-    setSyncStatus("syncing", `Menyimpan ${count || 1} data...`,
-      count > 1 ? `${count} data dalam antrean penyimpanan` : "Sedang menyimpan perubahan ke server...", "", false);
-  } else if (queue.length > 0) {
-    const errorText = lastSyncError
-      ? `Kendala penyimpanan · ${lastSyncError} · Dicoba ulang otomatis`
-      : `Akan disimpan otomatis · Sinkronisasi terakhir: ${lastText}`;
-    setSyncStatus(lastSyncError ? "error" : "pending", `Menyimpan ${queue.length} data...`, errorText, "", false);
+    // Hitung antrean terkini setiap kali status berubah, termasuk data baru
+    // yang ditambahkan pengguna saat request penyimpanan sedang berjalan.
+    const activeCount = Math.max(queue.length, 1);
+    setSyncStatus(
+      "syncing",
+      `Menyimpan ${activeCount} data...`,
+      activeCount > 1
+        ? `Data sedang diproses · ${activeCount} data masih berada dalam antrean penyimpanan`
+        : "Sedang menyimpan perubahan ke server...",
+      "",
+      false
+    );
+  } else if (pendingForDate > 0) {
+    // Saat online, perubahan langsung masuk ke alur pengiriman data.
+    setSyncStatus("syncing", `Menyimpan ${pendingForDate} data...`,
+      pendingForDate > 1
+        ? `${pendingForDate} data sedang menunggu giliran pengiriman`
+        : "Mengirim perubahan ke server...",
+      "", false);
   } else {
     setSyncStatus("saved", "Tersimpan", `Sinkronisasi terakhir: ${lastText}`, "", false);
   }
@@ -798,7 +803,7 @@ async function refreshServerSyncStatus(date = getSelectedAttendanceDate()) {
     console.warn("[Sync] Gagal mengambil riwayat dari log_presensi:", err);
     serverSyncStatusByDate[normalizeDateKey(date)] = { timestamp: null, error: true, formatted: "Riwayat belum dapat dimuat" };
     if (requestId === syncStatusRequestId && date === getSelectedAttendanceDate()) {
-      setSyncStatus("error", "Riwayat tidak tersedia", "Gagal membaca log_presensi", "", false);
+      setSyncStatus("error", "Riwayat tidak tersedia", "Gagal membaca log_presensi", "", true);
     }
   }
 }
@@ -819,20 +824,6 @@ function initSyncStatus() {
   updateConnectionStatus();
   updateSyncStatus();
   refreshServerSyncStatus(getSelectedAttendanceDate());
-}
-
-function scheduleAutoRetry(delay = SYNC_RETRY_DELAY) {
-  clearTimeout(syncRetryTimer);
-  if (!navigator.onLine) return;
-  const queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
-  if (!queue.length) return;
-  syncRetryTimer = setTimeout(() => {
-    if (!navigator.onLine || syncInProgress) {
-      if (navigator.onLine) scheduleAutoRetry(delay);
-      return;
-    }
-    triggerAutoSync();
-  }, delay);
 }
 
 function processStatusChange(rowIndex, newValue, tanggal) {
@@ -864,25 +855,31 @@ function processStatusChange(rowIndex, newValue, tanggal) {
   updatePendingBadge();
   updateSyncStatus();
 
+  // Mulai kirim langsung; jika proses lain sedang berjalan, loop sinkronisasi
+  // akan mengambil item terbaru dari antrean tanpa menunggu debounce.
   clearTimeout(syncTimer);
-  syncTimer = setTimeout(() => triggerAutoSync(), 1500); 
+  syncTimer = null;
+  void triggerAutoSync();
 }
 
 
 async function triggerAutoSync() {
   if (!navigator.onLine) {
     updateSyncStatus();
+    showToast("Offline: Perubahan tersimpan di perangkat", "info", 2000);
     return;
   }
 
-  if (syncInProgress) return; // Loop penyimpanan aktif akan mengambil antrean terbaru.
+  // Bila sinkronisasi sedang berjalan, proses aktif akan membaca antrean terbaru.
+  if (syncInProgress) {
+    updateSyncStatus();
+    return;
+  }
 
   const result = await syncPendingUpdates(false);
+
   if (result.success && result.synced > 0) {
-    lastSyncError = "";
     showToast("Data tersimpan otomatis ke server", "success", 2000);
-  } else if (result.remaining > 0 || result.offline || result.error) {
-    scheduleAutoRetry();
   }
 }
 
@@ -958,11 +955,9 @@ async function syncPendingUpdates(showOverlay = false) {
 
       // Jangan menghapus antrean jika server gagal.
       if (!result || result.success !== true) {
-        lastSyncError = (result && result.message) ? String(result.message) : "Server belum mengonfirmasi penyimpanan";
         failed = true;
         break;
       }
-      lastSyncError = "";
 
       // Ambil ulang antrean karena mungkin ada perubahan baru.
       const currentQueue = JSON.parse(
@@ -1023,7 +1018,6 @@ async function syncPendingUpdates(showOverlay = false) {
     }
   } catch (err) {
     console.warn("[Sync] Gagal menyinkronkan antrean:", err);
-    lastSyncError = !navigator.onLine ? "Koneksi terputus" : (err && err.message ? err.message : "Koneksi/server bermasalah");
     failed = true;
   } finally {
     syncInProgress = false;
@@ -1045,19 +1039,15 @@ async function syncPendingUpdates(showOverlay = false) {
     localStorage.getItem("piket_pending_updates") || "[]"
   ).length;
 
-  if (remaining > 0) {
-    scheduleAutoRetry();
-  } else {
-    clearTimeout(syncRetryTimer);
-    lastSyncError = "";
+  // Tangani perubahan yang masuk tepat saat loop sebelumnya selesai.
+  if (!failed && remaining > 0 && navigator.onLine) {
+    queueMicrotask(() => triggerAutoSync());
   }
-  updateSyncStatus();
 
   return {
     success: !failed && remaining === 0,
     synced,
-    remaining,
-    error: failed
+    remaining
   };
 }
 
@@ -1111,12 +1101,8 @@ async function handleSubmit(e) {
 
 window.addEventListener("online", () => {
   updateConnectionStatus();
-  const queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
-  if (queue.length) {
-    clearTimeout(syncRetryTimer);
-    showToast("Koneksi pulih. Penyimpanan dilanjutkan otomatis...", "info", 2000);
-    triggerAutoSync();
-  }
+  showToast("Koneksi terhubung kembali. Menyingkronkan data...", "info");
+  triggerAutoSync();
 });
 
 window.addEventListener("offline", () => {
