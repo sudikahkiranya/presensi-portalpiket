@@ -11,18 +11,18 @@
   <link rel="stylesheet" href="./css/style.css">
 
   <style>
-    .sync-status-panel{display:inline-flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;width:max-content;min-width:0;max-width:100%;box-sizing:border-box;padding:9px 13px;border:1px solid #c7e3d0;border-radius:12px;background:#f1faf4;color:#21663a;font-size:12px;line-height:1.35}
+    .sync-status-panel{display:inline-flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;width:max-content;min-width:0;max-width:100%;box-sizing:border-box;padding:2px 0;border:0;border-radius:0;background:transparent;color:#21663a;font-size:12px;line-height:1.35}
     .sync-status-main{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;white-space:nowrap}
     #syncStatusIcon svg{width:17px;height:17px;stroke-width:2.2}
     .sync-status-icon{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;flex:0 0 17px;border-radius:50%;background:#d9f0e0;color:#21854a;font-size:12px;font-weight:700}
     .sync-status-dot{width:7px;height:7px;flex:0 0 7px;margin-left:1px;border-radius:50%;background:#22a447;animation:syncOnlinePulse 2.2s ease-out infinite}
     .sync-status-detail{display:block;color:#52745d;font-size:11px;white-space:nowrap}
     .sync-status-detail span{display:inline}
-    .sync-status-panel[data-state="pending"],.sync-status-panel[data-state="syncing"]{border-color:#f0d9a7;background:#fff9eb;color:#8a5b08}
+    .sync-status-panel[data-state="pending"],.sync-status-panel[data-state="syncing"]{color:#8a5b08}
     .sync-status-panel[data-state="pending"] .sync-status-icon,.sync-status-panel[data-state="syncing"] #syncStatusIcon svg{animation:syncRotate 1.2s linear infinite}
     .sync-status-panel[data-state="syncing"] .sync-status-icon{background:#ffedc2;color:#9a6700}
     .sync-status-panel[data-state="pending"] .sync-status-dot,.sync-status-panel[data-state="syncing"] .sync-status-dot{background:#d99a17;animation:none}
-    .sync-status-panel[data-state="error"],.sync-status-panel[data-state="offline"]{border-color:#f2c8c5;background:#fff4f3;color:#a12a22}
+    .sync-status-panel[data-state="error"],.sync-status-panel[data-state="offline"]{color:#a12a22}
     .sync-status-panel[data-state="error"] .sync-status-icon,.sync-status-panel[data-state="offline"] .sync-status-icon{background:#fce1df;color:#b42318}
     .sync-status-panel[data-state="error"] .sync-status-dot,.sync-status-panel[data-state="offline"] .sync-status-dot{background:#d92d20;animation:none}
     .sync-status-panel[data-state="offline"] .sync-status-dot{display:none}
@@ -205,7 +205,6 @@
               <span id="syncStatusDot" class="sync-status-dot" aria-hidden="true"></span>
             </div>
             <div class="sync-status-detail"><span id="syncStatusCaption">Sinkronisasi terakhir: Memuat riwayat…</span><span id="syncLastUpdated" hidden></span></div>
-            <button type="button" id="retrySyncButton" class="sync-retry-button" onclick="handleSubmit(event)" hidden>Coba lagi</button>
           </div>
         </div>
       </div>
