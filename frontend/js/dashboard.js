@@ -672,6 +672,7 @@ function renderPagination(total) {
 
 let syncTimer = null;
 let syncInProgress = false;
+let currentSyncStudent = "";
 
 
 // ============================================================
@@ -762,10 +763,8 @@ function updateSyncStatus() {
     setSyncStatus(
       "syncing",
       `Menyimpan ${activeCount} data...`,
-      activeCount > 1
-        ? `Data sedang diproses · ${activeCount} data masih berada dalam antrean penyimpanan`
-        : "Sedang menyimpan perubahan ke server...",
       "",
+      currentSyncStudent ? `Memproses: ${currentSyncStudent}` : "",
       false
     );
   } else if (pendingForDate > 0) {
@@ -937,11 +936,12 @@ async function syncPendingUpdates(showOverlay = false) {
       // Kirim satu data setiap request dan tampilkan countdown antrean.
       const item = queue[0];
       const totalRemaining = queue.length;
+      currentSyncStudent = item.namaSiswa || item.nama || "data siswa";
       setSyncStatus(
         "syncing",
         totalRemaining > 1 ? `Menyimpan ${totalRemaining} data...` : "Menyimpan 1 data...",
         "",
-        `Memproses: ${item.namaSiswa || item.nama || "data siswa"}`,
+        `Memproses: ${currentSyncStudent}`,
         false
       );
 
@@ -1034,6 +1034,7 @@ async function syncPendingUpdates(showOverlay = false) {
     failed = true;
   } finally {
     syncInProgress = false;
+    currentSyncStudent = "";
 
     if (showOverlay) hideLoading();
 
