@@ -1033,6 +1033,7 @@ input[type="text"]:focus {
 .sync-status-panel[data-state="syncing"] .sync-status-dot {
   background: #b96845;
   animation: none;
+  display: none !important;
 }
 
 /* Status error/offline tetap merah agar mudah dibedakan */
