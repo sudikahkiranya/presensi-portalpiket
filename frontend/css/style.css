@@ -87,8 +87,9 @@ body.login-body {
    3. DASHBOARD LAYOUT & HEADERS
    ========================================================================== */
 body.dashboard-body {
-  background: #f2f0e5;
-  padding: 20px;
+  /* Warm cream inspired by the Scan Presensi screen */
+  background: #f7e8ca;
+  padding: 0 20px 20px;
   color: #26352a;
   display: flex;
   flex-direction: column;
@@ -104,12 +105,17 @@ main {
 }
 
 .header-box-kelas {
-  background: #ffffff;
-  padding: 16px 20px;
-  border-radius: 14px;
-  border: 1px solid #e4e5d9;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  background: #6b8f5b;
+  color: #ffffff;
+  padding: 16px 24px;
+  border-radius: 0 0 18px 18px;
+  border: 4px solid #ffffff;
+  border-top: 0;
+  box-shadow: 0 6px 18px rgba(83, 105, 62, 0.16);
   margin-bottom: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
