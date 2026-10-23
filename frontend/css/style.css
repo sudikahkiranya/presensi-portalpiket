@@ -110,7 +110,7 @@ main {
   max-width: 1400px;
   background: #678d58 !important; /* Sage Green Scanner */
   border-radius: 0 0 16px 16px !important;
-  padding: 18px 30px !important; /* 💡 Menambah tinggi header box */
+  padding: 16px 30px !important;
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
@@ -126,50 +126,55 @@ main {
   z-index: 999;
 }
 
-/* AREA KIRI: LOGO + GARIS PEMISAH + PIL BRAND */
+/* AREA KIRI: PIL BRAND UTUH */
 .brand-title {
   display: flex;
   align-items: center;
-  gap: 16px;
 }
 
-.logo-img { 
-  height: 48px; 
-  width: auto; 
-  object-fit: contain; 
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
-}
-
-/* Garis Pemisah Vertikal Halus */
-.header-v-divider {
-  width: 2px;
-  height: 38px;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 2px;
-}
-
-/* Pil Kapsul Halus untuk Judul & Tanggal */
+/* PIL PUTIH BRAND (TERDIRI DARI LOGO, GARIS PEMISAH, & TEKS) */
 .brand-pill-box {
   background: #ffffff !important;
   padding: 8px 18px !important;
-  border-radius: 12px !important; /* 💡 Pil tidak terlalu membulat */
+  border-radius: 12px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
   display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  gap: 3px !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.logo-img { 
+  height: 38px; 
+  width: auto; 
+  object-fit: contain; 
+}
+
+/* Garis Pemisah Vertikal Abu-abu Halus */
+.header-v-divider {
+  width: 1.5px;
+  height: 32px;
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.header-text-group {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
 }
 
 .header-main-title {
   margin: 0 !important;
-  font-size: 18px !important;
+  font-size: 17px !important;
   font-weight: 800 !important;
   color: #0f172a !important;
   line-height: 1.2;
 }
 
 .header-sub-date {
-  font-size: 12.5px !important;
+  font-size: 12px !important;
   font-weight: 600 !important;
   color: #678d58 !important;
   line-height: 1.2;
@@ -179,27 +184,26 @@ main {
 .right-controls {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
-/* Pil Kapsul User & Role */
 .user-pill-box {
   background: #ffffff !important;
   padding: 8px 18px !important;
-  border-radius: 12px !important; /* 💡 Pil tidak terlalu membulat */
+  border-radius: 12px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
   display: flex !important;
   flex-direction: column !important;
-  align-items: flex-start !important; /* 💡 Rata Kiri (Align Left) */
+  align-items: flex-start !important;
   justify-content: center !important;
-  gap: 5px !important; /* 💡 Beri jarak agar tidak terlalu rapat */
+  gap: 4px !important;
 }
 
 .pill-user-row {
   display: flex;
   align-items: center;
-  gap: 8px; /* 💡 Jarak icon & teks user */
-  font-size: 13.5px;
+  gap: 8px;
+  font-size: 13px;
   font-weight: 700;
   color: #0f172a;
   line-height: 1.2;
@@ -208,20 +212,20 @@ main {
 .pill-role-row {
   display: flex;
   align-items: center;
-  gap: 8px; /* 💡 Jarak icon & teks role */
-  font-size: 12px;
+  gap: 8px;
+  font-size: 11.5px;
   font-weight: 600;
   color: #678d58;
   line-height: 1.2;
 }
 
 .pill-icon {
-  font-size: 14px;
+  font-size: 13px;
   color: #475569;
 }
 
 .pill-icon-dot {
-  font-size: 11px;
+  font-size: 10px;
 }
 
 #petugasPiket {
@@ -234,11 +238,11 @@ main {
   font-weight: 600 !important;
 }
 
-/* TOMBOL LOGOUT BULAT PERFECT */
+/* TOMBOL LOGOUT BULAT */
 #logoutBtn {
   background: #ffffff !important;
-  width: 40px !important;
-  height: 40px !important;
+  width: 38px !important;
+  height: 38px !important;
   padding: 0 !important;
   border-radius: 50% !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
@@ -258,8 +262,8 @@ main {
 }
 
 .logout-icon { 
-  width: 19px; 
-  height: 19px; 
+  width: 18px; 
+  height: 18px; 
   stroke: #dc2626; 
 }
 
