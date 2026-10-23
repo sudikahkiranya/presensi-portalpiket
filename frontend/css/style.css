@@ -1122,3 +1122,206 @@
       animation: none;
     }
   }
+
+
+  /* ==========================================================================
+   HEADER BANNER & PIL KAPSUL (SAMAKAN DENGAN SCANNER)
+   ========================================================================== */
+#topHeaderBanner.header-box-kelas {
+  width: 100%;
+  max-width: 1400px;
+  background: #678d58 !important; /* Hijau Sage khas Scanner */
+  border-radius: 16px !important;
+  padding: 14px 24px !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid #ffffff !important;
+  border-bottom: 4px solid #ffffff !important;
+  margin-bottom: 20px !important;
+  box-sizing: border-box;
+  position: relative; /* Tetap non-sticky */
+}
+
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo-img {
+  height: 44px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+}
+
+.header-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-main-title {
+  margin: 0 !important;
+  font-size: 19px !important;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  letter-spacing: 0.3px;
+}
+
+.left-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ELEMEN KAPSUL LONJONG PIL PUTIH */
+.header-pill-box {
+  background: #ffffff !important;
+  padding: 6px 16px !important;
+  border-radius: 20px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  font-size: 13.5px !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  white-space: nowrap;
+}
+
+#tanggalPresensi {
+  color: #678d58 !important;
+  font-weight: 700 !important;
+}
+
+#petugasPiket {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+#roleUser {
+  color: #678d58 !important;
+  font-weight: 700 !important;
+}
+
+.pill-icon {
+  font-size: 14px;
+  display: inline-block;
+}
+
+/* TOMBOL LOGOUT BULAT PERFECT */
+#logoutBtn {
+  background: #ffffff !important;
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: none !important;
+  color: #dc2626 !important;
+  transition: all 0.2s ease !important;
+}
+
+#logoutBtn:hover {
+  background: #fef2f2 !important;
+  transform: scale(1.06) !important;
+}
+
+.logout-icon {
+  width: 18px;
+  height: 18px;
+  stroke: #dc2626;
+}
+
+/* ==========================================================================
+   TOAST NOTIFIKASI MODERN SCANNER
+   ========================================================================== */
+#appToast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 30000;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 300px;
+  max-width: 380px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  border-left: 6px solid #22c55e;
+  transform: translateX(120%);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+#appToast.is-visible {
+  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#appToast[data-type="success"] { border-left-color: #22c55e; }
+#appToast[data-type="error"] { border-left-color: #ef4444; }
+#appToast[data-type="info"] { border-left-color: #3b82f6; }
+
+.toast-icon-bg {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+#appToast[data-type="success"] .toast-icon-bg { background: #22c55e; }
+#appToast[data-type="error"] .toast-icon-bg { background: #ef4444; }
+#appToast[data-type="info"] .toast-icon-bg { background: #3b82f6; }
+
+.toast-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toast-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.toast-message {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+.toast-close-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #94a3b8 !important;
+  font-size: 15px !important;
+  cursor: pointer;
+  padding: 0 !important;
+  height: auto !important;
+  line-height: 1 !important;
+}
+
+.toast-close-btn:hover {
+  color: #475569 !important;
+}

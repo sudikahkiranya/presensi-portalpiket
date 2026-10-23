@@ -1258,41 +1258,40 @@ function getStatusClass(status) {
   return "status-kosong";
 }
 
-// FUNGSI TOAST NOTIFIKASI SAMA SEPERTI SCANNER APP
-let toastTimer = null;
+let toastTimeout = null;
 
 function showToast(message, type = "info", duration = 3000) {
   const toast = document.getElementById("appToast");
   const titleEl = document.getElementById("toastTitle");
   const msgEl = document.getElementById("toastMessage");
-  const iconEl = document.getElementById("toastIcon");
+  const iconBg = document.getElementById("toastIconBg");
 
   if (!toast) return;
 
   toast.setAttribute("data-type", type);
-
+  
   if (type === "success") {
-    if (titleEl) titleEl.textContent = "Berhasil";
-    if (iconEl) iconEl.textContent = "✓";
+    if (titleEl) titleEl.textContent = "Sukses";
+    if (iconBg) iconBg.textContent = "✓";
   } else if (type === "error") {
     if (titleEl) titleEl.textContent = "Gagal";
-    if (iconEl) iconEl.textContent = "✕";
+    if (iconBg) iconBg.textContent = "✕";
   } else {
     if (titleEl) titleEl.textContent = "Informasi";
-    if (iconEl) iconEl.textContent = "ℹ";
+    if (iconBg) iconBg.textContent = "ℹ";
   }
 
   if (msgEl) msgEl.textContent = message;
 
   toast.classList.add("is-visible");
 
-  if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    closeToast();
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    hideAppToast();
   }, duration);
 }
 
-function closeToast() {
+function hideAppToast() {
   const toast = document.getElementById("appToast");
   if (toast) toast.classList.remove("is-visible");
 }
