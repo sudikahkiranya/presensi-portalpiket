@@ -999,7 +999,7 @@ input[type="text"]:focus {
 }
 
 /* ==========================================================================
-   10. SYNC STATUS PANEL
+   10. SYNC STATUS PANEL & SPINNER
    ========================================================================== */
 .sync-status-panel {
   display: inline-flex;
@@ -1031,6 +1031,13 @@ input[type="text"]:focus {
   white-space: nowrap;
 }
 
+#syncStatusIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 #syncStatusIcon svg {
   width: 17px;
   height: 17px;
@@ -1051,15 +1058,17 @@ input[type="text"]:focus {
   font-weight: 700;
 }
 
+/* ANIMASI SPINNER MINI MERAH / TERRACOTTA */
 .sync-mini-spinner {
-  display: block;
-  width: 10px;
-  height: 10px;
-  box-sizing: border-box;
-  border: 1.5px solid rgba(221, 151, 135, 0.4);
-  border-top-color: #dd9787;
-  border-radius: 50%;
-  animation: syncRotate 0.75s linear infinite;
+  display: inline-block !important;
+  width: 12px !important;
+  height: 12px !important;
+  box-sizing: border-box !important;
+  border: 2px solid rgba(159, 18, 57, 0.25) !important;
+  border-top-color: #9f1239 !important;
+  border-radius: 50% !important;
+  animation: syncRotate 0.75s linear infinite !important;
+  flex-shrink: 0;
 }
 
 .sync-status-dot {
@@ -1091,56 +1100,41 @@ input[type="text"]:focus {
   display: inline;
 }
 
+/* TAMPILAN PANEL SAAT STATUS PENDING / SYNCING */
 .sync-status-panel[data-state="pending"],
 .sync-status-panel[data-state="syncing"] {
-  border-color: #fecdd3;
-  background: #fff1f2;
-  color: #9f1239;
+  border-color: #fecdd3 !important;
+  background: #fff1f2 !important;
+  color: #9f1239 !important;
 }
 
 .sync-status-panel[data-state="pending"] .sync-status-icon,
 .sync-status-panel[data-state="syncing"] .sync-status-icon {
-  background: #ffe4e6;
-  color: #9f1239;
-}
-
-.sync-status-panel[data-state="pending"] .sync-status-icon,
-.sync-status-panel[data-state="syncing"] #syncStatusIcon svg {
-  animation: syncRotate 1.2s linear infinite;
+  background: #ffe4e6 !important;
+  color: #9f1239 !important;
 }
 
 .sync-status-panel[data-state="pending"] .sync-status-dot,
 .sync-status-panel[data-state="syncing"] .sync-status-dot {
-  background: #dd9787;
-  animation: none;
   display: none !important;
 }
 
+/* TAMPILAN PANEL SAAT ERROR / OFFLINE */
 .sync-status-panel[data-state="error"],
 .sync-status-panel[data-state="offline"] {
-  border-color: #fca5a5;
-  background: #fef2f2;
-  color: #991b1b;
+  border-color: #fca5a5 !important;
+  background: #fef2f2 !important;
+  color: #991b1b !important;
 }
 
 .sync-status-panel[data-state="error"] .sync-status-icon,
 .sync-status-panel[data-state="offline"] .sync-status-icon {
-  background: #fecaca;
-  color: #991b1b;
-}
-
-.sync-status-panel[data-state="error"] .sync-status-dot,
-.sync-status-panel[data-state="offline"] .sync-status-dot {
-  background: #dc2626;
-  animation: none;
+  background: #fecaca !important;
+  color: #991b1b !important;
 }
 
 .sync-status-panel[data-state="offline"] .sync-status-dot {
-  display: none;
-}
-
-.sync-status-panel[data-state="syncing"] .sync-status-icon {
-  animation: none;
+  display: none !important;
 }
 
 .sync-retry-button {
