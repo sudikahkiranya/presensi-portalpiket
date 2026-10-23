@@ -753,12 +753,11 @@ function updateSyncStatus() {
   const lastText = lastSync ? formatSyncDateTime(lastSync) : (serverStatus ? serverStatus.formatted : "Memuat riwayat…");
 
   if (!online) {
+    // Tampilkan tombol "Kirim Data Pending" hanya jika ada data pending
     setSyncStatus("offline", "Offline", pendingForDate
       ? `${pendingForDate} perubahan menunggu koneksi`
       : `Sinkronisasi terakhir: ${lastText}`, "", pendingForDate > 0);
   } else if (syncInProgress) {
-    // Hitung antrean terkini setiap kali status berubah, termasuk data baru
-    // yang ditambahkan pengguna saat request penyimpanan sedang berjalan.
     const activeCount = Math.max(queue.length, 1);
     setSyncStatus(
       "syncing",
@@ -768,7 +767,6 @@ function updateSyncStatus() {
       false
     );
   } else if (pendingForDate > 0) {
-    // Saat online, perubahan langsung masuk ke alur pengiriman data.
     setSyncStatus("syncing", `Menyimpan ${pendingForDate} data...`,
       pendingForDate > 1
         ? `${pendingForDate} data sedang menunggu giliran pengiriman`
