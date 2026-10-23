@@ -109,31 +109,28 @@ main {
   width: 100%;
   max-width: 1400px;
   background: #678d58 !important; /* Sage Green Scanner */
-  border-radius: 0 0 16px 16px !important; /* Lengkung cuma di sudut bawah */
-  padding: 12px 28px !important;
+  border-radius: 0 0 16px 16px !important;
+  padding: 18px 30px !important; /* 💡 Menambah tinggi header box */
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
-  
-  /* BORDER PUTIH TEBAL DISAMAKAN DENGAN SCANNER */
   border-top: none !important;
   border-bottom: 4px solid #ffffff !important;
   border-left: 4px solid #ffffff !important;
   border-right: 4px solid #ffffff !important;
-  
-  margin-top: 0 !important; /* Memastikan tidak ada jarak di atas */
+  margin-top: 0 !important;
   margin-bottom: 20px !important;
   box-sizing: border-box;
   position: relative;
   z-index: 999;
 }
 
-/* AREA KIRI: LOGO + JUDUL & TANGGAL (ATAS BAWAH) */
+/* AREA KIRI: LOGO + GARIS PEMISAH + PIL BRAND */
 .brand-title {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 16px;
 }
 
 .logo-img { 
@@ -143,52 +140,65 @@ main {
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
 }
 
-.header-text-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+/* Garis Pemisah Vertikal Halus */
+.header-v-divider {
+  width: 2px;
+  height: 38px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 2px;
+}
+
+/* Pil Kapsul Halus untuk Judul & Tanggal */
+.brand-pill-box {
+  background: #ffffff !important;
+  padding: 8px 18px !important;
+  border-radius: 12px !important; /* 💡 Pil tidak terlalu membulat */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 3px !important;
 }
 
 .header-main-title {
   margin: 0 !important;
-  font-size: 19px !important;
+  font-size: 18px !important;
   font-weight: 800 !important;
-  color: #ffffff !important;
-  line-height: 1.15;
-  letter-spacing: 0.3px;
+  color: #0f172a !important;
+  line-height: 1.2;
 }
 
 .header-sub-date {
-  font-size: 13px !important;
-  font-weight: 500 !important;
-  color: #f1f5f9 !important;
-  opacity: 0.95;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  color: #678d58 !important;
+  line-height: 1.2;
 }
 
-/* AREA KANAN: PIL USER/ROLE + LOGOUT */
+/* AREA KANAN: PIL USER & ROLE + LOGOUT */
 .right-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
-/* 1 PIL KAPSUL LONJONG PUTIH (USER & ROLE SUSUN ATAS BAWAH) */
-.user-pill-stacked {
+/* Pil Kapsul User & Role */
+.user-pill-box {
   background: #ffffff !important;
-  padding: 6px 16px !important;
-  border-radius: 16px !important;
+  padding: 8px 18px !important;
+  border-radius: 12px !important; /* 💡 Pil tidak terlalu membulat */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
   display: flex !important;
   flex-direction: column !important;
-  align-items: flex-end !important;
+  align-items: flex-start !important; /* 💡 Rata Kiri (Align Left) */
   justify-content: center !important;
-  gap: 2px !important;
+  gap: 5px !important; /* 💡 Beri jarak agar tidak terlalu rapat */
 }
 
 .pill-user-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px; /* 💡 Jarak icon & teks user */
   font-size: 13.5px;
   font-weight: 700;
   color: #0f172a;
@@ -198,7 +208,7 @@ main {
 .pill-role-row {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 8px; /* 💡 Jarak icon & teks role */
   font-size: 12px;
   font-weight: 600;
   color: #678d58;
@@ -206,11 +216,12 @@ main {
 }
 
 .pill-icon {
-  font-size: 13px;
+  font-size: 14px;
+  color: #475569;
 }
 
 .pill-icon-dot {
-  font-size: 10px;
+  font-size: 11px;
 }
 
 #petugasPiket {
@@ -226,8 +237,8 @@ main {
 /* TOMBOL LOGOUT BULAT PERFECT */
 #logoutBtn {
   background: #ffffff !important;
-  width: 38px !important;
-  height: 38px !important;
+  width: 40px !important;
+  height: 40px !important;
   padding: 0 !important;
   border-radius: 50% !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
@@ -247,8 +258,8 @@ main {
 }
 
 .logout-icon { 
-  width: 18px; 
-  height: 18px; 
+  width: 19px; 
+  height: 19px; 
   stroke: #dc2626; 
 }
 
