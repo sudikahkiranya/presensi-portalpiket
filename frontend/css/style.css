@@ -104,13 +104,13 @@ main {
   margin: 0 auto;
 }
 
-/* HEADER BANNER SAGE GREEN */
+/* HEADER BANNER SAGE GREEN (MENTOK ATAS) */
 #topHeaderBanner {
   width: 100%;
   max-width: 1400px;
   background: #678d58 !important; /* Sage Green Scanner */
   border-radius: 0 0 16px 16px !important; /* Lengkung cuma di sudut bawah */
-  padding: 14px 30px !important;
+  padding: 12px 28px !important;
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
@@ -129,14 +129,15 @@ main {
   z-index: 999;
 }
 
+/* AREA KIRI: LOGO + JUDUL & TANGGAL (ATAS BAWAH) */
 .brand-title {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .logo-img { 
-  height: 40px; 
+  height: 48px; 
   width: auto; 
   object-fit: contain; 
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
@@ -144,43 +145,72 @@ main {
 
 .header-text-group {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .header-main-title {
   margin: 0 !important;
-  font-size: 20px !important;
-  font-weight: 700 !important;
+  font-size: 19px !important;
+  font-weight: 800 !important;
   color: #ffffff !important;
+  line-height: 1.15;
   letter-spacing: 0.3px;
-  line-height: 1;
 }
 
-.left-controls {
+.header-sub-date {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #f1f5f9 !important;
+  opacity: 0.95;
+}
+
+/* AREA KANAN: PIL USER/ROLE + LOGOUT */
+.right-controls {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
 }
 
-/* ELEMEN KAPSUL LONJONG PIL PUTIH (Bentuk Kapsul Perfect) */
-.header-pill-box {
+/* 1 PIL KAPSUL LONJONG PUTIH (USER & ROLE SUSUN ATAS BAWAH) */
+.user-pill-stacked {
   background: #ffffff !important;
   padding: 6px 16px !important;
-  border-radius: 20px !important;
+  border-radius: 16px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
-  font-size: 14px !important;
-  font-weight: 700 !important;
-  color: #334155 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  white-space: nowrap;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  justify-content: center !important;
+  gap: 2px !important;
 }
 
-#tanggalPresensi {
-  color: #16a34a !important; /* Warna Hijau seperti status Online / Masuk Scanner */
-  font-weight: 700 !important;
+.pill-user-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.2;
+}
+
+.pill-role-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #678d58;
+  line-height: 1.2;
+}
+
+.pill-icon {
+  font-size: 13px;
+}
+
+.pill-icon-dot {
+  font-size: 10px;
 }
 
 #petugasPiket {
@@ -190,19 +220,14 @@ main {
 
 #roleUser {
   color: #678d58 !important;
-  font-weight: 700 !important;
+  font-weight: 600 !important;
 }
 
-.pill-icon {
-  font-size: 14px;
-  display: inline-block;
-}
-
-/* TOMBOL LOGOUT BULAT PERFECT (Ukuran 36px x 36px) */
+/* TOMBOL LOGOUT BULAT PERFECT */
 #logoutBtn {
   background: #ffffff !important;
-  width: 36px !important;
-  height: 36px !important;
+  width: 38px !important;
+  height: 38px !important;
   padding: 0 !important;
   border-radius: 50% !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
@@ -213,6 +238,7 @@ main {
   border: none !important;
   color: #dc2626 !important;
   transition: background 0.2s ease, transform 0.2s ease !important;
+  flex-shrink: 0;
 }
 
 #logoutBtn:hover {

@@ -12,43 +12,41 @@
 </head>
 <body class="dashboard-body">
 
-  <!-- HEADER BANNER MENTOK ATAS (DITARUH LANGSUNG DI BAWAH BODY) -->
-  <div id="topHeaderBanner" class="header-box-kelas">
-    <div class="brand-title">
-      <img src="./assets/logo_transparent.png" class="logo-img" alt="Logo SMK MedikaCom">
-      <div class="header-text-group">
-        <h2 class="header-main-title">Portal Presensi Piket</h2>
-      </div>
+  <!-- HEADER BANNER APLIKASI -->
+<div id="topHeaderBanner" class="header-box-kelas">
+  <!-- AREA KIRI: LOGO + JUDUL & TANGGAL (ATAS BAWAH) -->
+  <div class="brand-title">
+    <img src="./assets/logo_transparent.png" class="logo-img" alt="Logo SMK MedikaCom">
+    <div class="header-text-group">
+      <h2 class="header-main-title">Portal Presensi Piket</h2>
+      <span id="tanggalPresensi" class="header-sub-date">Jumat, 23 Oktober 2026</span>
     </div>
+  </div>
 
-    <div class="left-controls">
-      <!-- PIL KAPSUL TANGGAL -->
-      <div id="tanggalPresensiBox" class="header-pill-box">
-        <span id="tanggalPresensi">Jumat, 23 Oktober 2026</span>
-      </div>
-
-      <!-- PIL KAPSUL USER -->
-      <div id="userPillBox" class="header-pill-box">
+  <!-- AREA KANAN: 1 PIL USER/ROLE (ATAS BAWAH) + LOGOUT -->
+  <div class="right-controls">
+    <!-- 1 PIL KAPSUL UNTUK USERNAME & ROLE -->
+    <div id="userRolePillBox" class="header-pill-box user-pill-stacked">
+      <div class="pill-user-row">
         <span class="pill-icon">👤</span>
         <span id="petugasPiket">Anggi Herdiawan</span>
       </div>
-
-      <!-- PIL KAPSUL ROLE -->
-      <div id="rolePillBox" class="header-pill-box">
-        <span class="pill-icon">🟣</span>
+      <div class="pill-role-row">
+        <span class="pill-icon-dot">🟣</span>
         <span id="roleUser">Admin Presensi</span>
       </div>
-
-      <!-- TOMBOL LOGOUT BULAT PERFECT -->
-      <button type="button" onclick="logout()" id="logoutBtn" title="Logout" aria-label="Logout">
-        <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-          <polyline points="16 17 21 12 16 7"></polyline>
-          <line x1="21" y1="12" x2="9" y2="12"></line>
-        </svg>
-      </button>
     </div>
+
+    <!-- TOMBOL LOGOUT BULAT PERFECT -->
+    <button type="button" onclick="logout()" id="logoutBtn" title="Logout" aria-label="Logout">
+      <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+      </svg>
+    </button>
   </div>
+</div>
 
   <!-- TOAST CONTAINER GAYA SCANNER -->
   <div id="appToast" role="alert" aria-live="assertive">
