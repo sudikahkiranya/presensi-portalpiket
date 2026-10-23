@@ -87,11 +87,12 @@ body.login-body {
    3. DASHBOARD LAYOUT & TOP HEADER BANNER (GAYA SCANNER PERFECT)
    ========================================================================== */
 body.dashboard-body {
-  background: #f6e7cb;
-  padding: 20px;
+  background: #f6e7cb !important;
+  padding: 0 30px 20px !important; /* Margin/padding atas WAJIB 0 */
   color: #1e293b;
   display: flex;
   flex-direction: column;
+  align-items: center;
   min-height: 100vh;
   box-sizing: border-box;
 }
@@ -107,28 +108,35 @@ main {
 #topHeaderBanner {
   width: 100%;
   max-width: 1400px;
-  background: #678d58 !important;
-  border-radius: 16px !important;
-  padding: 12px 24px !important;
+  background: #678d58 !important; /* Sage Green Scanner */
+  border-radius: 0 0 16px 16px !important; /* Lengkung cuma di sudut bawah */
+  padding: 14px 30px !important;
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
-  border: 1px solid #ffffff !important;
+  
+  /* BORDER PUTIH TEBAL DISAMAKAN DENGAN SCANNER */
+  border-top: none !important;
   border-bottom: 4px solid #ffffff !important;
+  border-left: 4px solid #ffffff !important;
+  border-right: 4px solid #ffffff !important;
+  
+  margin-top: 0 !important; /* Memastikan tidak ada jarak di atas */
   margin-bottom: 20px !important;
   box-sizing: border-box;
   position: relative;
+  z-index: 999;
 }
 
 .brand-title {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .logo-img { 
-  height: 46px; 
+  height: 40px; 
   width: auto; 
   object-fit: contain; 
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
@@ -136,35 +144,34 @@ main {
 
 .header-text-group {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
 }
 
 .header-main-title {
   margin: 0 !important;
-  font-size: 19px !important;
-  font-weight: 800 !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
   color: #ffffff !important;
   letter-spacing: 0.3px;
-  line-height: 1.2;
+  line-height: 1;
 }
 
 .left-controls {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
 }
 
-/* ELEMEN KAPSUL LONJONG PIL PUTIH */
+/* ELEMEN KAPSUL LONJONG PIL PUTIH (Bentuk Kapsul Perfect) */
 .header-pill-box {
   background: #ffffff !important;
   padding: 6px 16px !important;
   border-radius: 20px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
-  font-size: 13.5px !important;
+  font-size: 14px !important;
   font-weight: 700 !important;
-  color: #1e293b !important;
+  color: #334155 !important;
   display: inline-flex !important;
   align-items: center !important;
   gap: 6px !important;
@@ -172,7 +179,7 @@ main {
 }
 
 #tanggalPresensi {
-  color: #678d58 !important;
+  color: #16a34a !important; /* Warna Hijau seperti status Online / Masuk Scanner */
   font-weight: 700 !important;
 }
 
@@ -191,7 +198,7 @@ main {
   display: inline-block;
 }
 
-/* TOMBOL LOGOUT BULAT PERFECT */
+/* TOMBOL LOGOUT BULAT PERFECT (Ukuran 36px x 36px) */
 #logoutBtn {
   background: #ffffff !important;
   width: 36px !important;
@@ -205,12 +212,12 @@ main {
   justify-content: center !important;
   border: none !important;
   color: #dc2626 !important;
-  transition: all 0.2s ease !important;
+  transition: background 0.2s ease, transform 0.2s ease !important;
 }
 
 #logoutBtn:hover {
   background: #fef2f2 !important;
-  transform: scale(1.06) !important;
+  transform: scale(1.05) !important;
 }
 
 .logout-icon { 

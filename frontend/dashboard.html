@@ -9,238 +9,230 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./css/style.css">
-
-
-
 </head>
 <body class="dashboard-body">
 
-<!-- TOAST CONTAINER -->
-<div id="toastContainer"></div>
-
-<!-- CONFIRM MODAL -->
-<div id="confirmModal" class="modal-overlay">
-  <div class="modal-box">
-    <p id="confirmText">Yakin?</p>
-    <div class="modal-actions" style="margin-top:15px; display:flex; gap:10px;">
-      <button onclick="closeConfirm()" class="btn-cancel" style="background:#475569;">Batal</button>
-      <button onclick="confirmYes()" class="btn-confirm" style="background:#0f766e;">Lanjut</button>
+  <!-- HEADER BANNER MENTOK ATAS (DITARUH LANGSUNG DI BAWAH BODY) -->
+  <div id="topHeaderBanner" class="header-box-kelas">
+    <div class="brand-title">
+      <img src="./assets/logo_transparent.png" class="logo-img" alt="Logo SMK MedikaCom">
+      <div class="header-text-group">
+        <h2 class="header-main-title">Portal Presensi Piket</h2>
+      </div>
     </div>
-  </div>
-</div>
 
-<!-- NOTIF MODAL -->
-<div id="notifModal" class="modal-overlay">
-  <div class="modal-box">
-    <h3 id="notifTitle">✅ Rekap Presensi Hari Ini selesai dibuat</h3>
-    <p id="notifMessage" hidden></p>
-    <p><a id="pdfLink" href="#" target="_blank">Lihat Rekap PDF</a></p>
-    <div style="margin-top:15px; display:flex; flex-direction:column; gap:8px;">
-      <button type="button" id="btnKirimWA" onclick="kirimRekapGrupWA()">
-        📱 Kirim Rekap ke Grup WA
-      </button>
-      <button type="button" style="background:#64748b;" onclick="closeNotif()">Tutup</button>
-    </div>
-  </div>
-</div>
-
-<!-- ERROR MODAL -->
-<div id="errorModal" class="modal-overlay">
-  <div class="modal-box">
-    <h3 style="color:#ef4444;">❌ Rekap tidak dapat diproses</h3>
-    <p id="errorMessage"></p>
-    <button style="background:#ef4444;" onclick="closeError()">OK</button>
-  </div>
-</div>
-
-<!-- LOADING OVERLAY -->
-<div id="loadingOverlay">
-  <div>
-    <div class="spinner"></div>
-    <p id="loadingText" style="margin-top:12px; font-weight:500; color:#1f2d2f;">Memproses...</p>
-  </div>
-</div>
-
-<main>
-<!-- HEADER BANNER GAYA SCANNER -->
-<div class="header-box-kelas" id="topHeaderBanner">
-  <div class="brand-title">
-    <img src="./assets/logo_transparent.png" class="logo-img" alt="Logo SMK MedikaCom">
-    <div class="header-text-group">
-      <h2 class="header-main-title">Portal Presensi Piket</h2>
+    <div class="left-controls">
+      <!-- PIL KAPSUL TANGGAL -->
       <div id="tanggalPresensiBox" class="header-pill-box">
         <span id="tanggalPresensi">Jumat, 23 Oktober 2026</span>
       </div>
-    </div>
-  </div>
 
-  <div class="left-controls">
-    <!-- PIL KAPSUL USER -->
-    <div id="userPillBox" class="header-pill-box">
-      <span class="pill-icon">👤</span>
-      <span id="petugasPiket">Anggi Herdiawan</span>
-    </div>
-
-    <!-- PIL KAPSUL ROLE -->
-    <div id="rolePillBox" class="header-pill-box">
-      <span class="pill-icon">🟣</span>
-      <span id="roleUser">Admin Presensi</span>
-    </div>
-
-    <!-- TOMBOL LOGOUT BULAT PERFECT -->
-    <button onclick="logout()" id="logoutBtn" title="Logout" aria-label="Logout">
-      <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-        <polyline points="16 17 21 12 16 7"></polyline>
-        <line x1="21" y1="12" x2="9" y2="12"></line>
-      </svg>
-    </button>
-  </div>
-</div>
-
-<!-- TOAST CONTAINER GAYA SCANNER -->
-<div id="appToast" role="alert" aria-live="assertive">
-  <div class="toast-icon-bg" id="toastIconBg">✓</div>
-  <div class="toast-content">
-    <div class="toast-title" id="toastTitle">Notifikasi</div>
-    <div class="toast-message" id="toastMessage">Pesan notifikasi...</div>
-  </div>
-  <button type="button" class="toast-close-btn" onclick="hideAppToast()">✕</button>
-</div>
-
-  <!-- TABEL & CARD Utama -->
-  <form id="absenForm" onsubmit="handleSubmit(event)">
-    <div class="card">
-      
-      <!-- FILTER WRAPPER -->
-      <div class="filter-wrapper">
-        <div class="filter-group">
-          <div class="filter-item">
-            <label for="filterKelas">Kelas:</label>
-            <div id="filterKelas" data-value=""></div>
-          </div>
-          <div class="filter-item">
-            <label for="filterTingkat">Tingkat:</label>
-            <div id="filterTingkat" data-value=""></div>
-          </div>
-          <div class="filter-item">
-            <label for="filterStatus">Status Masuk:</label>
-            <div id="filterStatus" data-value=""></div>
-          </div>
-
-          <div class="filter-item">
-            <label for="filterNama">Nama Siswa:</label>
-            <input type="text" id="filterNama" class="filter-input-text" placeholder="Cari nama..." onkeyup="applyFilter()">
-          </div>
-        </div>
-
-
-        <div class="statistik-wrapper">
-          <div class="jumlah-data-box">
-          <label>Jumlah<br>Siswa Aktif</label>
-          <span id="jumlahData">0</span>
-          </div>
-
-          <div class="jumlah-data-box">
-            <label>Jumlah<br>Hadir</label>
-            <span id="jumlahHadir">0</span>
-          </div>
-
-          <div class="jumlah-data-box">
-            <label>Jumlah<br>Tidak Hadir</label>
-            <span id="jumlahTidakHadir">0</span>
-          </div>
-
-          <div class="jumlah-data-box" id="boxJumlahPrakerin">
-            <label>Jumlah<br>Prakerin</label>
-            <span id="jumlahPrakerin">0</span>
-          </div>
-        </div>
-
+      <!-- PIL KAPSUL USER -->
+      <div id="userPillBox" class="header-pill-box">
+        <span class="pill-icon">👤</span>
+        <span id="petugasPiket">Anggi Herdiawan</span>
       </div>
 
-      <!-- HEADER ACTION DENGAN IKON LENGKAP -->
-      <div class="table-header">
-        <div class="left-action">
-          <button type="button" onclick="tarikDataPresensi()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-              <polyline points="7 10 12 15 17 10"></polyline>
-              <line x1="12" y1="15" x2="12" y2="3"></line>
-            </svg>
-            Tarik Data
-          </button>
-          
-          <button type="button" onclick="cetakRekap()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-            Rekap Presensi
-          </button>
+      <!-- PIL KAPSUL ROLE -->
+      <div id="rolePillBox" class="header-pill-box">
+        <span class="pill-icon">🟣</span>
+        <span id="roleUser">Admin Presensi</span>
+      </div>
 
-          <button type="button" onclick="refreshData()">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="23 4 23 10 17 10"></polyline>
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-            </svg>
-            Refresh Data
-          </button>
+      <!-- TOMBOL LOGOUT BULAT PERFECT -->
+      <button type="button" onclick="logout()" id="logoutBtn" title="Logout" aria-label="Logout">
+        <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+  </div>
 
-          <div id="adminFilter" style="display:none;">
-            <input type="date" id="selectedDate" onchange="fetchData(this.value)">
-          </div>
-        </div>
+  <!-- TOAST CONTAINER GAYA SCANNER -->
+  <div id="appToast" role="alert" aria-live="assertive">
+    <div class="toast-icon-bg" id="toastIconBg">✓</div>
+    <div class="toast-content">
+      <div class="toast-title" id="toastTitle">Notifikasi</div>
+      <div class="toast-message" id="toastMessage">Pesan notifikasi...</div>
+    </div>
+    <button type="button" class="toast-close-btn" onclick="hideAppToast()">✕</button>
+  </div>
 
-        <div class="right-action">
-          <div id="syncStatusPanel" class="sync-status-panel" data-state="saved" role="status" aria-live="polite">
-            <div class="sync-status-main">
-              <span id="syncStatusDot" class="sync-status-dot" aria-hidden="true"></span>
-              <span id="syncStatusLabel">Data Tersimpan (Online)</span>
+  <!-- CONFIRM MODAL -->
+  <div id="confirmModal" class="modal-overlay">
+    <div class="modal-box">
+      <p id="confirmText">Yakin?</p>
+      <div class="modal-actions" style="margin-top:15px; display:flex; gap:10px;">
+        <button onclick="closeConfirm()" class="btn-cancel" style="background:#475569;">Batal</button>
+        <button onclick="confirmYes()" class="btn-confirm" style="background:#0f766e;">Lanjut</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIF MODAL -->
+  <div id="notifModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3 id="notifTitle">✅ Rekap Presensi Hari Ini selesai dibuat</h3>
+      <p id="notifMessage" hidden></p>
+      <p><a id="pdfLink" href="#" target="_blank">Lihat Rekap PDF</a></p>
+      <div style="margin-top:15px; display:flex; flex-direction:column; gap:8px;">
+        <button type="button" id="btnKirimWA" onclick="kirimRekapGrupWA()">
+          📱 Kirim Rekap ke Grup WA
+        </button>
+        <button type="button" style="background:#64748b;" onclick="closeNotif()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ERROR MODAL -->
+  <div id="errorModal" class="modal-overlay">
+    <div class="modal-box">
+      <h3 style="color:#ef4444;">❌ Rekap tidak dapat diproses</h3>
+      <p id="errorMessage"></p>
+      <button style="background:#ef4444;" onclick="closeError()">OK</button>
+    </div>
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loadingOverlay">
+    <div>
+      <div class="spinner"></div>
+      <p id="loadingText" style="margin-top:12px; font-weight:500; color:#1f2d2f;">Memproses...</p>
+    </div>
+  </div>
+
+  <main>
+    <!-- TABEL & CARD UTAMA -->
+    <form id="absenForm" onsubmit="handleSubmit(event)">
+      <div class="card">
+        
+        <!-- FILTER WRAPPER -->
+        <div class="filter-wrapper">
+          <div class="filter-group">
+            <div class="filter-item">
+              <label for="filterKelas">Kelas:</label>
+              <div id="filterKelas" data-value=""></div>
             </div>
-            <div class="sync-status-detail"><span id="syncStatusCaption">Update terakhir: Memuat riwayat…</span><span id="syncLastUpdated" hidden></span></div>
-            <button type="button" id="retrySyncButton" class="sync-retry-button" onclick="handleSubmit(event)" hidden>Coba lagi</button>
+            <div class="filter-item">
+              <label for="filterTingkat">Tingkat:</label>
+              <div id="filterTingkat" data-value=""></div>
+            </div>
+            <div class="filter-item">
+              <label for="filterStatus">Status Masuk:</label>
+              <div id="filterStatus" data-value=""></div>
+            </div>
+
+            <div class="filter-item">
+              <label for="filterNama">Nama Siswa:</label>
+              <input type="text" id="filterNama" class="filter-input-text" placeholder="Cari nama..." onkeyup="applyFilter()">
+            </div>
+          </div>
+
+          <div class="statistik-wrapper">
+            <div class="jumlah-data-box">
+              <label>Jumlah<br>Siswa Aktif</label>
+              <span id="jumlahData">0</span>
+            </div>
+
+            <div class="jumlah-data-box">
+              <label>Jumlah<br>Hadir</label>
+              <span id="jumlahHadir">0</span>
+            </div>
+
+            <div class="jumlah-data-box">
+              <label>Jumlah<br>Tidak Hadir</label>
+              <span id="jumlahTidakHadir">0</span>
+            </div>
+
+            <div class="jumlah-data-box" id="boxJumlahPrakerin">
+              <label>Jumlah<br>Prakerin</label>
+              <span id="jumlahPrakerin">0</span>
+            </div>
           </div>
         </div>
+
+        <!-- HEADER ACTION DENGAN IKON LENGKAP -->
+        <div class="table-header">
+          <div class="left-action">
+            <button type="button" onclick="tarikDataPresensi()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              Tarik Data
+            </button>
+            
+            <button type="button" onclick="cetakRekap()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+                <polyline points="10 9 9 9 8 9"></polyline>
+              </svg>
+              Rekap Presensi
+            </button>
+
+            <button type="button" onclick="refreshData()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              Refresh Data
+            </button>
+
+            <div id="adminFilter" style="display:none;">
+              <input type="date" id="selectedDate" onchange="fetchData(this.value)">
+            </div>
+          </div>
+
+          <div class="right-action">
+            <div id="syncStatusPanel" class="sync-status-panel" data-state="saved" role="status" aria-live="polite">
+              <div class="sync-status-main">
+                <span id="syncStatusDot" class="sync-status-dot" aria-hidden="true"></span>
+                <span id="syncStatusLabel">Data Tersimpan (Online)</span>
+              </div>
+              <div class="sync-status-detail"><span id="syncStatusCaption">Update terakhir: Memuat riwayat…</span><span id="syncLastUpdated" hidden></span></div>
+              <button type="button" id="retrySyncButton" class="sync-retry-button" onclick="handleSubmit(event)" hidden>Coba lagi</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLE -->
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Nama Siswa</th>
+                <th>Kelas</th>
+                <th>Tingkat</th>
+                <th>Scan Masuk</th>
+                <th>Status Masuk</th>
+                <th>Scan Pulang</th>
+              </tr>
+            </thead>
+            <tbody id="tbodySiswa">
+              <tr><td colspan="6">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="table-footer">
+          <div id="pagination"></div>
+        </div>
+
       </div>
+    </form>
+  </main>
 
+  <footer>
+    © SISENSI v 5.1
+  </footer>
 
-      <!-- TABLE -->
-      <div class="table-responsive">
-        <table>
-          <thead>
-            <tr>
-              <th>Nama Siswa</th>
-              <th>Kelas</th>
-              <th>Tingkat</th>
-              <th>Scan Masuk</th>
-              <th>Status Masuk</th>
-              <th>Scan Pulang</th>
-            </tr>
-          </thead>
-          <tbody id="tbodySiswa">
-            <tr><td colspan="6">Memuat data...</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- PAGINATION: SEKARANG DI DALAM CARD -->
-      <div class="table-footer">
-        <div id="pagination"></div>
-      </div>
-
-    </div>
-  </form>
-</main>
-
-
-<footer>
-  © SISENSI v 5.1
-</footer>
-
-<script src="./js/dashboard.js"></script>
+  <script src="./js/dashboard.js"></script>
 </body>
 </html>
