@@ -1,426 +1,1124 @@
 /* ==========================================================================
-   1. RESET & BASE CONFIGURATION (PALET WARNA SCANNER APP)
-   ========================================================================== */
-:root {
-  --bg-main: #f6e7cb;               /* Warm Cream Background */
-  --card-bg: #ffffff;               /* Clean White Card BG */
-  --card-border: #cbd5e1;           /* Soft Border */
-  --text-main: #1e293b;             /* Dark Slate Text */
-  --text-muted: #64748b;            /* Subtitle Text */
-  --sage-primary: #678d58;          /* Primary Accent Sage Green */
-  --sage-hover: #557548;            /* Accent Hover Sage */
-  --terracotta: #dd9787;            /* Accent Terracotta */
-  --input-bg: #ffffff;              /* Form Input BG */
-}
+    1. RESET & BASE CONFIGURATION
+    ========================================================================== */
+  html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    -webkit-text-size-adjust: 100%;
+  }
 
-html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  font-family: 'Poppins', sans-serif;
-  -webkit-text-size-adjust: 100%;
-}
+  h2, h3 { 
+    color: #1e293b; 
+    font-weight: 600; 
+    margin-top: 0; 
+  }
 
-h2, h3 { 
-  color: var(--text-main); 
-  font-weight: 600; 
-  margin-top: 0; 
-}
+  /* ==========================================================================
+    2. LOGIN PAGE STYLES
+    ========================================================================== */
+  body.login-body {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(rgba(246, 231, 203, 0.85), rgba(246, 231, 203, 0.85)), 
+                url('https://i.imgur.com/hqZ98He.jpeg') no-repeat center center;
+    background-size: cover;
+  }
 
-/* ==========================================================================
-   2. DASHBOARD LAYOUT & HEADER (DISAMAKAN PERSIS DENGAN SCANNER)
-   ========================================================================== */
-body.dashboard-body {
-  background: var(--bg-main);
-  padding: 0 30px 20px;
-  color: var(--text-main);
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
+  .container-login {
+    width: 100%;
+    max-width: 380px;
+    background: #ffffff;
+    padding: 40px 30px;
+    margin: 20px;
+    border-radius: 20px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 10px 25px rgba(74, 58, 30, 0.10);
+    text-align: center;
+    box-sizing: border-box;
+  }
 
-main {
-  flex: 1;
-  width: 100%;
-  max-width: 1280px;
-  margin: 16px auto 0;
-}
+  .logo {
+    display: block;
+    margin: 0 auto 20px auto;
+    max-width: 160px;
+  }
 
-/* HEADER BOX (SAGE GREEN BANNER SEPERTI SCANNER APP) */
-.header-box-kelas {
-  width: 100%;
-  max-width: 1280px;
-  background: var(--sage-primary);
-  border-radius: 0 0 16px 16px;
-  padding: 16px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  border-bottom: 4px solid #ffffff;
-  border-left: 4px solid #ffffff;
-  border-right: 4px solid #ffffff;
-  margin: 0 auto 20px auto;
-  box-sizing: border-box;
-  position: relative;
-  z-index: 99;
-}
+  .login-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 14px 18px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    background: #f8fafc;
+    text-align: center;
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+  }
 
-.header-box-kelas h2 {
-  color: #ffffff !important;
-  font-size: 19px;
-  font-weight: 700;
-  margin: 0;
-}
+  .login-btn {
+    width: 100%;
+    padding: 14px;
+    background-color: #678d58;
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+  }
 
-.header-box-kelas span#tanggalPresensi {
-  color: rgba(255, 255, 255, 0.9) !important;
-  font-size: 12.5px;
-  font-weight: 500;
-}
+  .error-msg {
+    color: #dc2626;
+    background: #fecaca;
+    padding: 10px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-top: 20px;
+    display: none;
+  }
 
-.logo-img { 
-  height: 44px; 
-  width: auto; 
-  object-fit: contain; 
-}
+  /* ==========================================================================
+    3. DASHBOARD LAYOUT & HEADERS
+    ========================================================================== */
+  body.dashboard-body {
+    background: #f6e7cb;
+    padding: 20px;
+    color: #1e293b;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
 
-/* KAPSUL PIL UNTUK USER & ROLE (PERSIS SEPERTI SCANNER) */
-.user-pill-container {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+  main {
+    flex: 1;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
 
-.user-pill-box {
-  background: #ffffff;
-  padding: 6px 14px;
-  border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  font-weight: 700;
-  font-size: 13px;
-  color: var(--text-main);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+  .header-box-kelas {
+    background: #ffffff;
+    padding: 16px 20px;
+    border-radius: 14px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 6px 18px rgba(74, 58, 30, 0.08);
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    box-sizing: border-box;
+  }
 
-.user-pill-box .pill-icon {
-  font-size: 14px;
-}
+  .logo-img { 
+    height: 60px; 
+    width: auto; 
+    object-fit: contain; 
+  }
 
-.role-pill-box {
-  background: #ffffff;
-  padding: 6px 14px;
-  border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  font-weight: 700;
-  font-size: 12.5px;
-  color: var(--sage-primary);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
+  .btn-logout {
+    background: #f1f5f9 !important;
+    color: #678d58 !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 8px !important;
+    border-radius: 10px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
 
-/* TOMBOL LOGOUT BULAT PERFECT */
-.btn-logout {
-  background: #ffffff !important;
-  width: 36px !important;
-  height: 36px !important;
-  padding: 0 !important;
-  border-radius: 50% !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  border: none !important;
-  cursor: pointer;
-  color: #dc2626 !important;
-  transition: all 0.2s ease-in-out;
-}
+  .btn-logout:hover {
+    background: #fecaca !important;
+    border-color: #fca5a5 !important;
+    color: #dc2626 !important;
+  }
 
-.btn-logout:hover {
-  background: #fecaca !important;
-  transform: scale(1.08);
-}
+  .logout-icon { 
+    width: 18px; 
+    height: 18px; 
+    stroke: currentColor; 
+  }
 
-.logout-icon { 
-  width: 18px; 
-  height: 18px; 
-  stroke: currentColor; 
-}
+  .card {
+    background: #ffffff;
+    border-radius: 14px;
+    padding: 24px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 8px 24px rgba(74, 58, 30, 0.08);
+    margin-bottom: 20px;
+  }
 
-.card {
-  background: var(--card-bg);
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid var(--card-border);
-  box-shadow: 0 8px 22px rgba(74, 58, 30, 0.10);
-  margin-bottom: 20px;
-}
+  /* ==========================================================================
+    4. FORM INPUTS & BUTTONS
+    ========================================================================== */
+  select, input[type="date"], input[type="text"] {
+    padding: 0 14px;
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    font-size: 13px;
+    font-family: 'Poppins', sans-serif;
+    background: #ffffff;
+    color: #1e293b;
+    outline: none;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+  }
 
-/* ==========================================================================
-   3. FORM INPUTS & BUTTONS
-   ========================================================================== */
-select, input[type="date"], input[type="text"] {
-  padding: 0 14px;
-  height: 38px;
-  border-radius: 12px;
-  border: 1.5px solid #cbd5e1;
-  font-size: 13px;
-  font-family: 'Poppins', sans-serif;
-  background: var(--input-bg);
-  color: var(--text-main);
-  outline: none;
-  box-sizing: border-box;
-  transition: all 0.2s ease;
-}
+  select:focus, input[type="date"]:focus, input[type="text"]:focus {
+    border-color: #678d58;
+    box-shadow: 0 0 0 2px rgba(103, 141, 88, 0.25);
+  }
 
-select:focus, input[type="date"]:focus, input[type="text"]:focus {
-  border-color: var(--sage-primary);
-  box-shadow: 0 0 0 2px rgba(103, 141, 88, 0.25);
-}
+  button {
+    background-color: #678d58;
+    color: #ffffff !important;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: 'Poppins', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 38px;
+    box-sizing: border-box;
+  }
 
-button {
-  background-color: var(--sage-primary);
-  color: #ffffff !important;
-  padding: 8px 16px;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  font-family: 'Poppins', sans-serif;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 38px;
-  box-sizing: border-box;
-  transition: all 0.2s ease;
-}
+  button:hover:not(:disabled) { 
+    opacity: 0.9; 
+    transform: translateY(-1px); 
+  }
 
-button:hover:not(:disabled) { 
-  background-color: var(--sage-hover);
-  transform: translateY(-1px); 
-}
+  button:disabled { 
+    opacity: 0.5; 
+    cursor: not-allowed; 
+  }
 
-button:disabled { 
-  opacity: 0.5; 
-  cursor: not-allowed; 
-}
+  .button-small {
+    font-size: 12px !important;
+    padding: 5px 7px !important;
+    background: #ffffff !important;
+    color: #678d58 !important;
+    border: 1px solid #678d58 !important;
+    border-radius: 6px !important;
+    cursor: pointer;
+    display: inline-flex !important;
+    margin-left: 6px;
+    height: auto !important;
+  }
 
-/* ==========================================================================
-   4. FILTERS & COUNTER BOX
-   ========================================================================== */
-.filter-wrapper {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 456px;
-  align-items: center;
-  gap: 16px;
-  width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 20px;
-  padding: 14px;
-  background: #f1f5f9;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 14px;
-}
+  /* ==========================================================================
+    5. FILTERS & COUNTER BOX
+    ========================================================================== */
+  .filter-wrapper {
+    display: grid;
+    /* Area filter mengambil sisa ruang; area statistik selalu tetap di kanan */
+    grid-template-columns: minmax(0, 1fr) 456px;
+    align-items: center;
+    gap: 16px;
 
-.filter-group {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  align-items: end;
-  gap: 10px;
-  width: 100%;
-  min-width: 0;
-}
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+    padding: 14px;
 
-.filter-item {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--sage-primary);
-}
+    background: #f1f5f9;
+    border: 1px solid #cbd5e1;
+    border-radius: 14px;
+  }
 
-.statistik-wrapper {
-  display: flex;
-  align-items: stretch;
-  justify-content: flex-end;
-  gap: 8px;
-  width: 456px;
-  max-width: 100%;
-  min-width: 0;
-}
+  /* AREA KIRI: FILTER */
+  .filter-group {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: end;
+    gap: 10px;
 
-.jumlah-data-box {
-  display: flex;
-  flex: 0 0 104px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 104px;
-  min-height: 86px;
-  box-sizing: border-box;
-  padding: 8px 4px;
-  background: var(--card-bg);
-  border: 1.5px solid #cbd5e1;
-  border-radius: 12px;
-  text-align: center;
-}
+    width: 100%;
+    min-width: 0;
+  }
 
-.jumlah-data-box label {
-  font-size: 10px;
-  line-height: 1.2;
-  font-weight: 700;
-  color: var(--sage-primary);
-  margin-bottom: 4px;
-}
+  .filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
 
-.jumlah-data-box span {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--terracotta);
-}
+    font-size: 12px;
+    font-weight: 600;
+    color: #678d58;
+  }
 
-/* ==========================================================================
-   5. TABLE & CHIPS STYLING
-   ========================================================================== */
-.table-responsive {
-  width: 100%;
-  border: 1.5px solid #cbd5e1;
-  border-radius: 12px;
-  margin-top: 15px;
-  background: var(--card-bg);
-  overflow: hidden;
-}
+  .filter-item .custom-dropdown,
+  .filter-item .filter-input-text {
+    width: 100%;
+    min-width: 0;
+  }
 
-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+  /* AREA KANAN: STATISTIK */
+  .statistik-wrapper {
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    gap: 8px;
 
-th { 
-  background: #f1f5f9 !important; 
-  color: #334155 !important; 
-  font-size: 12px; 
-  font-weight: 700; 
-  padding: 12px 10px; 
-  border-bottom: 2px solid #cbd5e1 !important; 
-  text-transform: uppercase;
-}
+    /* Lebar area tetap untuk 3 atau 4 kartu; kartu selalu menempel kanan */
+    width: 456px;
+    max-width: 100%;
+    min-width: 0;
+    margin: 0;
+  }
 
-#tbodySiswa td {
-  padding: 11px 10px;
-  border-bottom: 1px solid #e2e8f0 !important;
-  text-align: center;
-  vertical-align: middle;
-  font-size: 13px !important;
-  color: var(--text-main) !important;
-}
+  /* KARTU STATISTIK */
+  .jumlah-data-box {
+    display: flex;
+    flex: 0 0 104px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 
-.status-chip {
-  width: 208px !important;
-  height: 32px !important;
-  border-radius: 12px !important;
-  font-size: 12.5px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-  cursor: pointer;
-  white-space: nowrap;
-}
+    width: 104px;
+    min-width: 0;
+    min-height: 86px;
+    box-sizing: border-box;
+    padding: 8px 4px;
+    margin: 0;
 
-.status-hadir { background: #dcfce7 !important; color: #15803d !important; border: 1px solid #bbf7d0 !important; }
-.status-terlambat { background: #fef9c3 !important; color: #854d0e !important; border: 1px solid #fef08a !important; }
-.status-terlambat-berat { background: #ffedd5 !important; color: #9a3412 !important; border: 1px solid #fed7aa !important; }
-.status-terlambat-ekstrem, .status-alpa { background: #fecaca !important; color: #991b1b !important; border: 1px solid #fca5a5 !important; }
-.status-sakit { background: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #bae6fd !important; }
-.status-izin { background: #f1f5f9 !important; color: #475569 !important; border: 1px solid #cbd5e1 !important; }
+    background: #fff;
+    border: 1px solid #cbd5e1;
+    border-radius: 11px;
+    text-align: center;
+  }
 
-/* ==========================================================================
-   6. TOAST NOTIFICATION (PERSIS SCANNER APP)
-   ========================================================================== */
-#appToast {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 30000;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 300px;
-  max-width: 380px;
-  padding: 12px 16px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
-  border-left: 6px solid #22c55e;
-  transform: translateX(120%);
-  opacity: 0;
-  pointer-events: none;
-  transition: all 0.35s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-}
+  .jumlah-data-box label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-#appToast.is-visible {
-  transform: translateX(0);
-  opacity: 1;
-  pointer-events: auto;
-}
+    width: 100%;
+    min-height: 24px;
+    margin-bottom: 4px;
 
-#appToast[data-type="success"] { border-left-color: #22c55e; }
-#appToast[data-type="error"] { border-left-color: #ef4444; }
-#appToast[data-type="info"] { border-left-color: #3b82f6; }
+    font-size: 10px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #678d58;
+    text-align: center;
+    overflow-wrap: anywhere;
+  }
 
-.toast-icon-bg {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-  color: #fff;
-  flex-shrink: 0;
-}
+  .jumlah-data-box span {
+    display: block;
+    font-size: 18px;
+    line-height: 1.2;
+    font-weight: 800;
+    color: #dd9787;
+  }
 
-#appToast[data-type="success"] .toast-icon-bg { background: #22c55e; }
-#appToast[data-type="error"] .toast-icon-bg { background: #ef4444; }
-#appToast[data-type="info"] .toast-icon-bg { background: #3b82f6; }
+  /* Tablet dan layar sempit: filter di atas, statistik di bawah */
+  @media (max-width: 1200px) {
+    .filter-wrapper {
+      grid-template-columns: minmax(0, 1fr);
+    }
 
-.toast-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+    .filter-group {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
 
-.toast-title { font-size: 13px; font-weight: 700; color: #1e293b; }
-.toast-message { font-size: 12px; font-weight: 500; color: #64748b; line-height: 1.35; }
+    .statistik-wrapper {
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+    }
 
-.toast-close-btn {
-  background: transparent;
-  border: none;
-  color: #94a3b8;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 0;
-  line-height: 1;
-}
+    .jumlah-data-box {
+      flex: 1 1 0;
+      width: auto;
+    }
+  }
 
-/* Custom Dropdown & Modal Base */
-.custom-dropdown { position: relative; width: 100%; min-width: 160px; height: 38px; border-radius: 12px; background: var(--input-bg); border: 1.5px solid #cbd5e1; }
-.dropdown-selected { width: 100%; height: 100%; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-size: 13px; font-weight: 500; }
-.dropdown-menu { position: absolute; top: calc(100% + 4px); left: 0; width: 100%; max-height: 250px; overflow-y: auto; background: var(--card-bg); border: 1px solid #cbd5e1; border-radius: 12px; display: none; flex-direction: column; z-index: 99999; }
-.custom-dropdown.open .dropdown-menu { display: flex; }
-.dropdown-item { padding: 9px 14px; font-size: 12.5px; color: var(--text-main); cursor: pointer; }
-.dropdown-item:hover { background: #f1f5f9; color: var(--sage-primary); }
+  /* HP: dua kolom filter dan statistik */
+  @media (max-width: 600px) {
+    .filter-wrapper {
+      padding: 12px;
+    }
 
-/* Status Sync Panel */
-.sync-status-panel { display: inline-flex; flex-direction: column; align-items: center; padding: 9px 13px; border: 1px solid #bbf7d0; border-radius: 12px; background: #f0fdf4; color: #166534; font-size: 12px; }
-.sync-status-main { display: flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; }
-.sync-status-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+    .filter-group {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 
-footer { text-align: center; padding: 20px; font-size: 12px; color: var(--sage-primary); margin-top: 20px; }
+    .filter-item {
+      min-width: 0;
+    }
+
+    .statistik-wrapper {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      justify-content: stretch;
+    }
+
+    .jumlah-data-box {
+      width: 100%;
+    }
+  }
+
+  /* ==========================================================================
+    6. TABLE & DATA DISPLAY
+    ========================================================================== */
+  .table-header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 16px; 
+    flex-wrap: wrap; 
+    gap: 10px; 
+  }
+
+  .left-action { 
+    display: flex; 
+    gap: 8px; 
+    flex-wrap: wrap; 
+    align-items: center; 
+  }
+
+  .table-responsive {
+    width: 100%;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    margin-top: 15px;
+    background: #ffffff;
+
+    /* Potong sudut tabel mengikuti radius container */
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .table-responsive thead th:first-child {
+    border-top-left-radius: 11px;
+  }
+
+  .table-responsive thead th:last-child {
+    border-top-right-radius: 11px;
+  }
+
+  table { 
+    width: 100%; 
+    border-collapse: separate; 
+    border-spacing: 0; 
+    font-size: 13px; 
+  }
+
+  th { 
+    background: #f1f5f9 !important; 
+    color: #334155 !important; 
+    font-size: 12px; 
+    font-weight: 600; 
+    padding: 12px 10px; 
+    border-bottom: 2px solid #cbd5e1 !important; 
+  }
+
+  #tbodySiswa td {
+    padding: 11px 10px;
+    border-bottom: 1px solid #e2e8f0 !important;
+    text-align: center;
+    vertical-align: middle;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: #1e293b !important;
+  }
+
+  #tbodySiswa td:nth-child(1) {
+    font-weight: 600 !important;
+  }
+
+  #tbodySiswa tr {
+    position: relative;
+  }
+
+  /* Menjamin baris yang dropdown-nya sedang terbuka tampil paling depan */
+  #tbodySiswa tr:has(.custom-dropdown.open) {
+    z-index: 9999 !important;
+    position: relative !important;
+  }
+
+  tr:nth-child(even) td { 
+    background-color: #f8fafc; 
+  }
+
+  /* ==========================================================================
+    7. INTERACTIVE STATUS CHIPS & CUSTOM DROPDOWN
+    ========================================================================== */
+  #tbodySiswa td:nth-child(5) {
+    width: 220px;
+    max-width: 220px;
+    min-width: 220px;
+    text-align: center;
+    vertical-align: middle;
+    box-sizing: border-box;
+  }
+
+  .status-chip,
+  .inline-select,
+  .status-kosong,
+  .status-kosong-cell {
+    width: 208px !important;
+    height: 32px !important;
+    border-radius: 12px !important;
+    font-size: 12.5px !important;
+    box-sizing: border-box !important;
+    margin: 0 auto !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+  }
+
+  .status-chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  #tbodySiswa .status-chip,
+  #tbodySiswa .status-chip span,
+  .status-chip span {
+    font-size: 12.5px !important;
+    font-weight: 500 !important;
+    line-height: 1;
+  }
+
+  .status-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    filter: brightness(0.95);
+  }
+
+  .status-chip svg {
+    flex-shrink: 0 !important;
+    width: 13px;
+    height: 13px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+
+  .status-chip:hover svg {
+    opacity: 1;
+  }
+
+  .inline-select {
+    display: inline-block;
+    padding: 0 10px 0 14px;
+    border: 1.5px solid #678d58;
+    outline: none;
+    background-color: #ffffff;
+    color: #1e293b;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(103, 141, 88, 0.15);
+    text-align: center;
+    text-align-last: center;
+    font-weight: 500 !important;
+  }
+
+  /* STATUS COLOR PALETTE */
+  .status-hadir { 
+    background: #dcfce7 !important; 
+    color: #15803d !important; 
+    border: 1px solid #bbf7d0 !important;
+  }
+
+  .status-terlambat { 
+    background: #fef9c3 !important; 
+    color: #854d0e !important; 
+    border: 1px solid #fef08a !important;
+  }
+
+  .status-terlambat-berat { 
+    background: #ffedd5 !important; 
+    color: #9a3412 !important; 
+    border: 1px solid #fed7aa !important;
+  }
+
+  .status-terlambat-ekstrem,
+  .status-alpa { 
+    background: #fecaca !important; 
+    color: #991b1b !important; 
+    border: 1px solid #fca5a5 !important;
+  }
+
+  .status-sakit { 
+    background: #e0f2fe !important; 
+    color: #0369a1 !important; 
+    border: 1px solid #bae6fd !important;
+  }
+
+  .status-izin { 
+    background: #f1f5f9 !important; 
+    color: #475569 !important; 
+    border: 1px solid #cbd5e1 !important;
+  }
+
+  .status-libur,
+  .status-prakerin { 
+    background: #e0e7ff !important; 
+    color: #3730a3 !important; 
+    border: 1px solid #c7d2fe !important;
+  }
+
+  .status-htp { 
+    background: #fef3c7 !important; 
+    color: #92400e !important; 
+    border: 1px solid #fde68a !important;
+  }
+
+  .status-kosong,
+  .status-kosong-cell {
+    background: #fef08a !important; 
+    color: #854d0e !important; 
+    border: 1px solid #fde047 !important;
+    font-weight: 600 !important;
+  }
+
+  .status-chip svg,
+  .status-kosong svg {
+    stroke: currentColor !important;
+  }
+
+  /* ==========================================================================
+    8. PAGINATION & FOOTER
+    ========================================================================== */
+  .table-footer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
+    margin-top: 0;
+    padding: 16px 0 0;
+    background: #ffffff;
+    border-radius: 0 0 12px 12px;
+  }
+
+  #pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    max-width: 100%;
+  }
+
+  #pagination button { 
+    background: #f1f5f9 !important; 
+    color: #334155 !important; 
+    border: 1px solid #cbd5e1 !important; 
+    margin: 2px; 
+    padding: 6px 12px !important; 
+    border-radius: 8px !important; 
+    font-size: 13px !important; 
+    height: auto !important; 
+  }
+
+  #pagination button.active { 
+    background: #678d58 !important; 
+    color: #ffffff !important; 
+    font-weight: 600 !important; 
+  }
+
+  footer { 
+    text-align: center; 
+    padding: 20px; 
+    font-size: 12px; 
+    color: #678d58; 
+    margin-top: 20px; 
+  }
+
+  /* ==========================================================================
+    9. MODALS, TOASTS & CUSTOM DROPDOWN COMPONENT
+    ========================================================================== */
+  .modal-overlay,
+  #notifModal { 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(15, 23, 42, 0.4); 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    z-index: 1050 !important; 
+    opacity: 0; 
+    pointer-events: none; 
+    transition: opacity 0.25s ease; 
+  }
+
+  .modal-overlay.active,
+  #notifModal.active { 
+    opacity: 1; 
+    pointer-events: auto; 
+  }
+
+  .modal-box { 
+    background: #ffffff; 
+    padding: 20px; 
+    border-radius: 14px; 
+    width: 320px; 
+    text-align: center; 
+  }
+
+  #loadingOverlay {
+    display: none; 
+    position: fixed; 
+    inset: 0; 
+    background: rgba(15, 23, 42, 0.5); 
+    backdrop-filter: blur(4px); 
+    z-index: 9999 !important; 
+    justify-content: center; 
+    align-items: center;
+  }
+
+  #loadingOverlay.active { 
+    display: flex; 
+  }
+
+  #loadingOverlay > div { 
+    background: #ffffff; 
+    padding: 24px 30px; 
+    border-radius: 14px; 
+    text-align: center; 
+  }
+
+  .spinner { 
+    border: 3px solid #e2e8f0; 
+    border-top: 3px solid #678d58; 
+    border-radius: 50%; 
+    width: 30px; 
+    height: 30px; 
+    animation: spin 0.8s linear infinite; 
+    margin: 0 auto; 
+  }
+
+  @keyframes spin { 
+    to { transform: rotate(360deg); } 
+  }
+
+  #toastContainer,
+  .toast-container { 
+    position: fixed; 
+    top: 20px; 
+    right: 20px; 
+    z-index: 10000 !important; 
+  }
+
+  .toast { 
+    background: #ffffff; 
+    padding: 12px 16px; 
+    border-radius: 10px; 
+    margin-bottom: 10px; 
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); 
+    font-size: 13px; 
+  }
+
+  .toast.success { border-left: 4px solid #22c55e; }
+  .toast.error   { border-left: 4px solid #ef4444; }
+  .toast.info    { border-left: 4px solid #3b82f6; }
+
+  /* Custom Dropdown Styling */
+  .custom-dropdown {
+    position: relative;
+    width: 100%;
+    min-width: 160px;
+    height: 38px;
+    border-radius: 12px;
+    box-sizing: border-box;
+    margin: 0 auto;
+    user-select: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+  }
+
+  .dropdown-selected {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+    border-radius: 12px;
+    box-sizing: border-box;
+    font-size: 13px;
+    font-weight: 500;
+    color: #1e293b;
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    bottom: auto;
+    left: 0;
+
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+
+    max-height: 250px;
+    overflow-y: auto;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    display: none;
+    flex-direction: column;
+    z-index: 99999 !important;
+    box-sizing: border-box;
+  }
+
+  .dropdown-menu::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .dropdown-menu::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 10px;
+  }
+
+  .custom-dropdown.open .dropdown-menu {
+    display: flex;
+  }
+
+  .custom-dropdown .dropdown-menu {
+    z-index: 99999 !important;
+  }
+
+  .dropdown-item {
+    padding: 9px 14px;
+    text-align: left !important;
+    font-size: 12.5px;
+    color: #1e293b;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .dropdown-item:hover {
+    background: #f1f5f9;
+    color: #678d58;
+  }
+
+  .custom-dropdown.open .dropdown-selected svg {
+    transform: rotate(180deg);
+  }
+
+  /* PAKSA STYLING DROP-UP AGAR SELALU MEMBUKA KE ATAS */
+  .custom-dropdown.drop-up .dropdown-menu {
+    top: auto !important;
+    bottom: calc(100% + 4px) !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    z-index: 999999 !important;
+  }
+
+  .custom-dropdown.drop-up .dropdown-selected svg {
+    transform: rotate(180deg) !important;
+  }
+
+  .custom-dropdown.drop-up.open .dropdown-selected svg {
+    transform: rotate(0deg) !important;
+  }
+
+  .filter-input-text {
+    width: 100%;
+    min-width: 180px;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 12px !important;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    font-size: 13px;
+    font-family: 'Poppins', sans-serif;
+    color: #1e293b;
+    box-sizing: border-box;
+    outline: none;
+    transition: all 0.2s ease;
+  }
+
+  .filter-input-text:focus,
+  input[type="text"]:focus {
+    border-color: #678d58;
+    box-shadow: 0 0 0 3px rgba(103, 141, 88, 0.15);
+  }
+
+
+  #tbodySiswa .custom-dropdown.drop-up > .dropdown-menu {
+    top: auto !important;
+    bottom: calc(100% + 4px) !important;
+    max-height: 250px !important;
+    overflow-y: auto !important;
+    z-index: 999999 !important;
+  }
+
+
+  /* Samakan dimensi badge dan kontrol edit status */
+  .status-badge-btn,
+  #tbodySiswa .custom-dropdown .dropdown-selected {
+    box-sizing: border-box !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    line-height: 1.2 !important;
+    vertical-align: middle;
+  }
+
+  /* Pastikan wrapper tidak menambah tinggi baris */
+  #tbodySiswa td:has(.custom-dropdown),
+  #tbodySiswa td:has(.status-badge-btn) {
+    vertical-align: middle;
+  }
+
+  /* Animasi ikon saat proses sync */
+  @keyframes spinSync {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .sync-spinning {
+    animation: spinSync 1s linear infinite;
+    transform-origin: center;
+    flex-shrink: 0;
+  }
+
+  /* ==========================================================================
+    10. SYNC STATUS PANEL
+    ========================================================================== */
+
+  .sync-status-panel {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: max-content;
+    min-width: 0;
+    min-height: 56px;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 9px 13px;
+    border: 1px solid #bbf7d0;
+    border-radius: 12px;
+    background: #f0fdf4;
+    color: #166534;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .sync-status-main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  #syncStatusIcon svg {
+    width: 17px;
+    height: 17px;
+    stroke-width: 2.2;
+  }
+
+  .sync-status-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 17px;
+    height: 17px;
+    flex: 0 0 17px;
+    border-radius: 50%;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .sync-mini-spinner {
+    display: block;
+    width: 10px;
+    height: 10px;
+    box-sizing: border-box;
+    border: 1.5px solid rgba(221, 151, 135, 0.4);
+    border-top-color: #dd9787;
+    border-radius: 50%;
+    animation: syncRotate 0.75s linear infinite;
+  }
+
+  .sync-status-dot {
+    width: 7px;
+    height: 7px;
+    flex: 0 0 7px;
+    margin-left: 1px;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: syncOnlinePulse 2.2s ease-out infinite;
+  }
+
+  .sync-status-detail {
+    display: block;
+    min-height: 15px;
+    line-height: 15px;
+    text-align: center;
+    color: #64748b;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .sync-status-detail:empty::after {
+    content: "\00a0";
+    visibility: hidden;
+  }
+
+  .sync-status-detail span {
+    display: inline;
+  }
+
+  /* Status saat ada data menunggu atau sedang disimpan: Terracotta */
+  .sync-status-panel[data-state="pending"],
+  .sync-status-panel[data-state="syncing"] {
+    border-color: #fecdd3;
+    background: #fff1f2;
+    color: #9f1239;
+  }
+
+  .sync-status-panel[data-state="pending"] .sync-status-icon {
+    background: #ffe4e6;
+    color: #9f1239;
+  }
+
+  .sync-status-panel[data-state="syncing"] .sync-status-icon {
+    background: #ffe4e6;
+    color: #9f1239;
+  }
+
+  .sync-status-panel[data-state="pending"] .sync-status-icon,
+  .sync-status-panel[data-state="syncing"] #syncStatusIcon svg {
+    animation: syncRotate 1.2s linear infinite;
+  }
+
+  .sync-status-panel[data-state="pending"] .sync-status-dot,
+  .sync-status-panel[data-state="syncing"] .sync-status-dot {
+    background: #dd9787;
+    animation: none;
+    display: none !important;
+  }
+
+  /* Status error/offline tetap merah agar mudah dibedakan */
+  .sync-status-panel[data-state="error"],
+  .sync-status-panel[data-state="offline"] {
+    border-color: #fca5a5;
+    background: #fef2f2;
+    color: #991b1b;
+  }
+
+  .sync-status-panel[data-state="error"] .sync-status-icon,
+  .sync-status-panel[data-state="offline"] .sync-status-icon {
+    background: #fecaca;
+    color: #991b1b;
+  }
+
+  .sync-status-panel[data-state="error"] .sync-status-dot,
+  .sync-status-panel[data-state="offline"] .sync-status-dot {
+    background: #dc2626;
+    animation: none;
+  }
+
+  .sync-status-panel[data-state="offline"] .sync-status-dot {
+    display: none;
+  }
+
+  /* Ikon status tidak ikut berputar; animasi hanya pada ikon SVG yang sesuai */
+  .sync-status-panel[data-state="syncing"] .sync-status-icon {
+    animation: none;
+  }
+
+  .sync-retry-button {
+    padding: 4px 9px;
+    border: 1px solid currentColor;
+    border-radius: 7px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .sync-retry-button[hidden] {
+    display: none !important;
+  }
+
+  @keyframes syncRotate {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes syncOnlinePulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+    }
+
+    70% {
+      box-shadow: 0 0 0 5px rgba(34, 197, 94, 0);
+    }
+
+    100% {
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+    }
+  }
+
+  @media (max-width: 760px) {
+    .sync-status-panel {
+      max-width: 100%;
+      white-space: normal;
+    }
+
+    .sync-status-detail {
+      white-space: normal;
+    }
+
+    .right-action {
+      width: 100%;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sync-status-dot,
+    .sync-status-panel[data-state="syncing"] .sync-status-icon,
+    .sync-mini-spinner {
+      animation: none;
+    }
+  }
