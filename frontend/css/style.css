@@ -1001,18 +1001,21 @@ input[type="text"]:focus {
 /* ==========================================================================
    10. SYNC STATUS PANEL & SPINNER FIX
    ========================================================================== */
+/* ==========================================================================
+   10. SYNC STATUS PANEL (LAYOUT SEJAJAR HORIZONTAL)
+   ========================================================================== */
 .sync-status-panel {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
   width: max-content;
   min-width: 0;
-  min-height: 56px;
+  min-height: 52px;
   max-width: 100%;
   box-sizing: border-box;
-  padding: 9px 13px;
+  padding: 8px 14px;
   border: 1px solid #bbf7d0;
   border-radius: 12px;
   background: #f0fdf4;
@@ -1025,107 +1028,29 @@ input[type="text"]:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 8px; /* Jarak antara teks Offline & tombol */
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
 }
 
-#syncStatusIcon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-/* ANIMASI SPINNER MINI SAGE / MERAH */
-.sync-mini-spinner {
-  display: inline-block !important;
-  width: 13px !important;
-  height: 13px !important;
-  box-sizing: border-box !important;
-  border: 2px solid rgba(159, 18, 57, 0.25) !important;
-  border-top-color: #9f1239 !important;
-  border-radius: 50% !important;
-  animation: syncRotate 0.75s linear infinite !important;
-  flex-shrink: 0;
-}
-
-.sync-status-dot {
-  width: 7px;
-  height: 7px;
-  flex: 0 0 7px;
-  margin-left: 1px;
-  border-radius: 50%;
-  background: #22c55e;
-  animation: syncOnlinePulse 2.2s ease-out infinite;
-}
-
-.sync-status-detail {
-  display: block;
-  min-height: 15px;
-  line-height: 15px;
-  text-align: center;
-  color: #64748b;
-  font-size: 11px;
-  white-space: nowrap;
-}
-
-.sync-status-detail:empty::after {
-  content: "\00a0";
-  visibility: hidden;
-}
-
-/* STATE PENDING & SYNCING */
-.sync-status-panel[data-state="pending"],
-.sync-status-panel[data-state="syncing"] {
-  border-color: #fecdd3 !important;
-  background: #fff1f2 !important;
-  color: #9f1239 !important;
-}
-
-.sync-status-panel[data-state="pending"] .sync-status-dot,
-.sync-status-panel[data-state="syncing"] .sync-status-dot {
-  display: none !important;
-}
-
-/* STATE ERROR & OFFLINE */
-.sync-status-panel[data-state="error"],
-.sync-status-panel[data-state="offline"] {
-  border-color: #fca5a5 !important;
-  background: #fef2f2 !important;
-  color: #991b1b !important;
-}
-
-.sync-status-panel[data-state="offline"] .sync-status-dot {
-  display: none !important;
-}
-
-@keyframes syncRotate {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes syncOnlinePulse {
-  0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
-  70% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-}
-
-/* TOMBOL KIRIM DATA PENDING */
+/* TOMBOL SEJAJAR HORIZONTAL */
 .sync-retry-button {
   display: none !important;
-  margin-top: 6px;
-  padding: 6px 12px;
+  margin: 0 0 0 4px !important; /* Margin kiri agar tidak menempel ke teks */
+  padding: 4px 10px !important;
+  height: 28px !important;
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   background: #dc2626;
   color: #ffffff !important;
   font-family: inherit;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2);
+  box-shadow: 0 2px 5px rgba(220, 38, 38, 0.2);
+  white-space: nowrap;
 }
 
 .sync-retry-button:hover {
@@ -1133,14 +1058,7 @@ input[type="text"]:focus {
   transform: translateY(-1px);
 }
 
-/* PAKSA SEMBUNYIKAN KETIKA TERSIMPAN / MENYIMPAN */
-.sync-status-panel[data-state="saved"] #retrySyncButton,
-.sync-status-panel[data-state="syncing"] #retrySyncButton,
-#retrySyncButton[hidden] {
-  display: none !important;
-}
-
-/* TAMPILKAN TOMBOL DAN SEMBUNYIKAN CAPTION SAAT ERROR ATAU OFFLINE PENDING */
+/* KONDISI TAMPIL SAAT ERROR/OFFLINE */
 .sync-status-panel[data-state="error"] #retrySyncButton:not([hidden]),
 .sync-status-panel[data-state="offline"] #retrySyncButton:not([hidden]) {
   display: inline-flex !important;
@@ -1148,7 +1066,14 @@ input[type="text"]:focus {
   justify-content: center;
 }
 
-/* Sembunyikan caption pesan di bawahnya saat tombol Kirim Data Pending muncul agar kartu tetap rapi */
+/* PAKSA SEMBUNYIKAN SAAT SYNCING / SAVED */
+.sync-status-panel[data-state="saved"] #retrySyncButton,
+.sync-status-panel[data-state="syncing"] #retrySyncButton,
+#retrySyncButton[hidden] {
+  display: none !important;
+}
+
+/* SEMBUNYIKAN DETAIL CAPTION BAWAH SAAT TOMBOL MUNCUL AGAR KARTU TETAP TIPIS */
 .sync-status-panel[data-state="error"]:has(#retrySyncButton:not([hidden])) .sync-status-detail,
 .sync-status-panel[data-state="offline"]:has(#retrySyncButton:not([hidden])) .sync-status-detail {
   display: none !important;

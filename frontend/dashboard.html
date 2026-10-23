@@ -195,15 +195,16 @@
                 <span id="syncStatusIcon" class="sync-status-icon-wrapper"></span>
                 <span id="syncStatusDot" class="sync-status-dot" aria-hidden="true"></span>
                 <span id="syncStatusLabel">Data Tersimpan (Online)</span>
+                
+                <!-- TOMBOL AKSI SEJAJAR DI SAMPING TEKS -->
+                <button type="button" id="retrySyncButton" class="sync-retry-button" onclick="handleSubmit(event)" hidden>
+                  Kirim Data Pending
+                </button>
               </div>
               <div class="sync-status-detail">
                 <span id="syncStatusCaption">Update terakhir: Memuat riwayat…</span>
                 <span id="syncLastUpdated" hidden></span>
               </div>
-              <!-- TOMBOL AKSI ULANG MANUAL -->
-              <button type="button" id="retrySyncButton" class="sync-retry-button" onclick="handleSubmit(event)" hidden>
-                Kirim Data Pending
-              </button>
             </div>
           </div>
         </div>
