@@ -999,7 +999,7 @@ input[type="text"]:focus {
 }
 
 /* ==========================================================================
-   10. SYNC STATUS PANEL
+   10. SYNC STATUS PANEL (PENYESUAIAN DENGAN JS)
    ========================================================================== */
 .sync-status-panel {
   display: inline-flex;
@@ -1031,45 +1031,18 @@ input[type="text"]:focus {
   white-space: nowrap;
 }
 
-#syncStatusIcon svg {
-  width: 17px;
-  height: 17px;
-  stroke-width: 2.2;
-}
-
-.sync-status-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 17px;
-  height: 17px;
-  flex: 0 0 17px;
-  border-radius: 50%;
-  background: #dcfce7;
-  color: #15803d;
-  font-size: 12px;
-  font-weight: 700;
-}
-
+/* KEMBALIKAN MINI SPINNER SAAT MENYIMPAN/SYNCING */
 .sync-mini-spinner {
-  display: block;
-  width: 10px;
-  height: 10px;
-  box-sizing: border-box;
-  border: 1.5px solid rgba(221, 151, 135, 0.4);
-  border-top-color: #dd9787;
-  border-radius: 50%;
-  animation: syncRotate 0.75s linear infinite;
-}
-
-.sync-status-dot {
-  width: 7px;
-  height: 7px;
-  flex: 0 0 7px;
-  margin-left: 1px;
-  border-radius: 50%;
-  background: #22c55e;
-  animation: syncOnlinePulse 2.2s ease-out infinite;
+  display: inline-block !important;
+  width: 12px !important;
+  height: 12px !important;
+  box-sizing: border-box !important;
+  border: 2px solid rgba(159, 18, 57, 0.25) !important;
+  border-top-color: #9f1239 !important;
+  border-radius: 50% !important;
+  animation: syncRotate 0.75s linear infinite !important;
+  flex-shrink: 0;
+  margin-right: 2px;
 }
 
 .sync-status-detail {
@@ -1091,71 +1064,26 @@ input[type="text"]:focus {
   display: inline;
 }
 
+/* COLOR SCHEME PENDING & SYNCING (WARNA MERAH SOFT KHAS PANIK/DRAFT) */
 .sync-status-panel[data-state="pending"],
 .sync-status-panel[data-state="syncing"] {
-  border-color: #fecdd3;
-  background: #fff1f2;
-  color: #9f1239;
+  border-color: #fecdd3 !important;
+  background: #fff1f2 !important;
+  color: #9f1239 !important;
 }
 
-.sync-status-panel[data-state="pending"] .sync-status-icon,
-.sync-status-panel[data-state="syncing"] .sync-status-icon {
-  background: #ffe4e6;
-  color: #9f1239;
-}
-
-.sync-status-panel[data-state="pending"] .sync-status-icon,
-.sync-status-panel[data-state="syncing"] #syncStatusIcon svg {
-  animation: syncRotate 1.2s linear infinite;
-}
-
+/* Sembunyikan dot online saat menyimpan */
 .sync-status-panel[data-state="pending"] .sync-status-dot,
 .sync-status-panel[data-state="syncing"] .sync-status-dot {
-  background: #dd9787;
-  animation: none;
   display: none !important;
 }
 
+/* Status offline & error */
 .sync-status-panel[data-state="error"],
 .sync-status-panel[data-state="offline"] {
-  border-color: #fca5a5;
-  background: #fef2f2;
-  color: #991b1b;
-}
-
-.sync-status-panel[data-state="error"] .sync-status-icon,
-.sync-status-panel[data-state="offline"] .sync-status-icon {
-  background: #fecaca;
-  color: #991b1b;
-}
-
-.sync-status-panel[data-state="error"] .sync-status-dot,
-.sync-status-panel[data-state="offline"] .sync-status-dot {
-  background: #dc2626;
-  animation: none;
-}
-
-.sync-status-panel[data-state="offline"] .sync-status-dot {
-  display: none;
-}
-
-.sync-status-panel[data-state="syncing"] .sync-status-icon {
-  animation: none;
-}
-
-.sync-retry-button {
-  padding: 4px 9px;
-  border: 1px solid currentColor;
-  border-radius: 7px;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.sync-retry-button[hidden] {
-  display: none !important;
+  border-color: #fca5a5 !important;
+  background: #fef2f2 !important;
+  color: #991b1b !important;
 }
 
 @keyframes syncRotate {
