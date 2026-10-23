@@ -10,7 +10,7 @@ html, body {
 }
 
 h2, h3 { 
-  color: #26352a; 
+  color: #1f2d2f; 
   font-weight: 600; 
   margin-top: 0; 
 }
@@ -35,7 +35,7 @@ body.login-body {
   padding: 40px 30px;
   margin: 20px;
   border-radius: 20px;
-  border: 1px solid #e4e5d9;
+  border: 1px solid #e3eff2;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
   text-align: center;
   box-sizing: border-box;
@@ -53,8 +53,8 @@ body.login-body {
   padding: 14px 18px;
   margin-bottom: 16px;
   border-radius: 12px;
-  border: 1px solid #d9ddce;
-  background: #f7f6ef;
+  border: 1px solid #cfe3e7;
+  background: #f1f7f8;
   text-align: center;
   font-size: 15px;
   font-family: inherit;
@@ -64,7 +64,7 @@ body.login-body {
 .login-btn {
   width: 100%;
   padding: 14px;
-  background-color: #477a43;
+  background-color: #006D77;
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -75,7 +75,7 @@ body.login-body {
 
 .error-msg {
   color: #e53935;
-  background: #fcebea;
+  background: #ffebee;
   padding: 10px;
   border-radius: 8px;
   font-size: 13px;
@@ -87,10 +87,9 @@ body.login-body {
    3. DASHBOARD LAYOUT & HEADERS
    ========================================================================== */
 body.dashboard-body {
-  /* Warm cream inspired by the Scan Presensi screen */
-  background: #f7e8ca;
-  padding: 0 20px 20px;
-  color: #26352a;
+  background: #a3cbd3;
+  padding: 20px;
+  color: #1f2d2f;
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -105,17 +104,12 @@ main {
 }
 
 .header-box-kelas {
-  background: #6b8f5b;
-  color: #ffffff;
-  padding: 16px 24px;
-  border-radius: 0 0 18px 18px;
-  border: 4px solid #ffffff;
-  border-top: 0;
-  box-shadow: 0 6px 18px rgba(83, 105, 62, 0.16);
+  background: #ffffff;
+  padding: 16px 20px;
+  border-radius: 14px;
+  border: 1px solid #e3eff2;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
   margin-bottom: 20px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -131,9 +125,9 @@ main {
 }
 
 .btn-logout {
-  background: #f0f0e6 !important;
-  color: #477a43 !important;
-  border: 1px solid #d9ddce !important;
+  background: #edf6f8 !important;
+  color: #006D77 !important;
+  border: 1px solid #cfe3e7 !important;
   padding: 8px !important;
   border-radius: 10px !important;
   display: inline-flex !important;
@@ -159,7 +153,7 @@ main {
   background: #ffffff;
   border-radius: 14px;
   padding: 24px;
-  border: 1px solid #e4e5d9;
+  border: 1px solid #e3eff2;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
   margin-bottom: 20px;
 }
@@ -171,23 +165,23 @@ select, input[type="date"], input[type="text"] {
   padding: 0 14px;
   height: 38px;
   border-radius: 12px;
-  border: 1px solid #d9ddce;
+  border: 1px solid #cfe3e7;
   font-size: 13px;
   font-family: 'Poppins', sans-serif;
   background: #ffffff;
-  color: #26352a;
+  color: #1f2d2f;
   outline: none;
   box-sizing: border-box;
   transition: all 0.2s ease;
 }
 
 select:focus, input[type="date"]:focus, input[type="text"]:focus {
-  border-color: #477a43;
-  box-shadow: 0 0 0 2px rgba(71, 122, 67, 0.2);
+  border-color: #006D77;
+  box-shadow: 0 0 0 2px rgba(0, 109, 119, 0.2);
 }
 
 button {
-  background-color: #477a43;
+  background-color: #006D77;
   color: #ffffff !important;
   padding: 8px 16px;
   border-radius: 8px;
@@ -218,8 +212,8 @@ button:disabled {
   font-size: 12px !important;
   padding: 5px 7px !important;
   background: #ffffff !important;
-  color: #477a43 !important;
-  border: 1px solid #477a43 !important;
+  color: #006D77 !important;
+  border: 1px solid #006D77 !important;
   border-radius: 6px !important;
   cursor: pointer;
   display: inline-flex !important;
@@ -242,8 +236,8 @@ button:disabled {
   margin-bottom: 20px;
   padding: 14px;
 
-  background: #e9eddf;
-  border: 1px solid #d3d9c8;
+  background: #d1e5e9;
+  border: 1px solid #b2d5dc;
   border-radius: 14px;
 }
 
@@ -266,7 +260,7 @@ button:disabled {
 
   font-size: 12px;
   font-weight: 600;
-  color: #477a43;
+  color: #006D77;
 }
 
 .filter-item .custom-dropdown,
@@ -305,7 +299,7 @@ button:disabled {
   margin: 0;
 
   background: #fff;
-  border: 1px solid #d3d9c8;
+  border: 1px solid #b8dade;
   border-radius: 11px;
   text-align: center;
 }
@@ -322,7 +316,7 @@ button:disabled {
   font-size: 10px;
   line-height: 1.2;
   font-weight: 700;
-  color: #477a43;
+  color: #006D77;
   text-align: center;
   overflow-wrap: anywhere;
 }
@@ -403,7 +397,7 @@ button:disabled {
 
 .table-responsive {
   width: 100%;
-  border: 1px solid #d3d9c8;
+  border: 1px solid #b8dade;
   border-radius: 12px;
   margin-top: 15px;
   background: #ffffff;
@@ -429,22 +423,22 @@ table {
 }
 
 th { 
-  background: #e0e7d4 !important; 
+  background: #c2e0e5 !important; 
   color: #00383e !important; 
   font-size: 12px; 
   font-weight: 600; 
   padding: 12px 10px; 
-  border-bottom: 2px solid #cbd7bf !important; 
+  border-bottom: 2px solid #a3cdd4 !important; 
 }
 
 #tbodySiswa td {
   padding: 11px 10px;
-  border-bottom: 1px solid #e4e5d9 !important;
+  border-bottom: 1px solid #e3eff2 !important;
   text-align: center;
   vertical-align: middle;
   font-size: 13px !important;
   font-weight: 500 !important;
-  color: #30372e !important;
+  color: #2b2d42 !important;
 }
 
 #tbodySiswa td:nth-child(1) {
@@ -462,7 +456,7 @@ th {
 }
 
 tr:nth-child(even) td { 
-  background-color: #fbfaf5; 
+  background-color: #f8fafb; 
 }
 
 /* ==========================================================================
@@ -535,12 +529,12 @@ tr:nth-child(even) td {
 .inline-select {
   display: inline-block;
   padding: 0 10px 0 14px;
-  border: 1.5px solid #477a43;
+  border: 1.5px solid #006D77;
   outline: none;
   background-color: #ffffff;
-  color: #30372e;
+  color: #2b2d42;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(71, 122, 67, 0.15);
+  box-shadow: 0 2px 6px rgba(0, 109, 119, 0.15);
   text-align: center;
   text-align-last: center;
   font-weight: 500 !important;
@@ -635,7 +629,7 @@ tr:nth-child(even) td {
 }
 
 #pagination button { 
-  background: #f0f0e6 !important; 
+  background: #edf6f8 !important; 
   color: #004f56 !important; 
   border: 1px solid #bcd6db !important; 
   margin: 2px; 
@@ -646,7 +640,7 @@ tr:nth-child(even) td {
 }
 
 #pagination button.active { 
-  background: #477a43 !important; 
+  background: #006D77 !important; 
   color: #ffffff !important; 
   font-weight: 600 !important; 
 }
@@ -655,7 +649,7 @@ footer {
   text-align: center; 
   padding: 20px; 
   font-size: 12px; 
-  color: #477a43; 
+  color: #006D77; 
   margin-top: 20px; 
 }
 
@@ -713,8 +707,8 @@ footer {
 }
 
 .spinner { 
-  border: 3px solid #e4e5d9; 
-  border-top: 3px solid #477a43; 
+  border: 3px solid #e3eff2; 
+  border-top: 3px solid #006D77; 
   border-radius: 50%; 
   width: 30px; 
   height: 30px; 
@@ -761,7 +755,7 @@ footer {
   display: inline-flex;
   align-items: center;
   background: #ffffff;
-  border: 1px solid #d9ddce;
+  border: 1px solid #cfe3e7;
 }
 
 .dropdown-selected {
@@ -775,7 +769,7 @@ footer {
   box-sizing: border-box;
   font-size: 13px;
   font-weight: 500;
-  color: #26352a;
+  color: #1f2d2f;
 }
 
 .dropdown-menu {
@@ -791,7 +785,7 @@ footer {
   max-height: 250px;
   overflow-y: auto;
   background: #ffffff;
-  border: 1px solid #d9ddce;
+  border: 1px solid #cfe3e7;
   border-radius: 12px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   display: none;
@@ -821,14 +815,14 @@ footer {
   padding: 9px 14px;
   text-align: left !important;
   font-size: 12.5px;
-  color: #30372e;
+  color: #2b2d42;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .dropdown-item:hover {
   background: #f1f5f9;
-  color: #477a43;
+  color: #006D77;
 }
 
 .custom-dropdown.open .dropdown-selected svg {
@@ -858,11 +852,11 @@ footer {
   height: 38px;
   padding: 0 14px;
   border-radius: 12px !important;
-  border: 1px solid #d9ddce;
+  border: 1px solid #cfe3e7;
   background: #ffffff;
   font-size: 13px;
   font-family: 'Poppins', sans-serif;
-  color: #26352a;
+  color: #1f2d2f;
   box-sizing: border-box;
   outline: none;
   transition: all 0.2s ease;
@@ -870,8 +864,8 @@ footer {
 
 .filter-input-text:focus,
 input[type="text"]:focus {
-  border-color: #477a43;
-  box-shadow: 0 0 0 3px rgba(71, 122, 67, 0.15);
+  border-color: #006D77;
+  box-shadow: 0 0 0 3px rgba(0, 109, 119, 0.15);
 }
 
 
