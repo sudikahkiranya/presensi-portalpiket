@@ -999,7 +999,7 @@ input[type="text"]:focus {
 }
 
 /* ==========================================================================
-   10. SYNC STATUS PANEL & SPINNER
+   10. SYNC STATUS PANEL & SPINNER FIX
    ========================================================================== */
 .sync-status-panel {
   display: inline-flex;
@@ -1038,31 +1038,11 @@ input[type="text"]:focus {
   flex-shrink: 0;
 }
 
-#syncStatusIcon svg {
-  width: 17px;
-  height: 17px;
-  stroke-width: 2.2;
-}
-
-.sync-status-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 17px;
-  height: 17px;
-  flex: 0 0 17px;
-  border-radius: 50%;
-  background: #dcfce7;
-  color: #15803d;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-/* ANIMASI SPINNER MINI MERAH / TERRACOTTA */
+/* ANIMASI SPINNER MINI SAGE / MERAH */
 .sync-mini-spinner {
   display: inline-block !important;
-  width: 12px !important;
-  height: 12px !important;
+  width: 13px !important;
+  height: 13px !important;
   box-sizing: border-box !important;
   border: 2px solid rgba(159, 18, 57, 0.25) !important;
   border-top-color: #9f1239 !important;
@@ -1096,21 +1076,11 @@ input[type="text"]:focus {
   visibility: hidden;
 }
 
-.sync-status-detail span {
-  display: inline;
-}
-
-/* TAMPILAN PANEL SAAT STATUS PENDING / SYNCING */
+/* STATE PENDING & SYNCING */
 .sync-status-panel[data-state="pending"],
 .sync-status-panel[data-state="syncing"] {
   border-color: #fecdd3 !important;
   background: #fff1f2 !important;
-  color: #9f1239 !important;
-}
-
-.sync-status-panel[data-state="pending"] .sync-status-icon,
-.sync-status-panel[data-state="syncing"] .sync-status-icon {
-  background: #ffe4e6 !important;
   color: #9f1239 !important;
 }
 
@@ -1119,7 +1089,7 @@ input[type="text"]:focus {
   display: none !important;
 }
 
-/* TAMPILAN PANEL SAAT ERROR / OFFLINE */
+/* STATE ERROR & OFFLINE */
 .sync-status-panel[data-state="error"],
 .sync-status-panel[data-state="offline"] {
   border-color: #fca5a5 !important;
@@ -1127,28 +1097,7 @@ input[type="text"]:focus {
   color: #991b1b !important;
 }
 
-.sync-status-panel[data-state="error"] .sync-status-icon,
-.sync-status-panel[data-state="offline"] .sync-status-icon {
-  background: #fecaca !important;
-  color: #991b1b !important;
-}
-
 .sync-status-panel[data-state="offline"] .sync-status-dot {
-  display: none !important;
-}
-
-.sync-retry-button {
-  padding: 4px 9px;
-  border: 1px solid currentColor;
-  border-radius: 7px;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.sync-retry-button[hidden] {
   display: none !important;
 }
 
