@@ -1233,13 +1233,13 @@ document.addEventListener("visibilitychange", () => {
 
 function setPetugasPiket(nama) {
   const el = document.getElementById('petugasPiket');
-  if (el) el.textContent = `👤 ${nama || "-"}`;
+  if (el) el.textContent = nama || "-";
 }
 
 function setRoleUser(role) {
-  const roleLabel = { "Admin": "🟣 Admin Presensi", "Piket": "🟢 Petugas Piket" };
+  const roleLabel = { "Admin": "Admin Presensi", "Piket": "Petugas Piket" };
   const el = document.getElementById("roleUser");
-  if (el) el.textContent = roleLabel[role] || "⚪ -";
+  if (el) el.textContent = roleLabel[role] || "Petugas";
 }
 
 function getStatusClass(status) {
@@ -1258,14 +1258,43 @@ function getStatusClass(status) {
   return "status-kosong";
 }
 
+// FUNGSI TOAST NOTIFIKASI SAMA SEPERTI SCANNER APP
+let toastTimer = null;
+
 function showToast(message, type = "info", duration = 3000) {
-  const container = document.getElementById("toastContainer");
-  if (!container) return;
-  const toast = document.createElement("div");
-  toast.className = `toast ${type}`;
-  toast.textContent = message;
-  container.appendChild(toast);
-  setTimeout(() => toast.remove(), duration);
+  const toast = document.getElementById("appToast");
+  const titleEl = document.getElementById("toastTitle");
+  const msgEl = document.getElementById("toastMessage");
+  const iconEl = document.getElementById("toastIcon");
+
+  if (!toast) return;
+
+  toast.setAttribute("data-type", type);
+
+  if (type === "success") {
+    if (titleEl) titleEl.textContent = "Berhasil";
+    if (iconEl) iconEl.textContent = "✓";
+  } else if (type === "error") {
+    if (titleEl) titleEl.textContent = "Gagal";
+    if (iconEl) iconEl.textContent = "✕";
+  } else {
+    if (titleEl) titleEl.textContent = "Informasi";
+    if (iconEl) iconEl.textContent = "ℹ";
+  }
+
+  if (msgEl) msgEl.textContent = message;
+
+  toast.classList.add("is-visible");
+
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    closeToast();
+  }, duration);
+}
+
+function closeToast() {
+  const toast = document.getElementById("appToast");
+  if (toast) toast.classList.remove("is-visible");
 }
 
 function logout() {
