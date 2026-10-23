@@ -9,22 +9,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="./css/style.css">
-
-
-
 </head>
 <body class="dashboard-body">
 
-<!-- TOAST CONTAINER -->
-<div id="toastContainer"></div>
+<!-- TOAST CONTAINER MODEL SCANNER -->
+<div id="appToast" role="alert" aria-live="assertive">
+  <div class="toast-icon-bg" id="toastIcon">✓</div>
+  <div class="toast-content">
+    <div class="toast-title" id="toastTitle">Berhasil</div>
+    <div class="toast-message" id="toastMessage">Pesan tidak diketahui</div>
+  </div>
+  <button type="button" class="toast-close-btn" onclick="closeToast()" aria-label="Tutup">✕</button>
+</div>
 
 <!-- CONFIRM MODAL -->
 <div id="confirmModal" class="modal-overlay">
   <div class="modal-box">
     <p id="confirmText">Yakin?</p>
     <div class="modal-actions" style="margin-top:15px; display:flex; gap:10px;">
-      <button onclick="closeConfirm()" class="btn-cancel" style="background:#475569;">Batal</button>
-      <button onclick="confirmYes()" class="btn-confirm" style="background:#0f766e;">Lanjut</button>
+      <button type="button" onclick="closeConfirm()" class="btn-cancel" style="background:#475569;">Batal</button>
+      <button type="button" onclick="confirmYes()" class="btn-confirm" style="background:#0f766e;">Lanjut</button>
     </div>
   </div>
 </div>
@@ -49,7 +53,7 @@
   <div class="modal-box">
     <h3 style="color:#ef4444;">❌ Rekap tidak dapat diproses</h3>
     <p id="errorMessage"></p>
-    <button style="background:#ef4444;" onclick="closeError()">OK</button>
+    <button type="button" style="background:#ef4444;" onclick="closeError()">OK</button>
   </div>
 </div>
 
@@ -59,17 +63,6 @@
     <div class="spinner"></div>
     <p id="loadingText" style="margin-top:12px; font-weight:500; color:#1f2d2f;">Memproses...</p>
   </div>
-</div>
-
-<main>
-<!-- TOAST CONTAINER MODEL SCANNER -->
-<div id="appToast" role="alert" aria-live="assertive">
-  <div class="toast-icon-bg" id="toastIcon">✓</div>
-  <div class="toast-content">
-    <div class="toast-title" id="toastTitle">Berhasil</div>
-    <div class="toast-message" id="toastMessage">Pesan tidak diketahui</div>
-  </div>
-  <button type="button" class="toast-close-btn" onclick="closeToast()" aria-label="Tutup">✕</button>
 </div>
 
 <main>
@@ -94,7 +87,7 @@
         <span id="roleUser">-</span>
       </div>
 
-      <button onclick="logout()" title="Logout" aria-label="Logout" class="btn-logout">
+      <button type="button" onclick="logout()" title="Logout" aria-label="Logout" class="btn-logout">
         <svg class="logout-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
           <polyline points="16 17 21 12 16 7"></polyline>
@@ -130,11 +123,10 @@
           </div>
         </div>
 
-
         <div class="statistik-wrapper">
           <div class="jumlah-data-box">
-          <label>Jumlah<br>Siswa Aktif</label>
-          <span id="jumlahData">0</span>
+            <label>Jumlah<br>Siswa Aktif</label>
+            <span id="jumlahData">0</span>
           </div>
 
           <div class="jumlah-data-box">
@@ -155,7 +147,7 @@
 
       </div>
 
-      <!-- HEADER ACTION DENGAN IKON LENGKAP -->
+      <!-- HEADER ACTION -->
       <div class="table-header">
         <div class="left-action">
           <button type="button" onclick="tarikDataPresensi()">
@@ -203,7 +195,6 @@
         </div>
       </div>
 
-
       <!-- TABLE -->
       <div class="table-responsive">
         <table>
@@ -223,7 +214,7 @@
         </table>
       </div>
 
-      <!-- PAGINATION: SEKARANG DI DALAM CARD -->
+      <!-- PAGINATION -->
       <div class="table-footer">
         <div id="pagination"></div>
       </div>
@@ -231,7 +222,6 @@
     </div>
   </form>
 </main>
-
 
 <footer>
   © SISENSI v 5.1
