@@ -23,7 +23,7 @@ body.login-body {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(rgba(246, 231, 203, 0.85), rgba(246, 231, 203, 0.85)), 
+  background: linear-gradient(rgba(245, 240, 231, 0.88), rgba(245, 240, 231, 0.88)), 
               url('https://i.imgur.com/hqZ98He.jpeg') no-repeat center center;
   background-size: cover;
 }
@@ -64,7 +64,7 @@ body.login-body {
 .login-btn {
   width: 100%;
   padding: 14px;
-  background-color: #678d58;
+  background-color: #A66F7A;
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -87,7 +87,7 @@ body.login-body {
    3. DASHBOARD LAYOUT & TOP HEADER BANNER (GAYA SCANNER PERFECT)
    ========================================================================== */
 body.dashboard-body {
-  background: #f6e7cb !important;
+  background: #F5F0E7 !important;
   padding: 0 30px 20px !important; /* Margin/padding atas WAJIB 0 */
   color: #1e293b;
   display: flex;
@@ -111,7 +111,7 @@ main {
 #topHeaderBanner {
   width: 100%;
   max-width: 1400px;
-  background: #678d58 !important;
+  background: #824653 !important;
   border-radius: 0 0 16px 16px !important;
   padding: 16px 30px !important;
   display: flex !important;
@@ -180,7 +180,7 @@ main {
 .header-sub-date {
   font-size: 12px !important;
   font-weight: 500 !important;
-  color: #678d58 !important;
+  color: #A66F7A !important;
   line-height: 1.2;
 }
 
@@ -219,7 +219,7 @@ main {
   gap: 8px;
   font-size: 11.5px;
   font-weight: 500 !important;
-  color: #678d58;
+  color: #A66F7A;
   line-height: 1.2;
 }
 
@@ -239,7 +239,7 @@ main {
 }
 
 #roleUser {
-  color: #678d58 !important;
+  color: #A66F7A !important;
   font-weight: 500 !important;
 }
 
@@ -299,12 +299,12 @@ select, input[type="date"], input[type="text"] {
 }
 
 select:focus, input[type="date"]:focus, input[type="text"]:focus {
-  border-color: #678d58;
-  box-shadow: 0 0 0 2px rgba(103, 141, 88, 0.25);
+  border-color: #A66F7A;
+  box-shadow: 0 0 0 2px rgba(166, 111, 122, 0.25);
 }
 
 button {
-  background-color: #678d58;
+  background-color: #A66F7A;
   color: #ffffff !important;
   padding: 8px 16px;
   border-radius: 8px;
@@ -322,7 +322,8 @@ button {
 }
 
 button:hover:not(:disabled) { 
-  opacity: 0.9; 
+  background-color: #955D68;
+  opacity: 1; 
   transform: translateY(-1px); 
 }
 
@@ -335,8 +336,8 @@ button:disabled {
   font-size: 12px !important;
   padding: 5px 7px !important;
   background: #ffffff !important;
-  color: #678d58 !important;
-  border: 1px solid #678d58 !important;
+  color: #A66F7A !important;
+  border: 1px solid #A66F7A !important;
   border-radius: 6px !important;
   cursor: pointer;
   display: inline-flex !important;
@@ -381,7 +382,7 @@ button:disabled {
 
   font-size: 12px;
   font-weight: 600;
-  color: #678d58;
+  color: #A66F7A;
 }
 
 .filter-item .custom-dropdown,
@@ -434,7 +435,7 @@ button:disabled {
   font-size: 10px;
   line-height: 1.2;
   font-weight: 700;
-  color: #678d58;
+  color: #A66F7A;
   text-align: center;
   overflow-wrap: anywhere;
 }
@@ -642,12 +643,12 @@ tr:nth-child(even) td {
 .inline-select {
   display: inline-block;
   padding: 0 10px 0 14px;
-  border: 1.5px solid #678d58;
+  border: 1.5px solid #A66F7A;
   outline: none;
   background-color: #ffffff;
   color: #1e293b;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(103, 141, 88, 0.15);
+  box-shadow: 0 2px 6px rgba(166, 111, 122, 0.15);
   text-align: center;
   text-align-last: center;
   font-weight: 500 !important;
@@ -753,7 +754,7 @@ tr:nth-child(even) td {
 }
 
 #pagination button.active { 
-  background: #678d58 !important; 
+  background: #A66F7A !important; 
   color: #ffffff !important; 
   font-weight: 600 !important; 
 }
@@ -762,7 +763,7 @@ footer {
   text-align: center; 
   padding: 20px; 
   font-size: 12px; 
-  color: #678d58; 
+  color: #A66F7A; 
   margin-top: 20px; 
 }
 
@@ -821,7 +822,7 @@ footer {
 
 .spinner { 
   border: 3px solid #e2e8f0; 
-  border-top: 3px solid #678d58; 
+  border-top: 3px solid #A66F7A; 
   border-radius: 50%; 
   width: 30px; 
   height: 30px; 
@@ -918,7 +919,7 @@ footer {
 
 .dropdown-item:hover {
   background: #f1f5f9;
-  color: #678d58;
+  color: #A66F7A;
 }
 
 .custom-dropdown.open .dropdown-selected svg {
@@ -959,8 +960,8 @@ footer {
 
 .filter-input-text:focus,
 input[type="text"]:focus {
-  border-color: #678d58;
-  box-shadow: 0 0 0 3px rgba(103, 141, 88, 0.15);
+  border-color: #A66F7A;
+  box-shadow: 0 0 0 3px rgba(166, 111, 122, 0.15);
 }
 
 #tbodySiswa .custom-dropdown.drop-up > .dropdown-menu {
