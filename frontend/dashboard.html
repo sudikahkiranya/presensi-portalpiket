@@ -29,13 +29,18 @@
   <!-- AREA KANAN: PIL USER & ROLE + BUTTON LOGOUT -->
   <div class="right-controls">
     <div id="userRolePillBox" class="header-pill-box user-pill-box">
-      <div class="pill-user-row">
-        <span class="pill-icon">👤</span>
-        <span id="petugasPiket">Anggi Herdiawan</span>
+      <!-- IKON SVG BESAR (MEWAKILI USER & ROLE) -->
+      <div class="pill-main-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+          <circle cx="12" cy="7" r="4"></circle>
+        </svg>
       </div>
-      <div class="pill-role-row">
-        <span class="pill-icon-dot">🟣</span>
-        <span id="roleUser">Admin Presensi</span>
+
+      <!-- TEKS STACKED: USER DI ATAS, ROLE DI BAWAH -->
+      <div class="pill-text-stack">
+        <span id="petugasPiket" class="user-name-text">Anggi Herdiawan</span>
+        <span id="roleUser" class="role-title-text">Admin Presensi</span>
       </div>
     </div>
 

@@ -193,54 +193,53 @@ main {
 
 .user-pill-box {
   background: #ffffff !important;
-  padding: 10px 18px !important;
+  padding: 8px 16px !important;
   border-radius: 12px !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
   display: flex !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: center !important;
-  gap: 4px !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
 }
 
-.pill-user-row {
+/* IKON SVG AGAK BESAR DI KIRI */
+.pill-main-icon {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13.5px;
-  font-weight: 500 !important; /* Dibuat sedang / tidak bold tebal */
-  color: #0f172a;
-  line-height: 1.2;
+  justify-content: center;
+  color: #678d58; /* Warna Sage Green */
+  flex-shrink: 0;
 }
 
-.pill-role-row {
+.pill-main-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* KUMPULAN TEKS KANAN (SUSUN ATAS-BAWAH) */
+.pill-text-stack {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11.5px;
-  font-weight: 500 !important;
-  color: #A66F7A;
-  line-height: 1.2;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
 }
 
-.pill-icon {
-  font-size: 13px;
-  color: #475569;
-}
-
-.pill-icon-dot {
-  font-size: 10px;
-}
-
-/* TEKS USER DAN ROLE TIDAK BOLD */
+/* TEKS NAMA USER (ATAS) */
+.user-name-text,
 #petugasPiket {
+  font-size: 13.5px !important;
+  font-weight: 600 !important;
   color: #0f172a !important;
-  font-weight: 500 !important;
+  line-height: 1.25 !important;
 }
 
+/* TEKS ROLE (BAWAH) */
+.role-title-text,
 #roleUser {
-  color: #A66F7A !important;
+  font-size: 11.5px !important;
   font-weight: 500 !important;
+  color: #678d58 !important;
+  line-height: 1.2 !important;
 }
 
 /* TOMBOL LOGOUT BULAT */
