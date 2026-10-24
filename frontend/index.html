@@ -125,7 +125,7 @@
     .password-toggle:hover { background: #F2E5E7; color: #6F3945; }
     .password-toggle svg { width: 20px; height: 20px; }
     .container-login .login-btn {
-      width: auto; min-width: 150px; align-self: center; padding: 0 28px;
+      width: auto; min-width: 132px; max-width: 190px; align-self: center; padding: 0 24px; min-width: 120px; align-self: center; padding: 0 22px;
       min-height: 42px; margin: 4px 0 0; border: 0; border-radius: 15px;
       display: inline-flex; align-items: center; justify-content: center; gap: 10px;
       background: linear-gradient(100deg, #A66F7A, #95606B); color: white;
@@ -158,9 +158,10 @@
       .visual-copy h3 { font-size: 23px; }
       .visual-copy p { max-width: 290px; font-size: 12px; }
       .login-content { padding: 32px clamp(22px, 7vw, 48px) 28px; }
-      .login-brand { margin-bottom: 20px; }
-      .container-login .logo { width: min(220px, 80%); max-height: 76px; }
-      .login-heading { margin-bottom: 25px; }
+      .login-title-row { gap: 14px; margin-bottom: 25px; }
+      .container-login .logo { width: 58px; height: 54px; max-width: 58px; max-height: 54px; }
+      .login-title-divider { height: 42px; }
+      .login-heading h2 { font-size: clamp(20px, 4.5vw, 26px); }
     }
     @media (max-width: 420px) {
       body.login-body { padding: 12px; align-items: flex-start; }
@@ -169,8 +170,12 @@
       .visual-copy h3 { font-size: 20px; }
       .visual-copy p { font-size: 11px; line-height: 1.6; }
       .login-content { padding: 26px 20px 23px; }
+      .login-title-row { gap: 10px; }
+      .container-login .logo { width: 48px; height: 46px; max-width: 48px; max-height: 46px; }
+      .login-title-divider { height: 38px; }
+      .login-heading h2 { font-size: clamp(18px, 5vw, 22px); }
       .container-login .login-input { height: 54px; min-height: 54px; border-radius: 13px; }
-      .container-login .login-btn { height: 48px; min-height: 48px; min-width: 150px; border-radius: 13px; }
+      .container-login .login-btn { height: 46px; min-height: 46px; min-width: 120px; padding: 0 22px; border-radius: 13px; }
       .login-form { gap: 13px; }
       .login-footer { margin-top: 25px; font-size: 10px; }
     }
@@ -224,11 +229,12 @@
     </section>
 
     <section class="login-content" aria-labelledby="loginTitle">
-      <div class="login-brand">
-        <img src="https://i.imgur.com/gGZSCOY.png" class="logo" alt="Logo SMK MedikaCom">
-      </div>
-      <header class="login-heading">
-        <h2 id="loginTitle">Portal Presensi Piket</h2>
+      <header class="login-title-row" aria-labelledby="loginTitle">
+        <img src="./assets/logo_sekolah.png" class="logo" alt="Logo SMK MedikaCom">
+        <span class="login-title-divider" aria-hidden="true"></span>
+        <div class="login-heading">
+          <h2 id="loginTitle">Portal Presensi Piket</h2>
+        </div>
       </header>
 
       <form class="login-form" id="loginForm" onsubmit="event.preventDefault(); login();">
