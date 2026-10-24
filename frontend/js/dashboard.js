@@ -1309,7 +1309,7 @@ function logout() {
   sessionStorage.removeItem("piket_selected_date");
 
   // Kembali ke halaman login tanpa menyimpan dashboard di history
-  window.location.replace("index");
+  window.location.replace("/");
 }
 
 function showSyncResultModal(names = [], count = 0) {

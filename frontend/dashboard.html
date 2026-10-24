@@ -16,10 +16,14 @@
     (function() {
       const user = localStorage.getItem("piket_user");
       if (!user) {
-        // Jika belum login, tendang seketika ke halaman login tanpa kedip
-        window.location.replace("/index");
+        // Jika belum login, kembalikan ke domain utama
+        window.location.replace("/");
       } else {
-        // Jika sudah login, tampilkan halaman secara mulus
+        // 💡 HAPUS TULISAN /dashboard DARI URL BROWSER TANPA RELOAD
+        if (window.location.pathname !== "/") {
+          window.history.replaceState(null, "", "/");
+        }
+
         document.addEventListener("DOMContentLoaded", function() {
           const antiFlash = document.getElementById("antiFlashStyle");
           if (antiFlash) antiFlash.remove();
