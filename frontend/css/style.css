@@ -104,7 +104,6 @@ main {
   margin: 0 auto;
 }
 
-/* HEADER BANNER SAGE GREEN (MENTOK ATAS) */
 /* ==========================================================================
    HEADER BANNER (MENTOK ATAS, LOGO BESAR & TEKS REGULAR)
    ========================================================================== */
@@ -207,7 +206,7 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #678d58; /* Warna Sage Green */
+  color: #A66F7A;
   flex-shrink: 0;
 }
 
@@ -238,7 +237,7 @@ main {
 #roleUser {
   font-size: 11.5px !important;
   font-weight: 500 !important;
-  color: #678d58 !important;
+  color: #A66F7A !important;
   line-height: 1.2 !important;
 }
 

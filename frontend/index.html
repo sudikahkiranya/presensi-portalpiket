@@ -3,18 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#e8f6f4">
+  <meta name="theme-color" content="#824653">
   <title>Login - Portal Presensi Piket | SMK MedikaCom</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/style.css">
   <style>
-    /* Login page refresh — styling is scoped to this page */
+    /* Tema SISENSI: Burgundy + Pale Beige */
     body.login-body {
-      --medika-teal: #007b83;
-      --medika-deep: #123f49;
-      --medika-muted: #789099;
-      --medika-line: #d7e4e6;
-      --medika-mint: #eaf7f5;
+      --burgundy: #824653;
+      --burgundy-dark: #6F3945;
+      --burgundy-soft: #A66F7A;
+      --burgundy-pale: #F2E5E7;
+      --beige: #F5F0E7;
+      --ink: #34272B;
+      --muted: #897B7E;
+      --line: #E5D9D5;
       margin: 0;
       min-height: 100vh;
       padding: 28px;
@@ -23,11 +26,11 @@
       align-items: center;
       justify-content: center;
       font-family: 'Poppins', sans-serif;
-      color: var(--medika-deep);
+      color: var(--ink);
       background:
-        radial-gradient(circle at 100% 0%, rgba(147, 224, 218, .55) 0 120px, transparent 121px),
-        radial-gradient(circle at 0% 100%, rgba(147, 224, 218, .42) 0 150px, transparent 151px),
-        linear-gradient(135deg, #e8f6f4 0%, #f8fbfa 55%, #e3f5f2 100%);
+        radial-gradient(circle at 100% 0%, rgba(166,111,122,.16) 0 120px, transparent 121px),
+        radial-gradient(circle at 0% 100%, rgba(130,70,83,.10) 0 150px, transparent 151px),
+        linear-gradient(135deg, #F5F0E7 0%, #FBF8F2 55%, #F1EAE0 100%);
     }
     body.login-body * { box-sizing: border-box; }
     body.login-body > .container-login {
@@ -40,16 +43,16 @@
       overflow: hidden;
       padding: 0;
       margin: auto;
-      border: 1px solid rgba(255,255,255,.95);
+      border: 1px solid rgba(255,255,255,.96);
       border-radius: 26px;
-      background: rgba(255,255,255,.96);
-      box-shadow: 0 24px 70px rgba(28, 94, 97, .13);
+      background: rgba(255,255,255,.97);
+      box-shadow: 0 24px 70px rgba(83,45,54,.13);
     }
     .login-visual {
       position: relative;
       min-height: 425px;
       overflow: hidden;
-      background: #d9f3ef;
+      background: #E8D7D9;
       display: flex;
       align-items: flex-end;
       padding: 22px;
@@ -66,19 +69,19 @@
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(14,128,130,0) 40%, rgba(8,83,89,.72) 100%);
+      background: linear-gradient(180deg, rgba(111,57,69,0) 36%, rgba(75,37,46,.82) 100%);
       z-index: -1;
     }
-    .visual-copy { color: #fff; text-shadow: 0 2px 12px rgba(0,0,0,.16); }
+    .visual-copy { color: #fff; text-shadow: 0 2px 12px rgba(40,15,20,.22); }
     .visual-eyebrow {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       margin-bottom: 12px;
       padding: 7px 12px;
-      border: 1px solid rgba(255,255,255,.35);
+      border: 1px solid rgba(255,255,255,.38);
       border-radius: 999px;
-      background: rgba(255,255,255,.17);
+      background: rgba(130,70,83,.36);
       backdrop-filter: blur(8px);
       font-size: 11px;
       font-weight: 600;
@@ -86,7 +89,7 @@
       text-transform: uppercase;
     }
     .visual-copy h3 { margin: 0 0 8px; font-size: clamp(24px, 2.5vw, 32px); line-height: 1.25; font-weight: 700; }
-    .visual-copy p { max-width: 330px; margin: 0; font-size: 13px; line-height: 1.8; color: rgba(255,255,255,.92); }
+    .visual-copy p { max-width: 330px; margin: 0; font-size: 13px; line-height: 1.8; color: rgba(255,255,255,.94); }
     .login-content {
       display: flex;
       flex-direction: column;
@@ -97,44 +100,45 @@
     .login-brand { display: flex; justify-content: center; margin-bottom: 22px; }
     .container-login .logo { display: block; width: min(180px, 100%); height: auto; max-height: 62px; object-fit: contain; margin: 0 auto; }
     .login-heading { text-align: center; margin-bottom: 20px; }
-    .login-heading h2 { margin: 0 0 8px; color: #123f49; font-size: clamp(25px, 2.3vw, 32px); line-height: 1.3; font-weight: 700; letter-spacing: -.035em; }
-    .login-heading p { margin: 0; color: #80949b; font-size: 13px; line-height: 1.7; }
+    .login-heading h2 { margin: 0 0 8px; color: #824653; font-size: clamp(25px, 2.3vw, 32px); line-height: 1.3; font-weight: 700; letter-spacing: -.035em; }
+    .login-heading p { margin: 0; color: #897B7E; font-size: 13px; line-height: 1.7; }
     .login-form { display: grid; gap: 13px; }
-    .login-field label { display: block; margin: 0 0 8px; color: #234d56; font-size: 13px; font-weight: 600; }
+    .login-field label { display: block; margin: 0 0 8px; color: #6F3945; font-size: 13px; font-weight: 600; }
     .login-input-wrap { position: relative; }
     .login-input-wrap .field-icon {
       position: absolute; left: 17px; top: 50%; transform: translateY(-50%);
-      width: 20px; height: 20px; color: #7d969d; pointer-events: none;
+      width: 20px; height: 20px; color: #A18489; pointer-events: none;
     }
     .container-login .login-input {
       width: 100%; height: 42px; margin: 0; padding: 0 44px 0 46px;
-      border: 1.5px solid #d7e3e5; border-radius: 15px; outline: none;
-      background: #fff; color: #163f48; font: 400 14px 'Poppins', sans-serif;
+      border: 1.5px solid #E5D9D5; border-radius: 15px; outline: none;
+      background: #FFFEFC; color: #34272B; font: 400 14px 'Poppins', sans-serif;
       text-align: left; transition: border-color .2s, box-shadow .2s, background .2s;
     }
-    .container-login .login-input::placeholder { color: #9aabb0; opacity: 1; }
-    .container-login .login-input:focus { border-color: #07858b; box-shadow: 0 0 0 4px rgba(0,123,131,.10); background: #fcffff; }
+    .container-login .login-input::placeholder { color: #A99A9D; opacity: 1; }
+    .container-login .login-input:focus { border-color: #A66F7A; box-shadow: 0 0 0 4px rgba(166,111,122,.15); background: #fff; }
     .password-toggle {
       position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
       width: 34px; height: 34px; display: grid; place-items: center;
-      border: 0; border-radius: 9px; color: #7d969d; background: transparent; cursor: pointer;
+      border: 0; border-radius: 9px; color: #A66F7A; background: transparent; cursor: pointer;
     }
-    .password-toggle:hover { background: #edf8f6; color: #007b83; }
+    .password-toggle:hover { background: #F2E5E7; color: #6F3945; }
     .password-toggle svg { width: 20px; height: 20px; }
     .container-login .login-btn {
       width: 100%; min-height: 42px; margin: 4px 0 0; border: 0; border-radius: 15px;
       display: flex; align-items: center; justify-content: center; gap: 10px;
-      background: linear-gradient(100deg, #00747c, #00838a); color: white;
+      background: linear-gradient(100deg, #A66F7A, #95606B); color: white;
       font: 600 14px 'Poppins', sans-serif; cursor: pointer;
-      box-shadow: 0 8px 18px rgba(0,123,131,.16); transition: transform .18s, box-shadow .18s, filter .18s;
+      box-shadow: 0 8px 18px rgba(130,70,83,.18); transition: transform .18s, box-shadow .18s, filter .18s;
     }
-    .container-login .login-btn:hover { transform: translateY(-1px); box-shadow: 0 12px 22px rgba(0,123,131,.22); filter: brightness(1.03); }
+    .container-login .login-btn:hover { transform: translateY(-1px); background: linear-gradient(100deg, #95606B, #824653); box-shadow: 0 12px 22px rgba(130,70,83,.23); filter: brightness(1.02); }
     .container-login .login-btn:active { transform: translateY(0); }
     .login-btn svg { width: 20px; height: 20px; }
-    .login-footer { display: flex; align-items: center; justify-content: center; gap: 13px; margin-top: 20px; color: #879ba1; font-size: 11px; text-align: center; }
-    .login-footer::before, .login-footer::after { content: ""; height: 1px; width: 34px; background: #d8e5e6; }
-    .container-login .error-msg { min-height: 0; margin-top: 12px; color: #c0392b; font-size: 12px; text-align: center; }
+    .login-footer { display: flex; align-items: center; justify-content: center; gap: 13px; margin-top: 20px; color: #9A8B8D; font-size: 11px; text-align: center; }
+    .login-footer::before, .login-footer::after { content: ""; height: 1px; width: 34px; background: #E5D9D5; }
+    .container-login .error-msg { min-height: 0; margin-top: 12px; color: #B42332; font-size: 12px; text-align: center; }
     #loadingOverlay { z-index: 9999; }
+    #loadingOverlay .spinner { border-top-color: #824653 !important; }
     @media (min-width: 821px) {
       body.login-body > .container-login {
         width: min(790px, calc(100vw - 40px)) !important;
@@ -149,7 +153,7 @@
       body.login-body > .container-login { width: min(560px, calc(100vw - 36px)) !important; max-width: 560px !important; min-height: auto; grid-template-columns: 1fr !important; border-radius: 23px; }
       .login-visual { min-height: 210px; padding: 24px; }
       .login-visual::before { background-position: center 54%; }
-      .login-visual::after { background: linear-gradient(90deg, rgba(8,83,89,.58), rgba(8,83,89,.12)); }
+      .login-visual::after { background: linear-gradient(90deg, rgba(75,37,46,.66), rgba(111,57,69,.10)); }
       .visual-copy h3 { font-size: 23px; }
       .visual-copy p { max-width: 290px; font-size: 12px; }
       .login-content { padding: 32px clamp(22px, 7vw, 48px) 28px; }
@@ -171,92 +175,39 @@
     @media (prefers-reduced-motion: reduce) {
       .container-login *, .container-login *::before, .container-login *::after { transition: none !important; }
     }
-  
-/* Final polish: stable password toggle placement and always-visible idle state */
-.password-field,
-.password-wrapper,
-.password-input-wrap,
-.input-password-wrap {
-  position: relative;
-  width: 100%;
-}
-.password-toggle,
-.toggle-password,
-#togglePassword,
-#togglePasswordBtn,
-.show-password,
-.password-eye {
-  position: absolute !important;
-  right: 10px !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  width: 30px !important;
-  height: 30px !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  color: #007f86 !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-  z-index: 5 !important;
-  cursor: pointer !important;
-}
-.password-field input,
-.password-wrapper input,
-.password-input-wrap input,
-.input-password-wrap input,
-#kodeAkses {
-  padding-right: 54px !important;
-}
-.password-toggle svg,
-.toggle-password svg,
-#togglePassword svg,
-#togglePasswordBtn svg,
-.show-password svg,
-.password-eye svg {
-  width: 20px !important;
-  height: 20px !important;
-  opacity: 1 !important;
-  visibility: visible !important;
-}
-@media (max-width: 700px) {
-  .login-card,
-  .login-shell,
-  .login-container,
-  .container-login {
-    width: calc(100vw - 28px) !important;
-    max-width: 460px !important;
-    min-height: auto !important;
-  }
-}
 
-
-.password-toggle:hover,
-.toggle-password:hover,
-#togglePassword:hover,
-#togglePasswordBtn:hover,
-.show-password:hover,
-.password-eye:hover {
-  background: transparent !important;
-  color: #005f65 !important;
-}
-.password-toggle:focus-visible,
-.toggle-password:focus-visible,
-#togglePassword:focus-visible,
-#togglePasswordBtn:focus-visible,
-.show-password:focus-visible,
-.password-eye:focus-visible {
-  outline: 2px solid #77cfc9 !important;
-  outline-offset: 2px !important;
-  border-radius: 5px !important;
-}
-
-</style>
+    /* Tombol tampilkan password: posisi stabil dan selalu terlihat */
+    .password-field, .password-wrapper, .password-input-wrap, .input-password-wrap {
+      position: relative; width: 100%;
+    }
+    .password-toggle, .toggle-password, #togglePassword, #togglePasswordBtn, .show-password, .password-eye {
+      position: absolute !important; right: 10px !important; top: 50% !important;
+      transform: translateY(-50%) !important; display: inline-flex !important;
+      align-items: center !important; justify-content: center !important;
+      width: 30px !important; height: 30px !important; padding: 0 !important;
+      margin: 0 !important; border: 0 !important; border-radius: 7px !important;
+      background: transparent !important; color: #A66F7A !important;
+      opacity: 1 !important; visibility: visible !important; z-index: 5 !important;
+      cursor: pointer !important;
+    }
+    .password-field input, .password-wrapper input, .password-input-wrap input, .input-password-wrap input, #kodeAkses {
+      padding-right: 54px !important;
+    }
+    .password-toggle svg, .toggle-password svg, #togglePassword svg, #togglePasswordBtn svg, .show-password svg, .password-eye svg {
+      width: 20px !important; height: 20px !important; opacity: 1 !important; visibility: visible !important;
+    }
+    @media (max-width: 700px) {
+      .login-card, .login-shell, .login-container, .container-login {
+        width: calc(100vw - 28px) !important; max-width: 460px !important; min-height: auto !important;
+      }
+    }
+    .password-toggle:hover, .toggle-password:hover, #togglePassword:hover, #togglePasswordBtn:hover, .show-password:hover, .password-eye:hover {
+      background: #F2E5E7 !important; color: #6F3945 !important;
+    }
+    .password-toggle:focus-visible, .toggle-password:focus-visible, #togglePassword:focus-visible, #togglePasswordBtn:focus-visible, .show-password:focus-visible, .password-eye:focus-visible {
+      outline: 2px solid #A66F7A !important; outline-offset: 2px !important; border-radius: 5px !important;
+    }
+  </style>
 </head>
 <body class="login-body">
   <main class="container-login">
@@ -276,7 +227,7 @@
       </div>
       <header class="login-heading">
         <h2 id="loginTitle">Portal Presensi Piket</h2>
-        </header>
+      </header>
 
       <form class="login-form" id="loginForm" onsubmit="event.preventDefault(); login();">
         <div class="login-field">
@@ -291,27 +242,9 @@
           <div class="login-input-wrap">
             <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path><path d="M12 14v3"></path></svg>
             <input type="password" id="kodeAkses" class="login-input" placeholder="Masukkan password" autocomplete="current-password" required>
-            <button
-              class="password-toggle"
-              type="button"
-              id="togglePassword"
-              aria-label="Tampilkan password"
-              title="Tampilkan password"
-              aria-pressed="false"
-            >
-              <!-- Ikon eye: password tersembunyi -->
-              <svg
-                id="passwordEyeIcon"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path>
-                <circle cx="12" cy="12" r="3"></circle>
+            <button class="password-toggle" type="button" id="togglePassword" aria-label="Tampilkan password" title="Tampilkan password" aria-pressed="false">
+              <svg id="passwordEyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle>
               </svg>
             </button>
           </div>
@@ -342,30 +275,18 @@
       <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"></path>
       <circle cx="12" cy="12" r="3"></circle>
     `;
-
     const eyeOff = `
       <path d="M3 3l18 18"></path>
       <path d="M10.6 10.6a2 2 0 0 0 2.8 2.8"></path>
       <path d="M9.9 5.2A11 11 0 0 1 12 5c6.5 0 10 7 10 7a15 15 0 0 1-4 4.8"></path>
       <path d="M6.6 6.6C3.6 8.5 2 12 2 12s3.5 7 10 7c1 0 2-.2 2.9-.5"></path>
     `;
-
     toggle.addEventListener('click', function () {
       const show = password.type === 'password';
-
       password.type = show ? 'text' : 'password';
       icon.innerHTML = show ? eyeOff : eye;
-
-      toggle.setAttribute(
-        'aria-label',
-        show ? 'Sembunyikan password' : 'Tampilkan password'
-      );
-
-      toggle.setAttribute(
-        'title',
-        show ? 'Sembunyikan password' : 'Tampilkan password'
-      );
-
+      toggle.setAttribute('aria-label', show ? 'Sembunyikan password' : 'Tampilkan password');
+      toggle.setAttribute('title', show ? 'Sembunyikan password' : 'Tampilkan password');
       toggle.setAttribute('aria-pressed', String(show));
     });
   </script>
