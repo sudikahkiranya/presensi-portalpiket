@@ -1242,3 +1242,91 @@ input[type="text"]:focus {
 .toast-close-btn:hover {
   color: #475569 !important;
 }
+
+/* ==========================================================================
+   FINAL LOGIN ALIGNMENT FIX — logo | divider | title + centered compact button
+   ========================================================================== */
+body.login-body .login-title-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 16px !important;
+  width: 100% !important;
+  margin: 0 0 26px !important;
+  text-align: left !important;
+}
+
+body.login-body .login-title-row .logo {
+  display: block !important;
+  width: 54px !important;
+  height: 54px !important;
+  max-width: 54px !important;
+  max-height: 54px !important;
+  flex: 0 0 54px !important;
+  object-fit: contain !important;
+  margin: 0 !important;
+}
+
+body.login-body .login-title-divider {
+  display: block !important;
+  width: 1px !important;
+  height: 44px !important;
+  flex: 0 0 1px !important;
+  background: #DED2CE !important;
+}
+
+body.login-body .login-title-row .login-heading {
+  flex: 0 1 auto !important;
+  min-width: 0 !important;
+  margin: 0 !important;
+  text-align: left !important;
+}
+
+body.login-body .login-title-row .login-heading h2 {
+  margin: 0 !important;
+  color: #292524 !important;
+  font-size: clamp(20px, 2vw, 27px) !important;
+  line-height: 1.25 !important;
+  text-align: left !important;
+  white-space: normal !important;
+}
+
+body.login-body .login-form {
+  width: 100%;
+}
+
+body.login-body .login-form > .login-btn,
+body.login-body .container-login .login-btn {
+  display: inline-flex !important;
+  width: auto !important;
+  min-width: 120px !important;
+  max-width: 180px !important;
+  justify-self: center !important;
+  align-self: center !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding: 0 22px !important;
+}
+
+@media (max-width: 820px) {
+  body.login-body .login-title-row {
+    gap: 12px !important;
+  }
+
+  body.login-body .login-title-row .logo {
+    width: 48px !important;
+    height: 48px !important;
+    max-width: 48px !important;
+    max-height: 48px !important;
+    flex-basis: 48px !important;
+  }
+
+  body.login-body .login-title-divider {
+    height: 36px !important;
+  }
+
+  body.login-body .login-title-row .login-heading h2 {
+    font-size: clamp(19px, 4.2vw, 25px) !important;
+  }
+}
