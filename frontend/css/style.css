@@ -1424,3 +1424,49 @@ body.login-body .login-footer {
     white-space: normal !important;
   }
 }
+
+
+/* FINAL FIX: balance the whitespace above header and below footer */
+body.login-body > .container-login > .login-content {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  align-items: stretch !important;
+  height: 100% !important;
+  min-height: 425px !important;
+  box-sizing: border-box !important;
+  padding-top: 30px !important;
+  padding-bottom: 30px !important;
+}
+
+/* Keep the complete right-side content group compact and centered */
+body.login-body .login-title-row {
+  margin-top: 0 !important;
+  margin-bottom: 24px !important;
+}
+
+body.login-body .login-form {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+body.login-body .login-footer {
+  margin-top: 24px !important;
+  margin-bottom: 0 !important;
+}
+
+/* Avoid empty error-message space affecting the vertical balance */
+body.login-body .error-msg:empty {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+@media (max-width: 820px) {
+  body.login-body > .container-login > .login-content {
+    height: auto !important;
+    min-height: 0 !important;
+    padding-top: 30px !important;
+    padding-bottom: 30px !important;
+  }
+}
