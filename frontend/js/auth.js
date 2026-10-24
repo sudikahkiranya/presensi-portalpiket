@@ -42,7 +42,7 @@ window.addEventListener("DOMContentLoaded", function () {
         user.nama === savedNama &&
         user.loginDate === today
       ) {
-        window.location.replace("dashboard.html");
+        window.location.replace("dashboard");
       }
     } catch (error) {
       // Jika data sesi rusak, bersihkan sesi login
@@ -102,7 +102,7 @@ async function login() {
       }));
 
       // Pindah ke dashboard
-      window.location.href = "dashboard.html";
+      window.location.href = "dashboard";
     } else {
       hideLoading();
       errorMsg.textContent = result.message || "Username/Password salah atau tidak diizinkan.";

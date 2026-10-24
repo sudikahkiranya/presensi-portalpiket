@@ -58,7 +58,7 @@ function initFormPiket() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
 
   if (!user) {
-    window.location.href = "index.html";
+    window.location.href = "index";
     return;
   }
 
@@ -1309,7 +1309,7 @@ function logout() {
   sessionStorage.removeItem("piket_selected_date");
 
   // Kembali ke halaman login tanpa menyimpan dashboard di history
-  window.location.replace("index.html");
+  window.location.replace("index");
 }
 
 function showSyncResultModal(names = [], count = 0) {
