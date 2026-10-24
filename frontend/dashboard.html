@@ -3,9 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <base target="_top">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Portal Presensi Piket</title>
+
+  <!-- 1. SEMBUNYIKAN HTML SECARA INSTAN AGAR TIDAK KEDIP SAAT DI-BYPASS -->
+  <style id="antiFlashStyle">
+    html { display: none !important; }
+  </style>
+
+  <!-- 2. SKRIP CEK SESI LANGSUNG DI ATAS SEBELUM RENDER DOM -->
+  <script>
+    (function() {
+      const user = localStorage.getItem("piket_user");
+      if (!user) {
+        // Jika belum login, tendang seketika ke halaman login tanpa kedip
+        window.location.replace("/index");
+      } else {
+        // Jika sudah login, tampilkan halaman secara mulus
+        document.addEventListener("DOMContentLoaded", function() {
+          const antiFlash = document.getElementById("antiFlashStyle");
+          if (antiFlash) antiFlash.remove();
+        });
+      }
+    })();
+  </script>
+
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="./assets/logo_sekolah.png">
   <link rel="stylesheet" href="./css/style.css">
