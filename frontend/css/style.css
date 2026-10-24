@@ -1473,5 +1473,6 @@ body.login-body > .container-login > .login-content > .login-footer {
     height: auto !important;
     padding-top: 30px !important;
     padding-bottom: 30px !important;
+    transform: translateY(10px);
   }
 }
