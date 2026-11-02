@@ -170,9 +170,16 @@ main {
 /* TITEL TIDAK BOLD */
 .header-main-title {
   margin: 0 !important;
-  font-size: 17px !important;
-  font-weight: 600 !important; /* Dibuat sedang / tidak bold tebal */
+  font-size: 16px !important;
+  font-weight: 700 !important;
   color: #0f172a !important;
+  line-height: 1.2;
+}
+
+#headerNamaSekolah {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  color: #824653 !important; /* Warna aksen menyesuaikan tema */
   line-height: 1.2;
 }
 

@@ -62,19 +62,27 @@ function applySystemConfigToUI() {
   const config = window.systemConfig;
   if (!config) return;
 
-  // 1. Set Logo Sekolah (Gunakan logo_sekolah_direct_url yang anti-CORS)
-  const logoEl = document.querySelector(".logo-img");
-  if (logoEl && (config.logo_sekolah_direct_url || config.logo_sekolah_url)) {
-    logoEl.src = config.logo_sekolah_direct_url || config.logo_sekolah_url;
+  const logoUrl = config.logo_sekolah_direct_url || config.logo_sekolah_url;
+
+  // 1. Injeksi Logo Sekolah
+  const logoEl = document.getElementById("appLogo");
+  if (logoEl && logoUrl) {
+    logoEl.src = logoUrl;
   }
 
-  // 2. Set Nama Sekolah di Top Header
-  const titleEl = document.querySelector(".header-main-title");
-  if (titleEl && config.nama_sekolah) {
-    titleEl.textContent = `Portal Presensi ${config.nama_sekolah}`;
+  // 2. Injeksi Favicon Browser
+  const faviconEl = document.getElementById("appFavicon");
+  if (faviconEl && logoUrl) {
+    faviconEl.href = logoUrl;
   }
 
-  // 3. Set Document Title Tab Browser
+  // 3. Injeksi Nama Sekolah di Baris Kedua Header (Di bawah "Portal Piket Presensi")
+  const namaSekolahEl = document.getElementById("headerNamaSekolah");
+  if (namaSekolahEl && config.nama_sekolah) {
+    namaSekolahEl.textContent = config.nama_sekolah;
+  }
+
+  // 4. Update Judul Tab Browser
   if (config.nama_sekolah) {
     document.title = `Portal Piket | ${config.nama_sekolah}`;
   }
