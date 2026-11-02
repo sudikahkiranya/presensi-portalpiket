@@ -57,12 +57,15 @@
 
   <div class="brand-title">
     <div class="header-pill-box brand-pill-box">
-      <!-- Kosongkan src logo lokal -->
-      <img id="appLogo" src="" class="logo-img" alt="Logo Sekolah">
+      <!-- Hilangkan alt text sementara / sembunyikan src kosong agar tidak nampak broken -->
+      <img id="appLogo" src="" class="logo-img" alt="" style="display: none;">
+      
       <div class="header-v-divider"></div>
+      
       <div class="header-text-group">
-        <h2 id="headerMainTitle" class="header-main-title">Portal Presensi Piket</h2>
-        <span id="tanggalPresensi" class="header-sub-date">Jumat, 23 Oktober 2026</span>
+        <h2 class="header-main-title">Portal Presensi Piket</h2>
+        <!-- Ganti ID elemen agar tidak ditimpa oleh fungsi tanggalPresensi -->
+        <span id="headerNamaSekolah" class="header-sub-date">Memuat nama sekolah...</span>
       </div>
     </div>
   </div>

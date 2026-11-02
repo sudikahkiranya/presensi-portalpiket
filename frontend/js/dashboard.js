@@ -64,10 +64,11 @@ function applySystemConfigToUI() {
 
   const logoUrl = config.logo_sekolah_direct_url || config.logo_sekolah_url;
 
-  // 1. Injeksi Logo Sekolah
+  // 1. Injeksi Logo & Munculkan Gambar (Bebas dari Broken Image Icon!)
   const logoEl = document.getElementById("appLogo");
   if (logoEl && logoUrl) {
     logoEl.src = logoUrl;
+    logoEl.style.display = "block"; // Baru tampilkan saat URL sudah siap
   }
 
   // 2. Injeksi Favicon Browser
@@ -76,13 +77,13 @@ function applySystemConfigToUI() {
     faviconEl.href = logoUrl;
   }
 
-  // 3. Injeksi Nama Sekolah di Baris Kedua Header (Di bawah "Portal Piket Presensi")
+  // 3. Injeksi Nama Sekolah (Mengisi span#headerNamaSekolah)
   const namaSekolahEl = document.getElementById("headerNamaSekolah");
   if (namaSekolahEl && config.nama_sekolah) {
     namaSekolahEl.textContent = config.nama_sekolah;
   }
 
-  // 4. Update Judul Tab Browser
+  // 4. Update Title Tab Browser
   if (config.nama_sekolah) {
     document.title = `Portal Piket | ${config.nama_sekolah}`;
   }
@@ -188,17 +189,17 @@ async function fetchData(selectedDate) {
     sessionStorage.setItem("piket_selected_date", dateVal);
   }
 
-  if (tanggalPresensi) {
-    const tanggalObj =
-      user && user.role === "Admin" ? new Date(dateVal) : new Date();
+  // if (tanggalPresensi) {
+  //   const tanggalObj =
+  //     user && user.role === "Admin" ? new Date(dateVal) : new Date();
 
-    tanggalPresensi.textContent = tanggalObj.toLocaleDateString("id-ID", {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric"
-    });
-  }
+  //   tanggalPresensi.textContent = tanggalObj.toLocaleDateString("id-ID", {
+  //     weekday: "long",
+  //     day: "numeric",
+  //     month: "long",
+  //     year: "numeric"
+  //   });
+  // }
 
   try {
     let url = `${API_URL}?action=getSiswaHariIni`;
