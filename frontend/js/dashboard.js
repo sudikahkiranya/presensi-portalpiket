@@ -80,12 +80,7 @@ function initFormPiket() {
       if (tanggalTersimpan) {
         dateInput.value = tanggalTersimpan;
       } else if (!dateInput.value) {
-        const today = new Date();
-        const local = new Date(
-          today.getTime() - today.getTimezoneOffset() * 60000
-        );
-
-        dateInput.value = local.toISOString().split("T")[0];
+        dateInput.value = getLocalDateString();
       }
 
       // Simpan tanggal yang digunakan sebelum mengambil data.
@@ -112,6 +107,12 @@ function refreshData() {
   }
 }
 
+// Tambahkan helper ini di dashboard.js
+function getLocalDateString() {
+  const today = new Date();
+  const local = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
+  return local.toISOString().split("T")[0];
+}
 
 async function fetchData(selectedDate) {
   // Tampilkan filter lebih dulu jika elemen belum diinisialisasi.
@@ -131,13 +132,7 @@ async function fetchData(selectedDate) {
     selectedDate ||
     dateInput?.value ||
     sessionStorage.getItem("piket_selected_date") ||
-    (() => {
-      const today = new Date();
-      const local = new Date(
-        today.getTime() - today.getTimezoneOffset() * 60000
-      );
-      return local.toISOString().split("T")[0];
-    })();
+      getLocalDateString();
 
   // Pertahankan tanggal pilihan admin saat reload
   if (user && user.role === "Admin" && dateInput && dateVal) {
@@ -699,9 +694,7 @@ function getSelectedAttendanceDate() {
     const savedDate = sessionStorage.getItem("piket_selected_date");
     if (savedDate) return savedDate;
   }
-  const now = new Date();
-  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
-  return local.toISOString().split("T")[0];
+  return getLocalDateString();
 }
 
 function formatSyncDateTime(value) {
@@ -867,6 +860,7 @@ function processStatusChange(rowIndex, newValue, tanggal) {
 
   localStorage.setItem("piket_pending_updates", JSON.stringify(queue));
   updatePendingBadge();
+  applyFilter();
   updateSyncStatus();
 
   // Mulai kirim langsung; jika proses lain sedang berjalan, loop sinkronisasi
@@ -1190,13 +1184,7 @@ async function silentFetchData() {
   const dateVal =
     dateInput?.value ||
     sessionStorage.getItem("piket_selected_date") ||
-    (() => {
-      const today = new Date();
-      const local = new Date(
-        today.getTime() - today.getTimezoneOffset() * 60000
-      );
-      return local.toISOString().split("T")[0];
-    })();
+      getLocalDateString();
 
   // Pertahankan tanggal pilihan admin
   if (user && user.role === "Admin" && dateVal) {
@@ -1360,6 +1348,13 @@ function closeNotif() {
 }
 function closeError() { document.getElementById("errorModal")?.classList.remove("active"); }
 function closeConfirm() { document.getElementById("confirmModal")?.classList.remove("active"); }
+function handleConfirmYes() {
+  // Eksekusi aksi yang dikonfirmasi (misal: proses kirim WA / reset)
+  if (typeof window.onConfirmCallback === "function") {
+    window.onConfirmCallback();
+  }
+  hideConfirmModal(); // Sembunyikan modal
+}
 
 async function tarikDataPresensi() {
   showLoading("Menarik & memproses data presensi dari Pool...");
@@ -1393,12 +1388,11 @@ async function cetakRekap() {
   }
 
   const namaPetugas = user.nama || user.username || "Petugas Piket";
-  const dateVal = document.getElementById("selectedDate")?.value || new Date().toISOString().split("T")[0];
+  const dateVal = document.getElementById("selectedDate")?.value || getLocalDateString();
 
-  // 1. Tentukan tanggal berdasarkan role (Admin pakai tanggal terpilih, selain Admin pakai hari ini)
   const tanggalSelected = (user.role === "Admin") 
     ? dateVal 
-    : new Date().toISOString().split("T")[0];
+    : getLocalDateString();
 
   showLoading("Memeriksa kelengkapan data...");
 
@@ -1481,8 +1475,8 @@ async function kirimRekapGrupWA() {
   }
 
   const namaPetugas = user.nama || user.username || "Petugas Piket";
-  const dateVal = document.getElementById("selectedDate")?.value || new Date().toISOString().split("T")[0];
-  const tanggalSelected = (user.role === "Admin") ? dateVal : new Date().toISOString().split("T")[0];
+  const dateVal = document.getElementById("selectedDate")?.value || getLocalDateString();
+  const tanggalSelected = (user.role === "Admin") ? dateVal : getLocalDateString();
 
   const pdfUrl = latestPdfUrl || "";
 

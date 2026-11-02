@@ -20,9 +20,9 @@
         window.location.replace("/");
       } else {
         // 💡 HAPUS TULISAN /dashboard DARI URL BROWSER TANPA RELOAD
-        if (window.location.pathname !== "/") {
-          window.history.replaceState(null, "", "/");
-        }
+        // if (window.location.pathname !== "/") {
+        //   window.history.replaceState(null, "", "/");
+        // }
 
         document.addEventListener("DOMContentLoaded", function() {
           const antiFlash = document.getElementById("antiFlashStyle");
@@ -31,7 +31,7 @@
       }
     })();
   </script>
-
+  <script src="https://unpkg.com/lucide@latest"></script>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="./assets/logo_sekolah.png">
@@ -98,7 +98,7 @@
       <p id="confirmText">Yakin?</p>
       <div class="modal-actions" style="margin-top:15px; display:flex; gap:10px;">
         <button onclick="closeConfirm()" class="btn-cancel" style="background:#475569;">Batal</button>
-        <button onclick="confirmYes()" class="btn-confirm" style="background:#0f766e;">Lanjut</button>
+        <button onclick="handleConfirmYes()" class="btn-confirm" style="background:#0f766e;">Lanjut</button>
       </div>
     </div>
   </div>
