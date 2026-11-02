@@ -1598,6 +1598,7 @@ function openCustomDropdown(dropdown) {
   const menu = dropdown.querySelector(".dropdown-menu");
   if (!menu) return;
 
+  // Tutup dropdown lain yang sedang terbuka
   document.querySelectorAll(".custom-dropdown.open").forEach(function(el) {
     if (el !== dropdown) {
       closeCustomDropdown(el);
@@ -1607,35 +1608,44 @@ function openCustomDropdown(dropdown) {
   dropdown.classList.remove("drop-up");
   dropdown.classList.add("open");
 
-  menu.style.setProperty("top", "calc(100% + 4px)", "important");
-  menu.style.setProperty("bottom", "auto", "important");
-  menu.style.setProperty("max-height", "250px", "important");
-  menu.style.setProperty("overflow-y", "auto", "important");
+  // --- DETEKSI PINTAR BARIS TABEL ---
+  const tr = dropdown.closest("tr");
+  const tbody = tr ? tr.closest("tbody") : null;
+  
+  let isLastRow = false;
+  if (tbody && tr) {
+    const rows = Array.from(tbody.querySelectorAll("tr"));
+    const currentIndex = rows.indexOf(tr);
+    const totalRows = rows.length;
+
+    // Jika total data <= 4 dan ini baris terakhir, ATAU berada di 2 baris paling bawah tabel
+    if (currentIndex >= totalRows - 2 || (totalRows <= 4 && currentIndex === totalRows - 1)) {
+      isLastRow = true;
+    }
+  }
 
   const rect = dropdown.getBoundingClientRect();
   const viewportHeight = window.innerHeight;
   const spaceBelow = Math.max(0, viewportHeight - rect.bottom - 8);
   const spaceAbove = Math.max(0, rect.top - 8);
-  const menuHeight = Math.min(menu.scrollHeight, 250);
+  const menuHeight = Math.min(menu.scrollHeight || 180, 250);
 
-  const openUp = spaceBelow < menuHeight && spaceAbove > spaceBelow;
+  // Jika baris bawah/terakhir ATAU sisa ruang bawah sempit -> PAKSA DROP-UP!
+  const openUp = isLastRow || (spaceBelow < menuHeight && spaceAbove > spaceBelow);
 
   if (openUp) {
     dropdown.classList.add("drop-up");
-
     menu.style.setProperty("top", "auto", "important");
     menu.style.setProperty("bottom", "calc(100% + 4px)", "important");
+    menu.style.setProperty("box-shadow", "0 -6px 18px rgba(0,0,0,0.15)", "important");
+  } else {
+    menu.style.setProperty("top", "calc(100% + 4px)", "important");
+    menu.style.setProperty("bottom", "auto", "important");
+    menu.style.setProperty("box-shadow", "0 6px 16px rgba(0,0,0,0.08)", "important");
   }
 
-  const availableSpace = openUp ? spaceAbove : spaceBelow;
-
-  if (availableSpace < menuHeight) {
-    menu.style.setProperty(
-      "max-height",
-      Math.max(80, availableSpace) + "px",
-      "important"
-    );
-  }
+  menu.style.setProperty("max-height", "250px", "important");
+  menu.style.setProperty("overflow-y", "auto", "important");
 }
 
 document.addEventListener("click", function(e) {

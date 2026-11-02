@@ -1476,3 +1476,25 @@ body.login-body > .container-login > .login-content > .login-footer {
     transform: translateY(10px);
   }
 }
+
+/* ==========================================================================
+   FIX DROPDOWN OVERFLOW & TENGGELAM DI TABEL
+   ========================================================================== */
+.card, 
+.table-responsive {
+  overflow: visible !important;
+}
+
+#tbodySiswa tr:has(.custom-dropdown.open) {
+  z-index: 99999 !important;
+  position: relative !important;
+}
+
+#tbodySiswa td:has(.custom-dropdown.open) {
+  position: relative !important;
+  z-index: 99999 !important;
+}
+
+.custom-dropdown .dropdown-menu {
+  z-index: 999999 !important;
+}
