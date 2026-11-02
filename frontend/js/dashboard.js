@@ -433,7 +433,7 @@ function renderStatusBadge(statusTd, s, value) {
         renderStatusBadge(statusTd, s, value);
       }
     });
-    
+
     statusTd.appendChild(dropdownWrapper);
 
     const selectedBox = dropdownWrapper.querySelector('.dropdown-selected');
@@ -441,7 +441,6 @@ function renderStatusBadge(statusTd, s, value) {
       selectedBox.style.cssText = BASE_STYLE + `border: 1px solid #c5d3e8; background-color: #ffffff; cursor: pointer; color: #333;`;
     }
 
-    
     const menuContainer = dropdownWrapper.querySelector(".dropdown-menu");
 
     if (menuContainer) {
@@ -485,7 +484,7 @@ function renderStatusBadge(statusTd, s, value) {
       });
     }
 
-
+    // Buka dropdown & biarkan event listener global click menghitung posisinya (Up/Down)
     openCustomDropdown(dropdownWrapper);
 
     const resetToBadge = function() {
@@ -512,7 +511,6 @@ function renderStatusBadge(statusTd, s, value) {
   wrapper.appendChild(badgeBtn);
   statusTd.appendChild(wrapper);
 }
-
 
 function updateStatistik(data) {
   let hadir = 0;
@@ -1648,7 +1646,7 @@ document.addEventListener("click", function(e) {
   });
 });
 
-// Ganti seluruh event listener click custom-dropdown dengan ini:
+
 document.addEventListener('click', function (e) {
   const dropdownToggle = e.target.closest('.custom-dropdown');
 
@@ -1674,49 +1672,44 @@ document.addEventListener('click', function (e) {
     }
   });
 
-  // 2. Jika tadinya tertutup, sekarang kita buka dan hitung posisinya secara akurat
+  // 2. Hitung posisi akurat jika baru dibuka
   if (!isAlreadyOpen) {
-    // Ambil koordinat tombol presisi terhadap Layar (Viewport)
+    dropdownToggle.classList.add('open');
+    if (!menu) return;
+
+    // Ambil koordinat posisi tombol terhadap viewport
     const rect = dropdownToggle.getBoundingClientRect();
     const windowHeight = window.innerHeight || document.documentElement.clientHeight;
     
-    // Hitung jarak dari bawah tombol ke paling bawah layar
+    // Hitung jarak nyata tombol ke batas bawah & atas layar
     const spaceBelow = windowHeight - rect.bottom;
-    const menuHeight = 240; // Tinggi estimasi menu dropdown
+    const spaceAbove = rect.top;
 
-    console.log("🔍 [DEBUG Dropdown] Jarak ke bawah layar:", spaceBelow, "px");
+    // Ambil tinggi asli menu (bukan lagi hardcode 240px)
+    const menuHeight = menu.scrollHeight || 180;
 
-    // JIKA sisa ruang layar ke bawah < 240px, PAKSA DROP-UP!
-    if (spaceBelow < menuHeight) {
-      console.log("⬆️ [DEBUG Dropdown] Ruang sempit! Paksa Buka KE ATAS (Drop-Up)");
+    // JIKA sisa ruang di bawah kurang dari tinggi menu DAN ruang atas lebih lega, PAKSA DROP-UP!
+    if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
       dropdownToggle.classList.add('drop-up');
-      
-      if (menu) {
-        menu.style.setProperty('top', 'auto', 'important');
-        menu.style.setProperty('bottom', '100%', 'important');
-        menu.style.setProperty('margin-bottom', '6px', 'important');
-        menu.style.setProperty('box-shadow', '0 -8px 20px rgba(0, 0, 0, 0.18)', 'important');
-      }
+      menu.style.setProperty('top', 'auto', 'important');
+      menu.style.setProperty('bottom', '100%', 'important');
+      menu.style.setProperty('margin-bottom', '6px', 'important');
+      menu.style.setProperty('margin-top', '0px', 'important');
+      menu.style.setProperty('box-shadow', '0 -8px 20px rgba(0, 0, 0, 0.15)', 'important');
     } else {
-      console.log("⬇️ [DEBUG Dropdown] Ruang cukup! Buka KE BAWAH");
       dropdownToggle.classList.remove('drop-up');
-      
-      if (menu) {
-        menu.style.setProperty('top', '100%', 'important');
-        menu.style.setProperty('bottom', 'auto', 'important');
-        menu.style.setProperty('margin-top', '4px', 'important');
-        menu.style.setProperty('box-shadow', '0 6px 16px rgba(0, 0, 0, 0.08)', 'important');
-      }
+      menu.style.setProperty('top', '100%', 'important');
+      menu.style.setProperty('bottom', 'auto', 'important');
+      menu.style.setProperty('margin-top', '4px', 'important');
+      menu.style.setProperty('margin-bottom', '0px', 'important');
+      menu.style.setProperty('box-shadow', '0 6px 16px rgba(0, 0, 0, 0.1)', 'important');
     }
-
-    dropdownToggle.classList.add('open');
   } else {
-    // Jika diklik lagi saat terbuka, tutup
+    // Tutup jika diklik kembali
     dropdownToggle.classList.remove('open', 'drop-up');
     if (menu) menu.style.cssText = '';
   }
 
-  // Hentikan propagasi agar tidak langsung tertutup oleh event listener lain
   e.stopPropagation();
 });
 
