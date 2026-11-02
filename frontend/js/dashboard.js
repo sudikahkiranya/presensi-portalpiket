@@ -41,6 +41,45 @@ const manualStatusList = [
   { value: "Izin", label: "Izin" }
 ];
 
+// Simpan di variabel global FE
+window.systemConfig = {};
+
+async function loadSystemConfig() {
+  try {
+    const response = await fetch(`${API_URL}?action=getSystemConfig`);
+    const result = await response.json();
+
+    if (result.success && result.data) {
+      window.systemConfig = result.data;
+      applySystemConfigToUI();
+    }
+  } catch (err) {
+    console.warn("Gagal memuat system config:", err);
+  }
+}
+
+function applySystemConfigToUI() {
+  const config = window.systemConfig;
+  if (!config) return;
+
+  // 1. Set Logo Sekolah (Gunakan logo_sekolah_direct_url yang anti-CORS)
+  const logoEl = document.querySelector(".logo-img");
+  if (logoEl && (config.logo_sekolah_direct_url || config.logo_sekolah_url)) {
+    logoEl.src = config.logo_sekolah_direct_url || config.logo_sekolah_url;
+  }
+
+  // 2. Set Nama Sekolah di Top Header
+  const titleEl = document.querySelector(".header-main-title");
+  if (titleEl && config.nama_sekolah) {
+    titleEl.textContent = `Portal Presensi ${config.nama_sekolah}`;
+  }
+
+  // 3. Set Document Title Tab Browser
+  if (config.nama_sekolah) {
+    document.title = `Portal Piket | ${config.nama_sekolah}`;
+  }
+}
+
 function showLoading(text = "Memproses...") {
   const el = document.getElementById("loadingOverlay");
   const label = document.getElementById("loadingText");
@@ -66,6 +105,7 @@ function initFormPiket() {
   setRoleUser(user.role);
   initSyncStatus();
   updatePendingBadge();
+  loadSystemConfig();
 
   if (user.role === "Admin") {
     const adminFilter = document.getElementById("adminFilter");
