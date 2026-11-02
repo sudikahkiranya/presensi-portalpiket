@@ -36,6 +36,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="./assets/logo_sekolah.png">
   <link rel="stylesheet" href="./css/style.css">
+
+  <script>
+    // Cek auth secara instan SEBELUM browser sempat menggambar halaman (render DOM)
+    (function() {
+      const user = localStorage.getItem("piket_user");
+      // Jika di halaman dashboard tapi gak ada sesi user, langsung tendang ke login
+      if (!user && window.location.pathname.includes("dashboard")) {
+        window.location.replace("/");
+      }
+    })();
+  </script>
 </head>
 <body class="dashboard-body">
 
