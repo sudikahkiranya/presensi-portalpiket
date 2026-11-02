@@ -164,14 +164,23 @@ async function fetchData(selectedDate) {
       url = `${API_URL}?action=getSiswaByTanggal&tanggal=${dateVal}`;
     }
 
-    const response = await fetch(url);
+    // Tambahkan opsi redirect: "follow" agar browser mengikuti alur 302 redirect GAS
+    const response = await fetch(url, {
+      method: "GET",
+      redirect: "follow"
+    });
 
     if (!response.ok) {
       throw new Error(`HTTP error: ${response.status}`);
     }
 
-    
     const data = await response.json();
+
+    // Handling aman jika backend mengembalikan objek { success: false, message: "..." }
+    if (data && typeof data === "object" && !Array.isArray(data) && data.success === false) {
+      throw new Error(data.message || "Gagal mengambil data dari server");
+    }
+
     window.dataSiswa = Array.isArray(data) ? data : [];
 
     console.log("Tanggal yang diminta:", dateVal);
@@ -194,8 +203,8 @@ async function fetchData(selectedDate) {
     hideLoading();
 
   } catch (err) {
-    console.error(err);
-    showToast("Gagal terhubung ke server Backend API", "error");
+    console.error("Fetch Error:", err);
+    showToast("Gagal terhubung ke server Backend API: " + (err.message || err), "error");
     hideLoading();
   }
 }
