@@ -64,20 +64,29 @@ function applySystemConfigToUI() {
 
   const logoUrl = config.logo_sekolah_direct_url || config.logo_sekolah_url;
 
-  // 1. Injeksi Logo & Munculkan Gambar (Bebas dari Broken Image Icon!)
+  // 1. Injeksi Logo Sekolah (Mulus Fade-in & Bebas Layout Shift!)
   const logoEl = document.getElementById("appLogo");
   if (logoEl && logoUrl) {
     logoEl.src = logoUrl;
-    logoEl.style.display = "block"; // Baru tampilkan saat URL sudah siap
+
+    // Begitu gambar beres dimuat browser, munculkan secara smooth
+    logoEl.onload = function() {
+      logoEl.classList.add("is-loaded");
+    };
+
+    // Backup jika gambar sudah ada di cache browser
+    if (logoEl.complete) {
+      logoEl.classList.add("is-loaded");
+    }
   }
 
-  // 2. Injeksi Favicon Browser
+  // 2. Injeksi Favicon Browser Tab
   const faviconEl = document.getElementById("appFavicon");
   if (faviconEl && logoUrl) {
     faviconEl.href = logoUrl;
   }
 
-  // 3. Injeksi Nama Sekolah (Mengisi span#headerNamaSekolah)
+  // 3. Injeksi Nama Sekolah di Baris Kedua Header (Di bawah "Portal Piket Presensi")
   const namaSekolahEl = document.getElementById("headerNamaSekolah");
   if (namaSekolahEl && config.nama_sekolah) {
     namaSekolahEl.textContent = config.nama_sekolah;
