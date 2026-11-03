@@ -828,38 +828,50 @@ footer {
   gap: 10px;
 }
 
+/* Container dots */
 .dots {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 20px;
-  gap: 16px; /* Jarak agak renggang */
+  gap: 8px;
+  height: 16px;
 }
 
+/* Base style tiap titik */
 .dots span {
-  width: 10px;
-  height: 10px;
-  background-color: #A66F7A;
+  width: 9px;
+  height: 9px;
+  background-color: #A66F7A; /* Warna tema portal */
   border-radius: 50%;
+  display: inline-block;
+  animation: geminiPulse 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
+/* Staggered delay biar gelombangnya ngalir halus */
 .dots span:nth-child(1) {
-  animation: bounceSwapLeft 1.2s infinite ease-in-out;
+  animation-delay: 0s;
 }
 
 .dots span:nth-child(2) {
-  /* Hilangkan titik ke-3 jika cuma mau 2 titik bertubrukan di tengah */
-  animation: bounceSwapRight 1.2s infinite ease-in-out;
+  animation-delay: 0.2s;
 }
 
-@keyframes bounceSwapLeft {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(14px) scale(1.2); } /* Bertubrukan & membesar di tengah */
+.dots span:nth-child(3) {
+  animation-delay: 0.4s;
 }
 
-@keyframes bounceSwapRight {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(-14px) scale(0.8); }
+/* Keyframe Denyut Smooth (Scale + Opacity + Soft Glow) */
+@keyframes geminiPulse {
+  0%, 100% {
+    transform: scale(0.65);
+    opacity: 0.35;
+    box-shadow: 0 0 0 0 rgba(166, 111, 122, 0);
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(166, 111, 122, 0.4);
+  }
 }
 
 #loadingText {
