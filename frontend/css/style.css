@@ -5,7 +5,7 @@ html, body {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Roboto', sans-serif;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -84,11 +84,11 @@ body.login-body {
 }
 
 /* ==========================================================================
-   3. DASHBOARD LAYOUT & TOP HEADER BANNER (GAYA SCANNER PERFECT)
+   3. DASHBOARD LAYOUT & TOP HEADER BANNER
    ========================================================================== */
 body.dashboard-body {
   background: #F5F0E7 !important;
-  padding: 0 30px 20px !important; /* Margin/padding atas WAJIB 0 */
+  padding: 0 30px 20px !important;
   color: #1e293b;
   display: flex;
   flex-direction: column;
@@ -104,9 +104,6 @@ main {
   margin: 0 auto;
 }
 
-/* ==========================================================================
-   HEADER BANNER (MENTOK ATAS, LOGO BESAR & TEKS REGULAR)
-   ========================================================================== */
 #topHeaderBanner {
   width: 100%;
   max-width: 1400px;
@@ -128,7 +125,6 @@ main {
   z-index: 999;
 }
 
-/* AREA KIRI: PIL BRAND UTUH */
 .brand-title {
   display: flex;
   align-items: center;
@@ -145,14 +141,19 @@ main {
   gap: 14px !important;
 }
 
-/* LOGO DIPERBESAR */
+/* KUNCI TINGGI & LEBAR LOGO AGAR BEBAS DARI LAYOUT SHIFT (LOMPATAN BOX) */
 .logo-img { 
-  height: 52px !important; 
-  width: auto; 
+  width: 48px !important; 
+  height: 48px !important; 
   object-fit: contain; 
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-/* Garis Pemisah Vertikal Halus */
+.logo-img.is-loaded {
+  opacity: 1 !important;
+}
+
 .header-v-divider {
   width: 1.5px;
   height: 42px;
@@ -167,7 +168,6 @@ main {
   gap: 2px;
 }
 
-/* TITEL TIDAK BOLD */
 .header-main-title {
   margin: 0 !important;
   font-size: 16px !important;
@@ -179,7 +179,7 @@ main {
 #headerNamaSekolah {
   font-size: 13px !important;
   font-weight: 500 !important;
-  color: #824653 !important; /* Warna aksen menyesuaikan tema */
+  color: #824653 !important;
   line-height: 1.2;
 }
 
@@ -190,7 +190,6 @@ main {
   line-height: 1.2;
 }
 
-/* AREA KANAN: PIL USER & ROLE + LOGOUT */
 .right-controls {
   display: flex;
   align-items: center;
@@ -208,7 +207,6 @@ main {
   gap: 12px !important;
 }
 
-/* IKON SVG AGAK BESAR DI KIRI */
 .pill-main-icon {
   display: flex;
   align-items: center;
@@ -222,7 +220,6 @@ main {
   height: 22px;
 }
 
-/* KUMPULAN TEKS KANAN (SUSUN ATAS-BAWAH) */
 .pill-text-stack {
   display: flex;
   flex-direction: column;
@@ -230,7 +227,6 @@ main {
   gap: 1px;
 }
 
-/* TEKS NAMA USER (ATAS) */
 .user-name-text,
 #petugasPiket {
   font-size: 13.5px !important;
@@ -239,7 +235,6 @@ main {
   line-height: 1.25 !important;
 }
 
-/* TEKS ROLE (BAWAH) */
 .role-title-text,
 #roleUser {
   font-size: 11.5px !important;
@@ -248,7 +243,6 @@ main {
   line-height: 1.2 !important;
 }
 
-/* TOMBOL LOGOUT BULAT */
 #logoutBtn {
   background: #ffffff !important;
   width: 40px !important;
@@ -295,7 +289,7 @@ select, input[type="date"], input[type="text"] {
   border-radius: 12px;
   border: 1px solid #cbd5e1;
   font-size: 13px;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Roboto', sans-serif;
   background: #ffffff;
   color: #1e293b;
   outline: none;
@@ -317,7 +311,7 @@ button {
   cursor: pointer;
   font-size: 13px;
   font-weight: 500;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Roboto', sans-serif;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -956,7 +950,7 @@ footer {
   border: 1px solid #cbd5e1;
   background: #ffffff;
   font-size: 13px;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Roboto', sans-serif;
   color: #1e293b;
   box-sizing: border-box;
   outline: none;
@@ -1485,7 +1479,7 @@ body.login-body > .container-login > .login-content > .login-footer {
 }
 
 /* ==========================================================================
-   FIX DROPDOWN OVERFLOW & TENGGELAM DI TABEL
+   5. FIX DROPDOWN OVERFLOW & Z-INDEX
    ========================================================================== */
 .card, 
 .table-responsive {
