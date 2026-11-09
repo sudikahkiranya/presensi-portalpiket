@@ -6,6 +6,8 @@ window.currentPage = 1;
 window.rowsPerPage = 40;
 window.lastFilter = { kelas: "", tingkat: "", status: "" };
 
+const THEME_STORAGE_KEY = "sisensi_active_theme";
+
 Object.defineProperty(window, 'isDirty', {
   get: function() {
     let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
@@ -17,7 +19,6 @@ Object.defineProperty(window, 'isDirty', {
 var SVG_PENCIL = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>`;
 var SVG_CLOSE = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
 
-// Master untuk dalam baris tabel (pakai warna)
 const masterStatusList = [
   { value: '', label: '-- Pilih Status --', class: 'status-kosong' },
   { value: 'Tepat Waktu', label: 'Tepat Waktu', class: 'status-hadir' },
@@ -32,7 +33,6 @@ const masterStatusList = [
   { value: 'Prakerin', label: 'Prakerin', class: 'status-prakerin' }
 ];
 
-// Daftar status khusus edit manual
 const manualStatusList = [
   { value: "", label: "-- Pilih Status --" },
   { value: "Hadir Tidak Presensi", label: "Hadir Tidak Presensi" },
@@ -41,9 +41,11 @@ const manualStatusList = [
   { value: "Izin", label: "Izin" }
 ];
 
-// Simpan di variabel global FE
 window.systemConfig = {};
 
+/* ==========================================================================
+   1. SYSTEM CONFIG & THEME ENGINE
+   ========================================================================== */
 async function loadSystemConfig() {
   try {
     const response = await fetch(`${API_URL}?action=getSystemConfig`);
@@ -52,6 +54,7 @@ async function loadSystemConfig() {
     if (result.success && result.data) {
       window.systemConfig = result.data;
       applySystemConfigToUI();
+      initThemeEngine();
     }
   } catch (err) {
     console.warn("Gagal memuat system config:", err);
@@ -64,40 +67,99 @@ function applySystemConfigToUI() {
 
   const logoUrl = config.logo_sekolah_direct_url || config.logo_sekolah_url;
 
-  // 1. Injeksi Logo Sekolah (Mulus Fade-in & Bebas Layout Shift!)
   const logoEl = document.getElementById("appLogo");
   if (logoEl && logoUrl) {
     logoEl.src = logoUrl;
-
-    // Begitu gambar beres dimuat browser, munculkan secara smooth
-    logoEl.onload = function() {
-      logoEl.classList.add("is-loaded");
-    };
-
-    // Backup jika gambar sudah ada di cache browser
-    if (logoEl.complete) {
-      logoEl.classList.add("is-loaded");
-    }
+    logoEl.onload = function() { logoEl.classList.add("is-loaded"); };
+    if (logoEl.complete) logoEl.classList.add("is-loaded");
   }
 
-  // 2. Injeksi Favicon Browser Tab
   const faviconEl = document.getElementById("appFavicon");
-  if (faviconEl && logoUrl) {
-    faviconEl.href = logoUrl;
-  }
+  if (faviconEl && logoUrl) faviconEl.href = logoUrl;
 
-  // 3. Injeksi Nama Sekolah di Baris Kedua Header (Di bawah "Portal Piket Presensi")
   const namaSekolahEl = document.getElementById("headerNamaSekolah");
   if (namaSekolahEl && config.nama_sekolah) {
     namaSekolahEl.textContent = config.nama_sekolah;
   }
 
-  // 4. Update Title Tab Browser
   if (config.nama_sekolah) {
     document.title = `Portal Piket | ${config.nama_sekolah}`;
   }
 }
 
+function initThemeEngine() {
+  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  const globalTheme = (window.systemConfig && window.systemConfig.tema_warna) 
+    ? window.systemConfig.tema_warna 
+    : "burgundy";
+
+  const themeToApply = savedTheme || String(globalTheme).toLowerCase() || "burgundy";
+  selectTheme(themeToApply, false);
+}
+
+function toggleThemePopover(event) {
+  if (event) event.stopPropagation();
+  closeProfilePopover();
+  const popover = document.getElementById("themePopover");
+  if (popover) popover.classList.toggle("is-open");
+}
+
+function selectTheme(themeName, isUserAction = true) {
+  const cleanTheme = String(themeName).toLowerCase();
+  document.body.setAttribute("data-theme", cleanTheme);
+
+  document.querySelectorAll(".color-swatch").forEach(swatch => {
+    swatch.classList.toggle("active", swatch.dataset.theme === cleanTheme);
+  });
+
+  if (isUserAction) {
+    try {
+      localStorage.setItem(THEME_STORAGE_KEY, cleanTheme);
+    } catch (e) {}
+    const popover = document.getElementById("themePopover");
+    if (popover) popover.classList.remove("is-open");
+    showToast(`Tema visual diubah ke ${cleanTheme.toUpperCase()}!`, "info");
+  }
+}
+
+/* ==========================================================================
+   2. USER PROFILE POPOVER ENGINE
+   ========================================================================== */
+function toggleProfilePopover(event) {
+  if (event) event.stopPropagation();
+  const themePopover = document.getElementById("themePopover");
+  if (themePopover) themePopover.classList.remove("is-open");
+  
+  const popover = document.getElementById("profilePopover");
+  if (popover) popover.classList.toggle("is-open");
+}
+
+function closeProfilePopover() {
+  const popover = document.getElementById("profilePopover");
+  if (popover) popover.classList.remove("is-open");
+}
+
+document.addEventListener("click", function(e) {
+  const themePopover = document.getElementById("themePopover");
+  const themeBtn = document.getElementById("themePickerBtn");
+  if (themePopover && themePopover.classList.contains("is-open")) {
+    if (!themePopover.contains(e.target) && !themeBtn.contains(e.target)) {
+      themePopover.classList.remove("is-open");
+    }
+  }
+
+  const profilePopover = document.getElementById("profilePopover");
+  const profileBtn = document.getElementById("userProfileBtn");
+  if (profilePopover && profilePopover.classList.contains("is-open")) {
+    if (!profilePopover.contains(e.target) && !profileBtn.contains(e.target)) {
+      profilePopover.classList.remove("is-open");
+    }
+  }
+});
+
+/* ==========================================================================
+   3. APP INITIALIZATION & FETCH DATA
+   ========================================================================== */
 function showLoading(text = "Memproses...") {
   const el = document.getElementById("loadingOverlay");
   const label = document.getElementById("loadingText");
@@ -109,7 +171,6 @@ function hideLoading() {
   const el = document.getElementById("loadingOverlay");
   if (el) el.classList.remove("active");
 }
-
 
 function initFormPiket() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
@@ -132,18 +193,13 @@ function initFormPiket() {
     const dateInput = document.getElementById("selectedDate");
 
     if (dateInput) {
-      // Ambil tanggal sebelumnya; jika belum ada, gunakan hari ini.
       const tanggalTersimpan = sessionStorage.getItem("piket_selected_date");
-
       if (tanggalTersimpan) {
         dateInput.value = tanggalTersimpan;
       } else if (!dateInput.value) {
         dateInput.value = getLocalDateString();
       }
-
-      // Simpan tanggal yang digunakan sebelum mengambil data.
       sessionStorage.setItem("piket_selected_date", dateInput.value);
-
       fetchData(dateInput.value);
     } else {
       fetchData();
@@ -165,7 +221,6 @@ function refreshData() {
   }
 }
 
-// Tambahkan helper ini di dashboard.js
 function getLocalDateString() {
   const today = new Date();
   const local = new Date(today.getTime() - (today.getTimezoneOffset() * 60000));
@@ -173,7 +228,6 @@ function getLocalDateString() {
 }
 
 async function fetchData(selectedDate) {
-  // Tampilkan filter lebih dulu jika elemen belum diinisialisasi.
   if (!document.querySelector("#filterKelas .dropdown-selected") ||
       !document.querySelector("#filterTingkat .dropdown-selected") ||
       !document.querySelector("#filterStatus .dropdown-selected")) {
@@ -183,32 +237,14 @@ async function fetchData(selectedDate) {
   showLoading("Memuat data...");
 
   const user = JSON.parse(localStorage.getItem("piket_user"));
-  const tanggalPresensi = document.getElementById("tanggalPresensi");
   const dateInput = document.getElementById("selectedDate");
 
-  const dateVal =
-    selectedDate ||
-    dateInput?.value ||
-    sessionStorage.getItem("piket_selected_date") ||
-      getLocalDateString();
+  const dateVal = selectedDate || dateInput?.value || sessionStorage.getItem("piket_selected_date") || getLocalDateString();
 
-  // Pertahankan tanggal pilihan admin saat reload
   if (user && user.role === "Admin" && dateInput && dateVal) {
     dateInput.value = dateVal;
     sessionStorage.setItem("piket_selected_date", dateVal);
   }
-
-  // if (tanggalPresensi) {
-  //   const tanggalObj =
-  //     user && user.role === "Admin" ? new Date(dateVal) : new Date();
-
-  //   tanggalPresensi.textContent = tanggalObj.toLocaleDateString("id-ID", {
-  //     weekday: "long",
-  //     day: "numeric",
-  //     month: "long",
-  //     year: "numeric"
-  //   });
-  // }
 
   try {
     let url = `${API_URL}?action=getSiswaHariIni`;
@@ -217,42 +253,21 @@ async function fetchData(selectedDate) {
       url = `${API_URL}?action=getSiswaByTanggal&tanggal=${dateVal}`;
     }
 
-    // Tambahkan opsi redirect: "follow" agar browser mengikuti alur 302 redirect GAS
-    const response = await fetch(url, {
-      method: "GET",
-      redirect: "follow"
-    });
+    const response = await fetch(url, { method: "GET", redirect: "follow" });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error: ${response.status}`);
-    }
+    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
 
     const data = await response.json();
 
-    // Handling aman jika backend mengembalikan objek { success: false, message: "..." }
     if (data && typeof data === "object" && !Array.isArray(data) && data.success === false) {
       throw new Error(data.message || "Gagal mengambil data dari server");
     }
 
     window.dataSiswa = Array.isArray(data) ? data : [];
-
-    console.log("Tanggal yang diminta:", dateVal);
-    console.log("Jumlah data:", window.dataSiswa.length);
-
-    console.table(
-      window.dataSiswa.map(s => ({
-        nama: s.nama,
-        kelas: s.kelas,
-        statusMasuk: JSON.stringify(s.statusMasuk),
-        rowIndex: s.rowIndex
-      }))
-    );
-
     initFilters(window.dataSiswa);
     applyFilter();
     updateSyncStatus();
     refreshServerSyncStatus(dateVal);
-
     hideLoading();
 
   } catch (err) {
@@ -262,36 +277,22 @@ async function fetchData(selectedDate) {
   }
 }
 
-
 function initFilters(data = null) {
   const isDataReady = Array.isArray(data);
 
-  // Simpan pilihan sebelumnya sebelum dropdown dibuat ulang.
   const kelasContainer = document.getElementById("filterKelas");
   const tingkatContainer = document.getElementById("filterTingkat");
   const statusContainer = document.getElementById("filterStatus");
 
-  const previousKelas =
-    kelasContainer?.getAttribute("data-value") || "";
+  const previousKelas = kelasContainer?.getAttribute("data-value") || "";
+  const previousTingkat = tingkatContainer?.getAttribute("data-value") || "";
+  const previousStatus = statusContainer?.getAttribute("data-value") || "";
 
-  const previousTingkat =
-    tingkatContainer?.getAttribute("data-value") || "";
-
-  const previousStatus =
-    statusContainer?.getAttribute("data-value") || "";
-
-  // ==========================================
-  // 1. FILTER KELAS
-  // ==========================================
   const kelasMap = new Map();
-
   if (isDataReady) {
     data.forEach(s => {
       if (s.kelas && !kelasMap.has(s.kelas)) {
-        kelasMap.set(
-          s.kelas,
-          formatNamaKelas(s.kelas, s.tingkat)
-        );
+        kelasMap.set(s.kelas, formatNamaKelas(s.kelas, s.tingkat));
       }
     });
   }
@@ -307,155 +308,75 @@ function initFilters(data = null) {
     else if (tingkat === "XI") weight = 2;
     else if (tingkat === "XII") weight = 3;
 
-    return {
-      jurusan,
-      weight,
-      sub: sub || ""
-    };
+    return { jurusan, weight, sub: sub || "" };
   };
 
   const sortedKeys = [...kelasMap.keys()].sort((a, b) => {
     const pA = parseLabel(kelasMap.get(a));
     const pB = parseLabel(kelasMap.get(b));
-
-    if (pA.jurusan !== pB.jurusan) {
-      return pA.jurusan.localeCompare(pB.jurusan);
-    }
-
-    if (pA.weight !== pB.weight) {
-      return pA.weight - pB.weight;
-    }
-
+    if (pA.jurusan !== pB.jurusan) return pA.jurusan.localeCompare(pB.jurusan);
+    if (pA.weight !== pB.weight) return pA.weight - pB.weight;
     return pA.sub.localeCompare(pB.sub);
   });
 
   const kelasOptions = [
     { value: "", label: "Semua" },
-    ...sortedKeys.map(idRombel => ({
-      value: idRombel,
-      label: kelasMap.get(idRombel)
-    }))
+    ...sortedKeys.map(idRombel => ({ value: idRombel, label: kelasMap.get(idRombel) }))
   ];
 
   if (kelasContainer) {
-    const selectedKelas = kelasOptions.some(
-      option => option.value === previousKelas
-    ) ? previousKelas : "";
-
-    createCustomDropdown(
-      kelasContainer,
-      kelasOptions,
-      selectedKelas,
-      () => applyFilter()
-    );
+    const selectedKelas = kelasOptions.some(option => option.value === previousKelas) ? previousKelas : "";
+    createCustomDropdown(kelasContainer, kelasOptions, selectedKelas, () => applyFilter());
   }
 
-  // ==========================================
-  // 2. FILTER TINGKAT
-  // ==========================================
   const uniqueTingkat = isDataReady
-    ? [...new Set(
-        data.map(s => s.tingkat).filter(Boolean)
-      )].sort()
+    ? [...new Set(data.map(s => s.tingkat).filter(Boolean))].sort()
     : [];
 
   const tingkatOptions = [
     { value: "", label: "Semua" },
-    ...uniqueTingkat.map(t => ({
-      value: t,
-      label: t
-    }))
+    ...uniqueTingkat.map(t => ({ value: t, label: t }))
   ];
 
   if (tingkatContainer) {
-    const selectedTingkat = tingkatOptions.some(
-      option => option.value === previousTingkat
-    ) ? previousTingkat : "";
-
-    createCustomDropdown(
-      tingkatContainer,
-      tingkatOptions,
-      selectedTingkat,
-      () => applyFilter()
-    );
+    const selectedTingkat = tingkatOptions.some(option => option.value === previousTingkat) ? previousTingkat : "";
+    createCustomDropdown(tingkatContainer, tingkatOptions, selectedTingkat, () => applyFilter());
   }
 
-
-  // ==========================================
-  // 3. FILTER STATUS MASUK DINAMIS
-  // ==========================================
   const availableStatuses = new Set();
-
   if (Array.isArray(data) && data.length > 0) {
     data.forEach(s => {
       const status = String(s.statusMasuk ?? "").trim();
-
-      if (status) {
-        availableStatuses.add(status);
-      } else {
-        availableStatuses.add("Kosong");
-      }
+      if (status) availableStatuses.add(status);
+      else availableStatuses.add("Kosong");
     });
   }
 
-  // Urutkan status secara alfabetis, tanpa daftar status hardcoded.
-  const sortedStatuses = [...availableStatuses].sort((a, b) =>
-    a.localeCompare(b, "id")
-  );
-
+  const sortedStatuses = [...availableStatuses].sort((a, b) => a.localeCompare(b, "id"));
   const statusOptions = [
     { value: "", label: "Semua" },
-    ...sortedStatuses.map(status => ({
-      value: status,
-      label: status
-    }))
+    ...sortedStatuses.map(status => ({ value: status, label: status }))
   ];
 
   if (statusContainer) {
-    const selectedStatus = statusOptions.some(
-      option => option.value === previousStatus
-    ) ? previousStatus : "";
-
-    createCustomDropdown(
-      statusContainer,
-      statusOptions,
-      selectedStatus,
-      () => applyFilter()
-    );
+    const selectedStatus = statusOptions.some(option => option.value === previousStatus) ? previousStatus : "";
+    createCustomDropdown(statusContainer, statusOptions, selectedStatus, () => applyFilter());
   }
 }
-
 
 function renderStatusBadge(statusTd, s, value) {
   const matchStatus = masterStatusList.find(m => m.value === value);
   const badgeClass = matchStatus ? matchStatus.class : "badge-default";
 
   const wrapper = document.createElement("div");
-  wrapper.style.cssText = "display: flex; align-items: center; justify-content: center;";
+  wrapper.className = "badge-wrapper-cell";
 
   const badgeBtn = document.createElement("button");
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
-  
-  const BASE_STYLE = `
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: max-content;
-    height: 32px;
-    white-space: nowrap;
-    padding: 6px 14px;
-    border-radius: 12px;
-    font-size: 12.5px;
-    font-weight: 500;
-    box-sizing: border-box;
-  `;
-
-  badgeBtn.style.cssText = BASE_STYLE + "border: 1px solid rgba(0,0,0,0.1); cursor: pointer; transition: all 0.2s ease;";
   badgeBtn.innerHTML = `
     <span>${value || "-- Belum Diatur --"}</span>
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.7;">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
     </svg>
@@ -467,18 +388,7 @@ function renderStatusBadge(statusTd, s, value) {
 
     statusTd.innerHTML = "";
     const dropdownWrapper = document.createElement("div");
-    dropdownWrapper.style.cssText = `
-      position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      vertical-align: middle;
-      height: 32px;
-      margin: 0;
-      padding: 0;
-      border: none;
-      background: transparent;
-    `;
+    dropdownWrapper.className = "status-dropdown-cell-wrapper";
 
     createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
       cleanupListeners();
@@ -494,55 +404,6 @@ function renderStatusBadge(statusTd, s, value) {
 
     statusTd.appendChild(dropdownWrapper);
 
-    const selectedBox = dropdownWrapper.querySelector('.dropdown-selected');
-    if (selectedBox) {
-      selectedBox.style.cssText = BASE_STYLE + `border: 1px solid #c5d3e8; background-color: #ffffff; cursor: pointer; color: #333;`;
-    }
-
-    const menuContainer = dropdownWrapper.querySelector(".dropdown-menu");
-
-    if (menuContainer) {
-      menuContainer.style.cssText = `
-        text-align: center;
-        border-radius: 12px;
-        min-width: 100%;
-        width: max-content;
-        left: 50%;
-        transform: translateX(-50%);
-        box-shadow: 0 4px 14px rgba(0,0,0,0.12);
-        border: 1px solid #e2e8f0;
-        background: #ffffff;
-        padding: 4px 0;
-        box-sizing: border-box;
-      `;
-
-      menuContainer.querySelectorAll(".dropdown-item").forEach(item => {
-        item.style.cssText = `
-          background-color: transparent;
-          color: #333;
-          text-align: center;
-          justify-content: center;
-          display: flex;
-          font-size: 12px;
-          padding: 8px 12px;
-          white-space: nowrap;
-          cursor: pointer;
-          transition: background-color 0.15s ease;
-        `;
-
-        item.onmouseenter = function() {
-          this.style.backgroundColor = "#f1f5f9";
-          this.style.color = "#1e293b";
-        };
-
-        item.onmouseleave = function() {
-          this.style.backgroundColor = "transparent";
-          this.style.color = "#333";
-        };
-      });
-    }
-
-    // Buka dropdown & biarkan event listener global click menghitung posisinya (Up/Down)
     openCustomDropdown(dropdownWrapper);
 
     const resetToBadge = function() {
@@ -576,58 +437,37 @@ function updateStatistik(data) {
   let prakerin = 0;
 
   data.forEach(s => {
-    const status = String(s.statusMasuk ?? "")
-      .trim()
-      .toLowerCase();
+    const status = String(s.statusMasuk ?? "").trim().toLowerCase();
 
-    // Status kosong atau belum presensi tidak dihitung.
-    if (!status || status === "belum presensi") {
-      return;
-    }
+    if (!status || status === "belum presensi") return;
 
-    // Prakerin dihitung terpisah.
     if (status.includes("prakerin") || status.includes("pkl")) {
       prakerin++;
       return;
     }
 
-    // Tidak hadir = Sakit + Izin + Alpa.
     if (["sakit", "izin", "alpa"].includes(status)) {
       tidakHadir++;
       return;
     }
 
-    // Status yang menunjukkan siswa hadir.
-    if (
-      status.includes("tepat waktu") ||
-      status.includes("terlambat") ||
-      status.includes("hadir tidak presensi")
-    ) {
+    if (status.includes("tepat waktu") || status.includes("terlambat") || status.includes("hadir tidak presensi")) {
       hadir++;
     }
   });
 
   const jumlahDataEl = document.getElementById("jumlahData");
   const jumlahHadirEl = document.getElementById("jumlahHadir");
-  const jumlahTidakHadirEl =
-    document.getElementById("jumlahTidakHadir");
-  const jumlahPrakerinEl =
-    document.getElementById("jumlahPrakerin");
+  const jumlahTidakHadirEl = document.getElementById("jumlahTidakHadir");
+  const jumlahPrakerinEl = document.getElementById("jumlahPrakerin");
 
   if (jumlahDataEl) jumlahDataEl.textContent = data.length;
   if (jumlahHadirEl) jumlahHadirEl.textContent = hadir;
-  if (jumlahTidakHadirEl) {
-    jumlahTidakHadirEl.textContent = tidakHadir;
-  }
-  if (jumlahPrakerinEl) {
-    jumlahPrakerinEl.textContent = prakerin;
-  }
+  if (jumlahTidakHadirEl) jumlahTidakHadirEl.textContent = tidakHadir;
+  if (jumlahPrakerinEl) jumlahPrakerinEl.textContent = prakerin;
 
   const boxPrakerin = document.getElementById("boxJumlahPrakerin");
-
-  if (boxPrakerin) {
-    boxPrakerin.style.display = prakerin > 0 ? "" : "none";
-  }
+  if (boxPrakerin) boxPrakerin.style.display = prakerin > 0 ? "" : "none";
 } 
 
 function applyFilter() {
@@ -658,7 +498,7 @@ function applyFilter() {
   const pageData = filtered.slice(startIndex, startIndex + rowsPerPage);
 
   if (pageData.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Tidak ada data.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center-cell">Tidak ada data.</td></tr>`;
     document.getElementById("jumlahData").textContent = "0";
     renderPagination(0);
     return;
@@ -674,8 +514,7 @@ function applyFilter() {
     const jamPulangTd = document.createElement("td"); jamPulangTd.textContent = s.jamPulang || "-";
 
     const statusTd = document.createElement("td");
-    statusTd.style.textAlign = "center";
-    statusTd.style.verticalAlign = "middle";
+    statusTd.className = "status-cell-center";
     const value = s.statusMasuk || "";
 
     statusTd.dataset.rowIndex = s.rowIndex;
@@ -730,14 +569,12 @@ function renderPagination(total) {
   container.appendChild(nextBtn);
 }
 
+/* ==========================================================================
+   4. SYNC & SERVER DATA HANDLING
+   ========================================================================== */
 let syncTimer = null;
 let syncInProgress = false;
 let currentSyncStudent = "";
-
-
-// ============================================================
-// STATUS KONEKSI & SINKRONISASI
-// ============================================================
 let lastSuccessfulSyncByDate = {};
 let serverSyncStatusByDate = {};
 let syncStatusRequestId = 0;
@@ -774,15 +611,9 @@ function setSyncStatus(state, label, caption, detail, showRetry = false) {
   panel.dataset.state = state;
   if (icon) {
     if (state === "syncing") {
-      // Spinner mini menggantikan ikon besar saat proses penyimpanan.
       icon.innerHTML = '<span class="sync-mini-spinner" aria-hidden="true"></span>';
     } else {
-      const iconNames = {
-        saved: "check",
-        offline: "wifi-off",
-        error: "alert-circle",
-        pending: "clock"
-      };
+      const iconNames = { saved: "check", offline: "wifi-off", error: "alert-circle", pending: "clock" };
       const iconName = iconNames[state] || "clock";
       icon.innerHTML = `<i data-lucide="${iconName}"></i>`;
       if (window.lucide && typeof window.lucide.createIcons === "function") {
@@ -791,8 +622,6 @@ function setSyncStatus(state, label, caption, detail, showRetry = false) {
     }
   }
   if (labelEl) labelEl.textContent = label;
-  // Pertahankan area caption tetap ada agar tinggi panel tidak berubah antarstatus.
-  // Saat menyimpan, isinya dikosongkan secara visual tanpa menghilangkan ruangnya.
   if (captionEl) captionEl.textContent = state === "syncing" ? "\u00a0" : (caption || "\u00a0");
   if (detailEl) {
     detailEl.textContent = detail || "";
@@ -811,31 +640,17 @@ function updateSyncStatus() {
   const lastText = lastSync ? formatSyncDateTime(lastSync) : (serverStatus ? serverStatus.formatted : "Memuat riwayat…");
 
   if (!online) {
-    // Tampilkan tombol "Kirim Data Pending" hanya jika ada data pending
-    setSyncStatus("offline", "Offline", pendingForDate
-      ? `${pendingForDate} perubahan menunggu koneksi`
-      : `Sinkronisasi terakhir: ${lastText}`, "", pendingForDate > 0);
+    setSyncStatus("offline", "Offline", pendingForDate ? `${pendingForDate} perubahan menunggu koneksi` : `Sinkronisasi terakhir: ${lastText}`, "", pendingForDate > 0);
   } else if (syncInProgress) {
     const activeCount = Math.max(queue.length, 1);
-    setSyncStatus(
-      "syncing",
-      `Menyimpan ${activeCount} data...`,
-      "",
-      currentSyncStudent ? `Memproses: ${currentSyncStudent}` : "",
-      false
-    );
+    setSyncStatus("syncing", `Menyimpan ${activeCount} data...`, "", currentSyncStudent ? `Memproses: ${currentSyncStudent}` : "", false);
   } else if (pendingForDate > 0) {
-    setSyncStatus("syncing", `Menyimpan ${pendingForDate} data...`,
-      pendingForDate > 1
-        ? `${pendingForDate} data sedang menunggu giliran pengiriman`
-        : "Mengirim perubahan ke server...",
-      "", false);
+    setSyncStatus("syncing", `Menyimpan ${pendingForDate} data...`, pendingForDate > 1 ? `${pendingForDate} data sedang menunggu giliran pengiriman` : "Mengirim perubahan ke server...", "", false);
   } else {
     setSyncStatus("saved", "Tersimpan", `Sinkronisasi terakhir: ${lastText}`, "", false);
   }
 }
 
-// Samakan format tanggal agar YYYY-MM-DD dari input cocok dengan DD/MM/YYYY dari master/log.
 function normalizeDateKey(value) {
   if (!value) return "";
   const raw = String(value).trim();
@@ -858,7 +673,6 @@ async function refreshServerSyncStatus(date = getSelectedAttendanceDate()) {
       timestamp: result.timestamp || null,
       formatted: result.formatted || "Belum ada perubahan tersimpan"
     };
-    // Hindari respons tanggal lama menimpa status tanggal yang sedang dipilih.
     if (requestId === syncStatusRequestId && date === getSelectedAttendanceDate()) updateSyncStatus();
   } catch (err) {
     console.warn("[Sync] Gagal mengambil riwayat dari log_presensi:", err);
@@ -869,19 +683,15 @@ async function refreshServerSyncStatus(date = getSelectedAttendanceDate()) {
   }
 }
 
-function updateConnectionStatus() {
-  updateSyncStatus();
-}
+function updateConnectionStatus() { updateSyncStatus(); }
 
 function recordSuccessfulSync(item) {
-  // Riwayat resmi dibaca dari server. Refresh tanggal item agar cache tanggal itu ikut terbarui.
   const date = (item && item.tanggal) || getSelectedAttendanceDate();
   void refreshServerSyncStatus(date);
   updateSyncStatus();
 }
 
 function initSyncStatus() {
-  // Jangan memakai cache localStorage sebagai waktu sinkronisasi resmi.
   updateConnectionStatus();
   updateSyncStatus();
   refreshServerSyncStatus(getSelectedAttendanceDate());
@@ -919,13 +729,10 @@ function processStatusChange(rowIndex, newValue, tanggal) {
   applyFilter();
   updateSyncStatus();
 
-  // Mulai kirim langsung; jika proses lain sedang berjalan, loop sinkronisasi
-  // akan mengambil item terbaru dari antrean tanpa menunggu debounce.
   clearTimeout(syncTimer);
   syncTimer = null;
   void triggerAutoSync();
 }
-
 
 async function triggerAutoSync() {
   if (!navigator.onLine) {
@@ -934,29 +741,21 @@ async function triggerAutoSync() {
     return;
   }
 
-  // Bila sinkronisasi sedang berjalan, proses aktif akan membaca antrean terbaru.
   if (syncInProgress) {
     updateSyncStatus();
     return;
   }
 
   const result = await syncPendingUpdates(false);
-
   if (result.success && result.synced > 0) {
     showToast("Data tersimpan otomatis ke server", "success", 2000);
   }
 }
 
-
 async function syncPendingUpdates(showOverlay = false) {
-  if (syncInProgress) {
-    return { success: false, synced: 0, busy: true };
-  }
+  if (syncInProgress) return { success: false, synced: 0, busy: true };
 
-  let queue = JSON.parse(
-    localStorage.getItem("piket_pending_updates") || "[]"
-  );
-
+  let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   if (queue.length === 0) {
     updatePendingBadge();
     return { success: true, synced: 0 };
@@ -973,64 +772,31 @@ async function syncPendingUpdates(showOverlay = false) {
   let failed = false;
   updateSyncStatus();
 
-  if (showOverlay) {
-    showLoading(`Menyinkronkan ${queue.length} data ke server...`);
-  }
+  if (showOverlay) showLoading(`Menyinkronkan ${queue.length} data ke server...`);
 
   try {
     while (true) {
-      queue = JSON.parse(
-        localStorage.getItem("piket_pending_updates") || "[]"
-      );
-
+      queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
       if (queue.length === 0) break;
+      if (!navigator.onLine) { failed = true; break; }
 
-      if (!navigator.onLine) {
-        failed = true;
-        break;
-      }
-
-      // Kirim satu data setiap request dan tampilkan countdown antrean.
       const item = queue[0];
       const totalRemaining = queue.length;
       currentSyncStudent = item.namaSiswa || item.nama || "data siswa";
-      setSyncStatus(
-        "syncing",
-        totalRemaining > 1 ? `Menyimpan ${totalRemaining} data...` : "Menyimpan 1 data...",
-        "",
-        `Memproses: ${currentSyncStudent}`,
-        false
-      );
+      setSyncStatus("syncing", totalRemaining > 1 ? `Menyimpan ${totalRemaining} data...` : "Menyimpan 1 data...", "", `Memproses: ${currentSyncStudent}`, false);
 
       const response = await fetch(API_URL, {
         method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify({
-          action: "simpanStatusMasuk",
-          payload: [item]
-        })
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: "simpanStatusMasuk", payload: [item] })
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const result = await response.json();
 
-      // Jangan menghapus antrean jika server gagal.
-      if (!result || result.success !== true) {
-        failed = true;
-        break;
-      }
+      if (!result || result.success !== true) { failed = true; break; }
 
-      // Ambil ulang antrean karena mungkin ada perubahan baru.
-      const currentQueue = JSON.parse(
-        localStorage.getItem("piket_pending_updates") || "[]"
-      );
-
-      // Hapus hanya versi data yang benar-benar dikirim.
+      const currentQueue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
       const index = currentQueue.findIndex(current =>
         Number(current.rowIndex) === Number(item.rowIndex) &&
         current.timestamp === item.timestamp &&
@@ -1039,50 +805,28 @@ async function syncPendingUpdates(showOverlay = false) {
 
       if (index !== -1) {
         currentQueue.splice(index, 1);
-
-        localStorage.setItem(
-          "piket_pending_updates",
-          JSON.stringify(currentQueue)
-        );
-
+        localStorage.setItem("piket_pending_updates", JSON.stringify(currentQueue));
       }
 
-      // Request ini dikonfirmasi sukses oleh server walaupun antrean lokal sudah berubah.
       recordSuccessfulSync(item);
       synced++;
       const syncedName = item.namaSiswa || item.nama || "Siswa";
       syncedNames.push(syncedName);
-      // Beri toast untuk setiap siswa tepat setelah server mengonfirmasi penyimpanan.
       showToast(`Update data ${syncedName} berhasil disimpan.`, "success", 3500);
 
-      // Update angka setelah setiap penyimpanan sukses, termasuk countdown pada panel.
       updatePendingBadge();
-      const remainingNow = JSON.parse(
-        localStorage.getItem("piket_pending_updates") || "[]"
-      ).length;
+      const remainingNow = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]").length;
       if (remainingNow > 0) {
-        setSyncStatus(
-          "syncing",
-          `Menyimpan ${remainingNow} data...`,
-          "",
-          "",
-          false
-        );
+        setSyncStatus("syncing", `Menyimpan ${remainingNow} data...`, "", "", false);
       } else {
         setSyncStatus("syncing", "Menyimpan...", "", "", false);
       }
 
       if (showOverlay) {
-        const remaining = JSON.parse(
-          localStorage.getItem("piket_pending_updates") || "[]"
-        ).length;
-
+        const remaining = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]").length;
         const label = document.getElementById("loadingText");
-
         if (label) {
-          label.textContent = remaining > 0
-            ? `Tersinkron ${synced}. Sisa ${remaining} data...`
-            : "Semua data berhasil disinkronkan!";
+          label.textContent = remaining > 0 ? `Tersinkron ${synced}. Sisa ${remaining} data...` : "Semua data berhasil disinkronkan!";
         }
       }
     }
@@ -1092,81 +836,45 @@ async function syncPendingUpdates(showOverlay = false) {
   } finally {
     syncInProgress = false;
     currentSyncStudent = "";
-
     if (showOverlay) hideLoading();
-
     updatePendingBadge();
     updateConnectionStatus();
     updateSyncStatus();
   }
 
-  // Pastikan indikator FE langsung membaca ulang log setelah batch selesai.
-  // Jangan hanya mengandalkan refresh per item yang berjalan asynchronous.
-  if (synced > 0) {
-    await refreshServerSyncStatus(getSelectedAttendanceDate());
-  }
+  if (synced > 0) await refreshServerSyncStatus(getSelectedAttendanceDate());
 
-  const remaining = JSON.parse(
-    localStorage.getItem("piket_pending_updates") || "[]"
-  ).length;
-
-  // Notifikasi sukses sudah ditampilkan sebagai toast per siswa pada setiap respons sukses.
-
-  // Tangani perubahan yang masuk tepat saat loop sebelumnya selesai.
+  const remaining = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]").length;
   if (!failed && remaining > 0 && navigator.onLine) {
     queueMicrotask(() => triggerAutoSync());
   }
 
-  return {
-    success: !failed && remaining === 0,
-    synced,
-    remaining,
-    syncedNames
-  };
+  return { success: !failed && remaining === 0, synced, remaining, syncedNames };
 }
 
 async function handleSubmit(e) {
   if (e) e.preventDefault();
-
-  const queue = JSON.parse(
-    localStorage.getItem("piket_pending_updates") || "[]"
-  );
+  const queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
 
   if (queue.length === 0) {
-    showToast(
-      "Tidak ada perubahan data yang perlu disinkronkan.",
-      "info"
-    );
+    showToast("Tidak ada perubahan data yang perlu disinkronkan.", "info");
     return;
   }
 
   if (syncInProgress) {
-    showToast(
-      "Sinkronisasi sedang berjalan. Tunggu sebentar ya, bro!",
-      "info"
-    );
+    showToast("Sinkronisasi sedang berjalan. Tunggu sebentar ya, bro!", "info");
     return;
   }
 
   const result = await syncPendingUpdates(true);
-
-  const remaining = JSON.parse(
-    localStorage.getItem("piket_pending_updates") || "[]"
-  ).length;
+  const remaining = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]").length;
 
   if (result.success) {
-    // Toast sukses sudah ditampilkan satu per siswa saat masing-masing data tersimpan.
+    // Handling sukses
   } else if (!navigator.onLine || result.offline) {
-    showToast(
-      `Offline. ${remaining} data tetap tersimpan di perangkat.`,
-      "error"
-    );
+    showToast(`Offline. ${remaining} data tetap tersimpan di perangkat.`, "error");
   } else {
-    showToast(
-      `${result.synced} data berhasil disinkronkan. ` +
-      `${remaining} data masih antre dan bisa dicoba lagi.`,
-      "error"
-    );
+    showToast(`${result.synced} data berhasil disinkronkan. ${remaining} data masih antre.`, "error");
   }
 }
 
@@ -1181,42 +889,7 @@ window.addEventListener("offline", () => {
   showToast("Koneksi terputus. Mode Offline aktif.", "error");
 });
 
-function updatePendingBadge() {
-  updateSyncStatus();
-}
-
-// async function handleSubmit(e) {
-//   if (e) e.preventDefault();
-//   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
-
-//   if (queue.length === 0) {
-//     showToast("Tidak ada perubahan data yang perlu disinkronkan.", "info");
-//     return;
-//   }
-
-//   showLoading(`Menyinkronkan ${queue.length} data ke server...`);
-
-//   try {
-//     const response = await fetch(API_URL, {
-//       method: "POST",
-//       headers: { "Content-Type": "text/plain;charset=utf-8" },
-//       body: JSON.stringify({ action: "simpanStatusMasuk", payload: queue })
-//     });
-//     const result = await response.json();
-
-//     hideLoading();
-//     if (result.success) {
-//       localStorage.setItem("piket_pending_updates", "[]");
-//       updatePendingBadge();
-//       showToast("Semua perubahan berhasil disinkronkan!", "success");
-//     } else {
-//       showToast("Gagal menyimpan data ke server", "error");
-//     }
-//   } catch (err) {
-//     hideLoading();
-//     showToast("Gagal terhubung ke server API", "error");
-//   }
-// }
+function updatePendingBadge() { updateSyncStatus(); }
 
 let pollingTimer = null;
 const POLLING_INTERVAL = 30000;
@@ -1229,20 +902,13 @@ function startAutoPolling() {
   }, POLLING_INTERVAL);
 }
 
-function stopAutoPolling() {
-  if (pollingTimer) clearInterval(pollingTimer);
-}
+function stopAutoPolling() { if (pollingTimer) clearInterval(pollingTimer); }
 
 async function silentFetchData() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   const dateInput = document.getElementById("selectedDate");
+  const dateVal = dateInput?.value || sessionStorage.getItem("piket_selected_date") || getLocalDateString();
 
-  const dateVal =
-    dateInput?.value ||
-    sessionStorage.getItem("piket_selected_date") ||
-      getLocalDateString();
-
-  // Pertahankan tanggal pilihan admin
   if (user && user.role === "Admin" && dateVal) {
     if (dateInput) dateInput.value = dateVal;
     sessionStorage.setItem("piket_selected_date", dateVal);
@@ -1250,17 +916,12 @@ async function silentFetchData() {
 
   try {
     let url = `${API_URL}?action=getSiswaHariIni`;
-
     if (user && user.role === "Admin" && dateVal) {
       url = `${API_URL}?action=getSiswaByTanggal&tanggal=${dateVal}`;
     }
 
     const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`HTTP error: ${response.status}`);
-    }
-
+    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
     const newData = await response.json();
 
     if (Array.isArray(newData)) {
@@ -1274,12 +935,8 @@ async function silentFetchData() {
 }
 
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    stopAutoPolling();
-  } else {
-    silentFetchData();
-    startAutoPolling();
-  }
+  if (document.hidden) stopAutoPolling();
+  else { silentFetchData(); startAutoPolling(); }
 });
 
 function setPetugasPiket(nama) {
@@ -1291,22 +948,6 @@ function setRoleUser(role) {
   const roleLabel = { "Admin": "Admin Presensi", "Piket": "Petugas Piket" };
   const el = document.getElementById("roleUser");
   if (el) el.textContent = roleLabel[role] || "Petugas";
-}
-
-function getStatusClass(status) {
-  if (!status || status.trim() === "" || status === "Belum Presensi") return "status-kosong";
-  const s = status.toLowerCase();
-  if (s.includes("tepat waktu")) return "status-hadir";
-  if (s.includes("sangat terlambat sekali")) return "status-terlambat-ekstrem";
-  if (s.includes("sangat terlambat")) return "status-terlambat-berat";
-  if (s.includes("terlambat")) return "status-terlambat";
-  if (s.includes("hadir tidak presensi")) return "status-htp";
-  if (s.includes("sakit")) return "status-sakit";
-  if (s.includes("izin")) return "status-izin";
-  if (s.includes("alpa")) return "status-alpa";
-  if (s.includes("libur")) return "status-libur";
-  if (s.includes("prakerin") || s.includes("pkl")) return "status-prakerin";
-  return "status-kosong";
 }
 
 let toastTimeout = null;
@@ -1337,9 +978,7 @@ function showToast(message, type = "info", duration = 3000) {
   toast.classList.add("is-visible");
 
   clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => {
-    hideAppToast();
-  }, duration);
+  toastTimeout = setTimeout(() => { hideAppToast(); }, duration);
 }
 
 function hideAppToast() {
@@ -1348,20 +987,13 @@ function hideAppToast() {
 }
 
 function logout() {
-  // Hentikan polling agar tidak ada proses background yang berjalan
   stopAutoPolling();
-
-  // Hapus seluruh data sesi login
   localStorage.removeItem("piket_user");
   localStorage.removeItem("piketID");
   localStorage.removeItem("namaPetugas");
   localStorage.removeItem("role");
   localStorage.removeItem("loginDate");
-
-  // Bersihkan tanggal pilihan admin
   sessionStorage.removeItem("piket_selected_date");
-
-  // Kembali ke halaman login tanpa menyimpan dashboard di history
   window.location.replace("/");
 }
 
@@ -1405,11 +1037,8 @@ function closeNotif() {
 function closeError() { document.getElementById("errorModal")?.classList.remove("active"); }
 function closeConfirm() { document.getElementById("confirmModal")?.classList.remove("active"); }
 function handleConfirmYes() {
-  // Eksekusi aksi yang dikonfirmasi (misal: proses kirim WA / reset)
-  if (typeof window.onConfirmCallback === "function") {
-    window.onConfirmCallback();
-  }
-  hideConfirmModal(); // Sembunyikan modal
+  if (typeof window.onConfirmCallback === "function") window.onConfirmCallback();
+  closeConfirm();
 }
 
 async function tarikDataPresensi() {
@@ -1433,7 +1062,6 @@ async function tarikDataPresensi() {
   }
 }
 
-// Variable global untuk menampung URL PDF hasil pembuatan rekap terakhir
 let latestPdfUrl = "";
 
 async function cetakRekap() {
@@ -1445,44 +1073,33 @@ async function cetakRekap() {
 
   const namaPetugas = user.nama || user.username || "Petugas Piket";
   const dateVal = document.getElementById("selectedDate")?.value || getLocalDateString();
-
-  const tanggalSelected = (user.role === "Admin") 
-    ? dateVal 
-    : getLocalDateString();
+  const tanggalSelected = (user.role === "Admin") ? dateVal : getLocalDateString();
 
   showLoading("Memeriksa kelengkapan data...");
 
   try {
-    // 2. Cek status kosong terlebih dahulu
     const urlCek = `${API_URL}?action=cekStatusKosongHariIni&tanggal=${tanggalSelected}`;
     const resCek = await fetch(urlCek);
     const dataCek = await resCek.json();
 
-    if (!dataCek.success) {
-      throw new Error(dataCek.message || "Gagal memeriksa data presensi.");
-    }
+    if (!dataCek.success) throw new Error(dataCek.message || "Gagal memeriksa data presensi.");
 
-    // Jika masih ada baris status masuk yang belum terisi (> 0)
     if (dataCek.result > 0) {
       hideLoading();
       showToast(`Masih ada ${dataCek.result} data status masuk yang belum diisi!`, "error");
       return;
     }
 
-    // 3. Proses pembuatan PDF jika data sudah lengkap
     showLoading("Membuat berkas PDF rekap...");
     const urlRekap = `${API_URL}?action=buatRekapPresensiHarian&namaPetugas=${encodeURIComponent(namaPetugas)}&tanggal=${tanggalSelected}`;
     const resRekap = await fetch(urlRekap);
     const dataRekap = await resRekap.json();
 
-    if (!dataRekap.success) {
-      throw new Error(dataRekap.message || "Gagal membuat rekap PDF.");
-    }
+    if (!dataRekap.success) throw new Error(dataRekap.message || "Gagal membuat rekap PDF.");
 
     hideLoading();
     showToast("Berhasil membuat rekap PDF!", "success");
 
-    // 4. AMBIL URL PDF (Mendukung format String maupun Object JSON)
     let pdfUrl = "";
     if (typeof dataRekap.result === "object" && dataRekap.result !== null) {
       pdfUrl = dataRekap.result.url || dataRekap.result.pdfUrl || dataRekap.result.downloadUrl || "";
@@ -1490,27 +1107,16 @@ async function cetakRekap() {
       pdfUrl = dataRekap.result;
     }
 
-    if (!pdfUrl) {
-      throw new Error("Link PDF tidak ditemukan dari server.");
-    }
+    if (!pdfUrl) throw new Error("Link PDF tidak ditemukan dari server.");
 
-    // SIMPAN KE VARIABEL GLOBAL AGAR BISA DIPAKAI OLEH kirimRekapGrupWA
     latestPdfUrl = pdfUrl;
 
-    // 5. HUBUNGKAN KE NOTIF MODAL HTML
     const pdfLinkEl = document.getElementById("pdfLink");
     const notifModalEl = document.getElementById("notifModal");
 
-    if (pdfLinkEl) {
-      pdfLinkEl.href = pdfUrl; // Pasang URL PDF ke elemen <a>
-    }
-
-    if (notifModalEl) {
-      notifModalEl.classList.add("active"); // Tampilkan modal notifikasi
-    } else {
-      // Fallback jika modal tidak ditemukan, buka di tab baru
-      window.open(pdfUrl, "_blank");
-    }
+    if (pdfLinkEl) pdfLinkEl.href = pdfUrl;
+    if (notifModalEl) notifModalEl.classList.add("active");
+    else window.open(pdfUrl, "_blank");
 
   } catch (err) {
     console.error(err);
@@ -1519,10 +1125,6 @@ async function cetakRekap() {
   }
 }
 
-/**
- * FUNGSI UNTUK MENGIRIM REKAP KE GRUP WA PIKET
- * Dipanggil oleh tombol "Kirim Rekap ke Grup WA" di Modal / Dashboard
- */
 async function kirimRekapGrupWA() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   if (!user) {
@@ -1533,24 +1135,18 @@ async function kirimRekapGrupWA() {
   const namaPetugas = user.nama || user.username || "Petugas Piket";
   const dateVal = document.getElementById("selectedDate")?.value || getLocalDateString();
   const tanggalSelected = (user.role === "Admin") ? dateVal : getLocalDateString();
-
   const pdfUrl = latestPdfUrl || "";
 
   showLoading("Sedang mengirim rekap presensi ke Grup WhatsApp...");
 
   try {
     const targetUrl = `${API_URL}?action=kirimRekapGrupWA&namaPetugas=${encodeURIComponent(namaPetugas)}&tanggal=${encodeURIComponent(tanggalSelected)}&pdfUrl=${encodeURIComponent(pdfUrl)}`;
-
     const response = await fetch(targetUrl);
     const result = await response.json();
 
     hideLoading();
-
-    if (result.success) {
-      showToast(result.message || "Rekap berhasil dikirim ke Grup WA!", "success");
-    } else {
-      showToast("Gagal mengirim WA: " + (result.message || "Terjadi kesalahan server."), "error");
-    }
+    if (result.success) showToast(result.message || "Rekap berhasil dikirim ke Grup WA!", "success");
+    else showToast("Gagal mengirim WA: " + (result.message || "Terjadi kesalahan server."), "error");
   } catch (err) {
     hideLoading();
     console.error("❌ Error kirimRekapGrupWA:", err);
@@ -1577,8 +1173,7 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
   containerElement.innerHTML = `
     <div class="dropdown-selected">
       <span class="dropdown-text"></span>
-      <svg viewBox="0 0 24 24" width="13" height="13"
-        stroke="currentColor" stroke-width="2" fill="none">
+      <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none">
         <polyline points="6 9 12 15 18 9"></polyline>
       </svg>
     </div>
@@ -1589,8 +1184,7 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
   const menu = containerElement.querySelector(".dropdown-menu");
   const selectedBox = containerElement.querySelector(".dropdown-selected");
 
-  const currentObj =
-    optionsArray.find(opt => opt.value === selectedValue) || optionsArray[0];
+  const currentObj = optionsArray.find(opt => opt.value === selectedValue) || optionsArray[0];
 
   textSpan.innerText = currentObj.label;
   containerElement.setAttribute("data-value", currentObj.value);
@@ -1605,18 +1199,15 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
 
   selectedBox.onclick = function(e) {
     e.stopPropagation();
-
     if (containerElement.classList.contains("open")) {
       closeCustomDropdown(containerElement);
       return;
     }
-
     openCustomDropdown(containerElement);
   };
 
   menu.onclick = function(e) {
     e.stopPropagation();
-
     const item = e.target.closest(".dropdown-item");
     if (!item) return;
 
@@ -1636,7 +1227,6 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
 
 function closeCustomDropdown(dropdown) {
   if (!dropdown) return;
-
   dropdown.classList.remove("open", "drop-up");
 
   const menu = dropdown.querySelector(".dropdown-menu");
@@ -1656,17 +1246,13 @@ function openCustomDropdown(dropdown) {
   const menu = dropdown.querySelector(".dropdown-menu");
   if (!menu) return;
 
-  // Tutup dropdown lain yang sedang terbuka
   document.querySelectorAll(".custom-dropdown.open").forEach(function(el) {
-    if (el !== dropdown) {
-      closeCustomDropdown(el);
-    }
+    if (el !== dropdown) closeCustomDropdown(el);
   });
 
   dropdown.classList.remove("drop-up");
   dropdown.classList.add("open");
 
-  // --- DETEKSI PINTAR BARIS TABEL ---
   const tr = dropdown.closest("tr");
   const tbody = tr ? tr.closest("tbody") : null;
   
@@ -1675,8 +1261,6 @@ function openCustomDropdown(dropdown) {
     const rows = Array.from(tbody.querySelectorAll("tr"));
     const currentIndex = rows.indexOf(tr);
     const totalRows = rows.length;
-
-    // Jika total data <= 4 dan ini baris terakhir, ATAU berada di 2 baris paling bawah tabel
     if (currentIndex >= totalRows - 2 || (totalRows <= 4 && currentIndex === totalRows - 1)) {
       isLastRow = true;
     }
@@ -1688,7 +1272,6 @@ function openCustomDropdown(dropdown) {
   const spaceAbove = Math.max(0, rect.top - 8);
   const menuHeight = Math.min(menu.scrollHeight || 180, 250);
 
-  // Jika baris bawah/terakhir ATAU sisa ruang bawah sempit -> PAKSA DROP-UP!
   const openUp = isLastRow || (spaceBelow < menuHeight && spaceAbove > spaceBelow);
 
   if (openUp) {
@@ -1708,77 +1291,9 @@ function openCustomDropdown(dropdown) {
 
 document.addEventListener("click", function(e) {
   if (e.target.closest(".custom-dropdown")) return;
-
   document.querySelectorAll(".custom-dropdown.open").forEach(function(el) {
     closeCustomDropdown(el);
   });
-});
-
-
-document.addEventListener('click', function (e) {
-  const dropdownToggle = e.target.closest('.custom-dropdown');
-
-  // Jika klik terjadi DI LUAR custom-dropdown, tutup semua dropdown
-  if (!dropdownToggle) {
-    document.querySelectorAll('.custom-dropdown').forEach(el => {
-      el.classList.remove('open', 'drop-up');
-      const m = el.querySelector('.dropdown-menu');
-      if (m) m.style.cssText = '';
-    });
-    return;
-  }
-
-  const menu = dropdownToggle.querySelector('.dropdown-menu');
-  const isAlreadyOpen = dropdownToggle.classList.contains('open');
-
-  // 1. Tutup semua dropdown lain terlebih dahulu
-  document.querySelectorAll('.custom-dropdown').forEach(el => {
-    if (el !== dropdownToggle) {
-      el.classList.remove('open', 'drop-up');
-      const m = el.querySelector('.dropdown-menu');
-      if (m) m.style.cssText = '';
-    }
-  });
-
-  // 2. Hitung posisi akurat jika baru dibuka
-  if (!isAlreadyOpen) {
-    dropdownToggle.classList.add('open');
-    if (!menu) return;
-
-    // Ambil koordinat posisi tombol terhadap viewport
-    const rect = dropdownToggle.getBoundingClientRect();
-    const windowHeight = window.innerHeight || document.documentElement.clientHeight;
-    
-    // Hitung jarak nyata tombol ke batas bawah & atas layar
-    const spaceBelow = windowHeight - rect.bottom;
-    const spaceAbove = rect.top;
-
-    // Ambil tinggi asli menu (bukan lagi hardcode 240px)
-    const menuHeight = menu.scrollHeight || 180;
-
-    // JIKA sisa ruang di bawah kurang dari tinggi menu DAN ruang atas lebih lega, PAKSA DROP-UP!
-    if (spaceBelow < menuHeight && spaceAbove > spaceBelow) {
-      dropdownToggle.classList.add('drop-up');
-      menu.style.setProperty('top', 'auto', 'important');
-      menu.style.setProperty('bottom', '100%', 'important');
-      menu.style.setProperty('margin-bottom', '6px', 'important');
-      menu.style.setProperty('margin-top', '0px', 'important');
-      menu.style.setProperty('box-shadow', '0 -8px 20px rgba(0, 0, 0, 0.15)', 'important');
-    } else {
-      dropdownToggle.classList.remove('drop-up');
-      menu.style.setProperty('top', '100%', 'important');
-      menu.style.setProperty('bottom', 'auto', 'important');
-      menu.style.setProperty('margin-top', '4px', 'important');
-      menu.style.setProperty('margin-bottom', '0px', 'important');
-      menu.style.setProperty('box-shadow', '0 6px 16px rgba(0, 0, 0, 0.1)', 'important');
-    }
-  } else {
-    // Tutup jika diklik kembali
-    dropdownToggle.classList.remove('open', 'drop-up');
-    if (menu) menu.style.cssText = '';
-  }
-
-  e.stopPropagation();
 });
 
 document.addEventListener('DOMContentLoaded', initFormPiket);

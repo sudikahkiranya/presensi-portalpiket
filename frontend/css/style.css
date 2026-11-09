@@ -1,6 +1,75 @@
 /* ==========================================================================
-   1. RESET & BASE CONFIGURATION
+   1. COLOR PALETTE ENGINE & CSS VARIABLES (THEMATIC & DYNAMIC)
    ========================================================================== */
+:root {
+  /* Default Theme: Burgundy */
+  --theme-glow-rgb: 130, 70, 83;
+  --theme-glow: rgba(var(--theme-glow-rgb), 0.18);
+  --primary: #824653;
+  --primary-hover: #6F3945;
+  --primary-soft: #A66F7A;
+  --bg-page: #F5F0E7;
+  --text-dark: #1e293b;
+  --border-light: #cbd5e1;
+}
+
+body[data-theme="green"] {
+  --theme-glow-rgb: 16, 185, 129;
+  --primary: #059669;
+  --primary-hover: #047857;
+  --primary-soft: #34d399;
+  --bg-page: #f0fdf4;
+}
+
+body[data-theme="blue"] {
+  --theme-glow-rgb: 37, 99, 235;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+  --primary-soft: #60a5fa;
+  --bg-page: #eff6ff;
+}
+
+body[data-theme="orange"] {
+  --theme-glow-rgb: 234, 88, 12;
+  --primary: #ea580c;
+  --primary-hover: #c2410c;
+  --primary-soft: #fb923c;
+  --bg-page: #fff7ed;
+}
+
+body[data-theme="purple"] {
+  --theme-glow-rgb: 147, 51, 234;
+  --primary: #9333ea;
+  --primary-hover: #7e22ce;
+  --primary-soft: #c084fc;
+  --bg-page: #faf5ff;
+}
+
+body[data-theme="gold"] {
+  --theme-glow-rgb: 217, 119, 6;
+  --primary: #d97706;
+  --primary-hover: #b45309;
+  --primary-soft: #fbbf24;
+  --bg-page: #fffbeb;
+}
+
+body[data-theme="black"] {
+  --theme-glow-rgb: 30, 41, 59;
+  --primary: #0f172a;
+  --primary-hover: #1e293b;
+  --primary-soft: #475569;
+  --bg-page: #f8fafc;
+}
+
+body[data-theme="white"] {
+  --theme-glow-rgb: 100, 116, 139;
+  --primary: #475569;
+  --primary-hover: #334155;
+  --primary-soft: #94a3b8;
+  --bg-page: #f1f5f9;
+}
+
+/* Base resets */
 html, body {
   height: 100%;
   margin: 0;
@@ -10,91 +79,21 @@ html, body {
 }
 
 h2, h3 { 
-  color: #1e293b; 
+  color: var(--text-dark); 
   font-weight: 600; 
   margin-top: 0; 
 }
 
-/* ==========================================================================
-   2. LOGIN PAGE STYLES
-   ========================================================================== */
-body.login-body {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: linear-gradient(rgba(245, 240, 231, 0.88), rgba(245, 240, 231, 0.88)), 
-              url('https://i.imgur.com/hqZ98He.jpeg') no-repeat center center;
-  background-size: cover;
-}
-
-.container-login {
-  width: 100%;
-  max-width: 380px;
-  background: #ffffff;
-  padding: 40px 30px;
-  margin: 20px;
-  border-radius: 20px;
-  border: 1px solid #cbd5e1;
-  box-shadow: 0 10px 25px rgba(74, 58, 30, 0.10);
-  text-align: center;
-  box-sizing: border-box;
-}
-
-.logo {
-  display: block;
-  margin: 0 auto 20px auto;
-  max-width: 160px;
-}
-
-.login-input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 14px 18px;
-  margin-bottom: 16px;
-  border-radius: 12px;
-  border: 1px solid #cbd5e1;
-  background: #f8fafc;
-  text-align: center;
-  font-size: 15px;
-  font-family: inherit;
-  outline: none;
-}
-
-.login-btn {
-  width: 100%;
-  padding: 14px;
-  background-color: #A66F7A;
-  color: #ffffff;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.error-msg {
-  color: #dc2626;
-  background: #fecaca;
-  padding: 10px;
-  border-radius: 8px;
-  font-size: 13px;
-  margin-top: 20px;
-  display: none;
-}
-
-/* ==========================================================================
-   3. DASHBOARD LAYOUT & TOP HEADER BANNER
-   ========================================================================== */
 body.dashboard-body {
-  background: #F5F0E7 !important;
+  background: var(--bg-page) !important;
   padding: 0 30px 20px !important;
-  color: #1e293b;
+  color: var(--text-dark);
   display: flex;
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
   box-sizing: border-box;
+  transition: background 0.3s ease;
 }
 
 main {
@@ -104,16 +103,19 @@ main {
   margin: 0 auto;
 }
 
+/* ==========================================================================
+   2. TOP HEADER BANNER MODERN & CLEAN (NO BOX NESTING)
+   ========================================================================== */
 #topHeaderBanner {
   width: 100%;
   max-width: 1400px;
-  background: #824653 !important;
+  background: var(--primary) !important;
   border-radius: 0 0 16px 16px !important;
-  padding: 16px 30px !important;
+  padding: 14px 30px !important;
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 8px 20px var(--theme-glow) !important;
   border-top: none !important;
   border-bottom: 4px solid #ffffff !important;
   border-left: 4px solid #ffffff !important;
@@ -123,187 +125,259 @@ main {
   box-sizing: border-box;
   position: relative;
   z-index: 999;
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
-.brand-title {
+.header-brand-group {
   display: flex;
   align-items: center;
+  gap: 16px;
 }
 
-.brand-pill-box {
-  background: #ffffff !important;
-  padding: 8px 18px !important;
-  border-radius: 12px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 14px !important;
+/* LINGKARAN LOGO BULAT PERFECT */
+.brand-logo-circle {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
-/* KUNCI TINGGI & LEBAR LOGO AGAR BEBAS DARI LAYOUT SHIFT (LOMPATAN BOX) */
-.logo-img { 
-  width: 48px !important; 
-  height: 48px !important; 
+.header-logo-img { 
+  width: 32px; 
+  height: 32px; 
   object-fit: contain; 
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 
-.logo-img.is-loaded {
+.header-logo-img.is-loaded {
   opacity: 1 !important;
 }
 
-.header-v-divider {
-  width: 1.5px;
-  height: 42px;
-  background: #cbd5e1;
-  border-radius: 2px;
-}
-
-.header-text-group {
+.brand-text-stack {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
   gap: 2px;
 }
 
-.header-main-title {
+.brand-main-title {
   margin: 0 !important;
-  font-size: 16px !important;
+  font-size: 17px !important;
   font-weight: 700 !important;
-  color: #0f172a !important;
+  color: #ffffff !important;
   line-height: 1.2;
 }
 
-#headerNamaSekolah {
-  font-size: 13px !important;
+.brand-sub-title {
+  font-size: 12.5px !important;
   font-weight: 500 !important;
-  color: #824653 !important;
+  color: rgba(255, 255, 255, 0.8) !important;
   line-height: 1.2;
 }
 
-.header-sub-date {
-  font-size: 12px !important;
-  font-weight: 500 !important;
-  color: #A66F7A !important;
-  line-height: 1.2;
-}
-
-.right-controls {
+/* CONTROLS AREA (THEME & PROFILE) */
+.header-user-controls {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.user-pill-box {
-  background: #ffffff !important;
-  padding: 8px 16px !important;
-  border-radius: 12px !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  gap: 12px !important;
-}
-
-.pill-main-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #A66F7A;
-  flex-shrink: 0;
-}
-
-.pill-main-icon svg {
-  width: 22px;
-  height: 22px;
-}
-
-.pill-text-stack {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 1px;
-}
-
-.user-name-text,
-#petugasPiket {
-  font-size: 13.5px !important;
-  font-weight: 600 !important;
-  color: #0f172a !important;
-  line-height: 1.25 !important;
-}
-
-.role-title-text,
-#roleUser {
-  font-size: 11.5px !important;
-  font-weight: 500 !important;
-  color: #A66F7A !important;
-  line-height: 1.2 !important;
-}
-
-#logoutBtn {
-  background: #ffffff !important;
+.header-icon-btn {
   width: 40px !important;
   height: 40px !important;
   padding: 0 !important;
   border-radius: 50% !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  background: #ffffff !important;
+  border: none !important;
   cursor: pointer;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  border: none !important;
-  color: #dc2626 !important;
-  transition: background 0.2s ease, transform 0.2s ease !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
+  color: var(--primary) !important;
+  font-size: 16px;
+  transition: transform 0.2s ease, background 0.2s ease !important;
   flex-shrink: 0;
 }
 
-#logoutBtn:hover {
+.header-icon-btn:hover {
+  transform: scale(1.06) !important;
+  background: #ffffff !important;
+}
+
+/* ==========================================================================
+   3. THEME POPOVER & PROFILE DROPDOWN (SWATCHES & POPUPS)
+   ========================================================================== */
+.theme-picker-wrapper,
+.user-profile-wrapper {
+  position: relative;
+}
+
+.theme-popover,
+.profile-popover {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-light);
+  padding: 14px;
+  display: none;
+  z-index: 1000;
+  box-sizing: border-box;
+  animation: popoverFadeIn 0.2s ease;
+}
+
+@keyframes popoverFadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.theme-popover.is-open,
+.profile-popover.is-open {
+  display: block;
+}
+
+.theme-popover-header {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.theme-color-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  width: 150px;
+}
+
+.color-swatch {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  border: 2px solid #ffffff !important;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 0 !important;
+}
+
+.color-swatch:hover {
+  transform: scale(1.15) !important;
+}
+
+.color-swatch.active {
+  box-shadow: 0 0 0 2.5px var(--primary) !important;
+}
+
+.burgundyswatch { background: #824653 !important; }
+.greenswatch { background: #059669 !important; }
+.blueswatch { background: #2563eb !important; }
+.orangeswatch { background: #ea580c !important; }
+.purpleswatch { background: #9333ea !important; }
+.goldswatch { background: #d97706 !important; }
+.blackswatch { background: #0f172a !important; }
+.whiteswatch { background: #94a3b8 !important; }
+
+/* USER PROFILE DROPDOWN STYLES */
+.profile-popover {
+  width: 220px;
+  padding: 16px;
+}
+
+.profile-popover-user {
+  text-align: left;
+}
+
+.profile-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.profile-role {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--primary-soft);
+  margin-top: 2px;
+}
+
+.profile-popover-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 12px 0;
+}
+
+.profile-logout-item {
+  width: 100% !important;
   background: #fef2f2 !important;
-  transform: scale(1.05) !important;
+  color: #dc2626 !important;
+  border: 1px solid #fecaca !important;
+  border-radius: 10px !important;
+  padding: 8px 12px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  height: 36px !important;
+  transition: background 0.2s ease !important;
+}
+
+.profile-logout-item:hover {
+  background: #fee2e2 !important;
 }
 
 .logout-icon { 
-  width: 18px; 
-  height: 18px; 
+  width: 16px; 
+  height: 16px; 
   stroke: #dc2626; 
 }
 
+/* ==========================================================================
+   4. FORM INPUTS, CARDS & BUTTONS
+   ========================================================================== */
 .card {
   background: #ffffff;
   border-radius: 14px;
   padding: 24px;
-  border: 1px solid #cbd5e1;
-  box-shadow: 0 8px 24px rgba(74, 58, 30, 0.08);
+  border: 1px solid var(--border-light);
+  box-shadow: 0 8px 24px var(--theme-glow);
   margin-bottom: 20px;
 }
 
-/* ==========================================================================
-   4. FORM INPUTS & BUTTONS
-   ========================================================================== */
 select, input[type="date"], input[type="text"] {
   padding: 0 14px;
   height: 38px;
   border-radius: 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-light);
   font-size: 13px;
   font-family: 'Roboto', sans-serif;
   background: #ffffff;
-  color: #1e293b;
+  color: var(--text-dark);
   outline: none;
   box-sizing: border-box;
   transition: all 0.2s ease;
 }
 
 select:focus, input[type="date"]:focus, input[type="text"]:focus {
-  border-color: #A66F7A;
-  box-shadow: 0 0 0 2px rgba(166, 111, 122, 0.25);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--theme-glow);
 }
 
 button {
-  background-color: #A66F7A;
+  background-color: var(--primary);
   color: #ffffff !important;
   padding: 8px 16px;
   border-radius: 8px;
@@ -318,11 +392,11 @@ button {
   gap: 6px;
   height: 38px;
   box-sizing: border-box;
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
 
 button:hover:not(:disabled) { 
-  background-color: #955D68;
-  opacity: 1; 
+  background-color: var(--primary-hover);
   transform: translateY(-1px); 
 }
 
@@ -331,18 +405,28 @@ button:disabled {
   cursor: not-allowed; 
 }
 
-.button-small {
-  font-size: 12px !important;
-  padding: 5px 7px !important;
-  background: #ffffff !important;
-  color: #A66F7A !important;
-  border: 1px solid #A66F7A !important;
-  border-radius: 6px !important;
-  cursor: pointer;
-  display: inline-flex !important;
-  margin-left: 6px;
-  height: auto !important;
+.btn-cancel { background: #475569 !important; }
+.btn-confirm { background: #0f766e !important; }
+.btn-slate { background: #64748b !important; }
+.btn-danger { background: #ef4444 !important; }
+
+.text-danger { color: #ef4444 !important; }
+.text-center-cell { text-align: center !important; }
+.badge-wrapper-cell { display: flex; align-items: center; justify-content: center; }
+.status-dropdown-cell-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  height: 32px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
 }
+
+.admin-date-picker { display: inline-block; }
 
 /* ==========================================================================
    5. FILTERS & COUNTER BOX
@@ -352,14 +436,12 @@ button:disabled {
   grid-template-columns: minmax(0, 1fr) 456px;
   align-items: center;
   gap: 16px;
-
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 20px;
   padding: 14px;
-
   background: #f1f5f9;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-light);
   border-radius: 14px;
 }
 
@@ -368,7 +450,6 @@ button:disabled {
   grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: end;
   gap: 10px;
-
   width: 100%;
   min-width: 0;
 }
@@ -378,10 +459,9 @@ button:disabled {
   flex-direction: column;
   gap: 6px;
   min-width: 0;
-
   font-size: 12px;
   font-weight: 600;
-  color: #A66F7A;
+  color: var(--primary);
 }
 
 .filter-item .custom-dropdown,
@@ -395,7 +475,6 @@ button:disabled {
   align-items: stretch;
   justify-content: flex-end;
   gap: 8px;
-
   width: 456px;
   max-width: 100%;
   min-width: 0;
@@ -408,16 +487,14 @@ button:disabled {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
   width: 104px;
   min-width: 0;
   min-height: 86px;
   box-sizing: border-box;
   padding: 8px 4px;
   margin: 0;
-
   background: #fff;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-light);
   border-radius: 11px;
   text-align: center;
 }
@@ -426,15 +503,13 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
-
   width: 100%;
   min-height: 24px;
   margin-bottom: 4px;
-
   font-size: 10px;
   line-height: 1.2;
   font-weight: 700;
-  color: #A66F7A;
+  color: var(--primary);
   text-align: center;
   overflow-wrap: anywhere;
 }
@@ -444,52 +519,21 @@ button:disabled {
   font-size: 18px;
   line-height: 1.2;
   font-weight: 800;
-  color: #dd9787;
+  color: var(--primary-soft);
 }
 
 @media (max-width: 1200px) {
-  .filter-wrapper {
-    grid-template-columns: minmax(0, 1fr);
-  }
-
-  .filter-group {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-
-  .statistik-wrapper {
-    display: flex;
-    justify-content: flex-end;
-    width: 100%;
-  }
-
-  .jumlah-data-box {
-    flex: 1 1 0;
-    width: auto;
-  }
+  .filter-wrapper { grid-template-columns: minmax(0, 1fr); }
+  .filter-group { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .statistik-wrapper { display: flex; justify-content: flex-end; width: 100%; }
+  .jumlah-data-box { flex: 1 1 0; width: auto; }
 }
 
 @media (max-width: 600px) {
-  .filter-wrapper {
-    padding: 12px;
-  }
-
-  .filter-group {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .filter-item {
-    min-width: 0;
-  }
-
-  .statistik-wrapper {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    justify-content: stretch;
-  }
-
-  .jumlah-data-box {
-    width: 100%;
-  }
+  .filter-wrapper { padding: 12px; }
+  .filter-group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .statistik-wrapper { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .jumlah-data-box { width: 100%; }
 }
 
 /* ==========================================================================
@@ -513,20 +557,12 @@ button:disabled {
 
 .table-responsive {
   width: 100%;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-light);
   border-radius: 12px;
   margin-top: 15px;
   background: #ffffff;
-  overflow: hidden;
+  overflow: visible !important;
   box-sizing: border-box;
-}
-
-.table-responsive thead th:first-child {
-  border-top-left-radius: 11px;
-}
-
-.table-responsive thead th:last-child {
-  border-top-right-radius: 11px;
 }
 
 table { 
@@ -542,7 +578,7 @@ th {
   font-size: 12px; 
   font-weight: 600; 
   padding: 12px 10px; 
-  border-bottom: 2px solid #cbd5e1 !important; 
+  border-bottom: 2px solid var(--border-light) !important; 
 }
 
 #tbodySiswa td {
@@ -552,30 +588,20 @@ th {
   vertical-align: middle;
   font-size: 13px !important;
   font-weight: 500 !important;
-  color: #1e293b !important;
+  color: var(--text-dark) !important;
 }
 
-#tbodySiswa td:nth-child(1) {
-  font-weight: 600 !important;
-}
-
-#tbodySiswa tr {
-  position: relative;
-}
+#tbodySiswa td:nth-child(1) { font-weight: 600 !important; }
+#tbodySiswa tr { position: relative; }
 
 #tbodySiswa tr:has(.custom-dropdown.open) {
-  z-index: 9999 !important;
+  z-index: 99999 !important;
   position: relative !important;
 }
 
-tr:nth-child(even) td { 
-  background-color: #f8fafc; 
-}
+tr:nth-child(even) td { background-color: #f8fafc; }
 
-/* ==========================================================================
-   7. INTERACTIVE STATUS CHIPS & CUSTOM DROPDOWN
-   ========================================================================== */
-#tbodySiswa td:nth-child(5) {
+.status-cell-center {
   width: 220px;
   max-width: 220px;
   min-width: 220px;
@@ -584,138 +610,41 @@ tr:nth-child(even) td {
   box-sizing: border-box;
 }
 
-.status-chip,
-.inline-select,
-.status-kosong,
-.status-kosong-cell {
-  width: 208px !important;
-  height: 32px !important;
-  border-radius: 12px !important;
-  font-size: 12.5px !important;
-  box-sizing: border-box !important;
-  margin: 0 auto !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 8px !important;
-}
-
-.status-chip {
+/* ==========================================================================
+   7. STATUS CHIPS & BADGES
+   ========================================================================== */
+.status-badge-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 0 12px;
+  gap: 6px;
+  width: max-content;
+  height: 32px;
+  white-space: nowrap;
+  padding: 6px 14px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  font-weight: 500;
+  box-sizing: border-box;
+  border: 1px solid rgba(0,0,0,0.1);
   cursor: pointer;
   transition: all 0.2s ease;
-  border: 1px solid transparent;
-  user-select: none;
-  white-space: nowrap;
 }
 
-#tbodySiswa .status-chip,
-#tbodySiswa .status-chip span,
-.status-chip span {
-  font-size: 12.5px !important;
-  font-weight: 500 !important;
-  line-height: 1;
-}
-
-.status-chip:hover {
+.status-badge-btn:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-  filter: brightness(0.95);
+  filter: brightness(0.96);
 }
 
-.status-chip svg {
-  flex-shrink: 0 !important;
-  width: 13px;
-  height: 13px;
-  opacity: 0.7;
-  transition: opacity 0.2s;
-}
-
-.status-chip:hover svg {
-  opacity: 1;
-}
-
-.inline-select {
-  display: inline-block;
-  padding: 0 10px 0 14px;
-  border: 1.5px solid #A66F7A;
-  outline: none;
-  background-color: #ffffff;
-  color: #1e293b;
-  cursor: pointer;
-  box-shadow: 0 2px 6px rgba(166, 111, 122, 0.15);
-  text-align: center;
-  text-align-last: center;
-  font-weight: 500 !important;
-}
-
-/* STATUS COLOR PALETTE */
-.status-hadir { 
-  background: #dcfce7 !important; 
-  color: #15803d !important; 
-  border: 1px solid #bbf7d0 !important;
-}
-
-.status-terlambat { 
-  background: #fef9c3 !important; 
-  color: #854d0e !important; 
-  border: 1px solid #fef08a !important;
-}
-
-.status-terlambat-berat { 
-  background: #ffedd5 !important; 
-  color: #9a3412 !important; 
-  border: 1px solid #fed7aa !important;
-}
-
-.status-terlambat-ekstrem,
-.status-alpa { 
-  background: #fecaca !important; 
-  color: #991b1b !important; 
-  border: 1px solid #fca5a5 !important;
-}
-
-.status-sakit { 
-  background: #e0f2fe !important; 
-  color: #0369a1 !important; 
-  border: 1px solid #bae6fd !important;
-}
-
-.status-izin { 
-  background: #f1f5f9 !important; 
-  color: #475569 !important; 
-  border: 1px solid #cbd5e1 !important;
-}
-
-.status-libur,
-.status-prakerin { 
-  background: #e0e7ff !important; 
-  color: #3730a3 !important; 
-  border: 1px solid #c7d2fe !important;
-}
-
-.status-htp { 
-  background: #fef3c7 !important; 
-  color: #92400e !important; 
-  border: 1px solid #fde68a !important;
-}
-
-.status-kosong,
-.status-kosong-cell {
-  background: #fef08a !important; 
-  color: #854d0e !important; 
-  border: 1px solid #fde047 !important;
-  font-weight: 600 !important;
-}
-
-.status-chip svg,
-.status-kosong svg {
-  stroke: currentColor !important;
-}
+.status-hadir { background: #dcfce7 !important; color: #15803d !important; border: 1px solid #bbf7d0 !important; }
+.status-terlambat { background: #fef9c3 !important; color: #854d0e !important; border: 1px solid #fef08a !important; }
+.status-terlambat-berat { background: #ffedd5 !important; color: #9a3412 !important; border: 1px solid #fed7aa !important; }
+.status-terlambat-ekstrem, .status-alpa { background: #fecaca !important; color: #991b1b !important; border: 1px solid #fca5a5 !important; }
+.status-sakit { background: #e0f2fe !important; color: #0369a1 !important; border: 1px solid #bae6fd !important; }
+.status-izin { background: #f1f5f9 !important; color: #475569 !important; border: 1px solid #cbd5e1 !important; }
+.status-libur, .status-prakerin { background: #e0e7ff !important; color: #3730a3 !important; border: 1px solid #c7d2fe !important; }
+.status-htp { background: #fef3c7 !important; color: #92400e !important; border: 1px solid #fde68a !important; }
+.status-kosong { background: #fef08a !important; color: #854d0e !important; border: 1px solid #fde047 !important; font-weight: 600 !important; }
 
 /* ==========================================================================
    8. PAGINATION & FOOTER
@@ -726,10 +655,8 @@ tr:nth-child(even) td {
   align-items: center;
   width: 100%;
   box-sizing: border-box;
-  margin-top: 0;
   padding: 16px 0 0;
   background: #ffffff;
-  border-radius: 0 0 12px 12px;
 }
 
 #pagination {
@@ -738,13 +665,12 @@ tr:nth-child(even) td {
   align-items: center;
   flex-wrap: wrap;
   gap: 4px;
-  max-width: 100%;
 }
 
 #pagination button { 
   background: #f1f5f9 !important; 
   color: #334155 !important; 
-  border: 1px solid #cbd5e1 !important; 
+  border: 1px solid var(--border-light) !important; 
   margin: 2px; 
   padding: 6px 12px !important; 
   border-radius: 8px !important; 
@@ -753,7 +679,7 @@ tr:nth-child(even) td {
 }
 
 #pagination button.active { 
-  background: #A66F7A !important; 
+  background: var(--primary) !important; 
   color: #ffffff !important; 
   font-weight: 600 !important; 
 }
@@ -762,15 +688,14 @@ footer {
   text-align: center; 
   padding: 20px; 
   font-size: 12px; 
-  color: #A66F7A; 
+  color: var(--primary-soft); 
   margin-top: 20px; 
 }
 
 /* ==========================================================================
    9. MODALS, TOASTS & CUSTOM DROPDOWN COMPONENT
    ========================================================================== */
-.modal-overlay,
-#notifModal { 
+.modal-overlay { 
   position: fixed; 
   inset: 0; 
   background: rgba(15, 23, 42, 0.4); 
@@ -783,8 +708,7 @@ footer {
   transition: opacity 0.25s ease; 
 }
 
-.modal-overlay.active,
-#notifModal.active { 
+.modal-overlay.active { 
   opacity: 1; 
   pointer-events: auto; 
 }
@@ -797,9 +721,10 @@ footer {
   text-align: center; 
 }
 
-/* ==========================================================================
-   LOADING OVERLAY MODERN MINIMALIS
-   ========================================================================== */
+.modal-actions { margin-top: 15px; display: flex; gap: 10px; justify-content: center; }
+.notif-modal-stack { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
+
+/* LOADING OVERLAY MODERN MINIMALIS */
 #loadingOverlay {
   display: none;
   position: fixed;
@@ -811,9 +736,7 @@ footer {
   align-items: center;
 }
 
-#loadingOverlay.active {
-  display: flex !important;
-}
+#loadingOverlay.active { display: flex !important; }
 
 #loadingOverlay > div {
   background: #ffffff;
@@ -828,7 +751,6 @@ footer {
   gap: 10px;
 }
 
-/* Container dots */
 .dots {
   display: flex;
   align-items: center;
@@ -837,40 +759,29 @@ footer {
   height: 16px;
 }
 
-/* Base style tiap titik */
 .dots span {
   width: 9px;
   height: 9px;
-  background-color: #A66F7A; /* Warna tema portal */
+  background-color: var(--primary);
   border-radius: 50%;
   display: inline-block;
   animation: geminiPulse 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-/* Staggered delay biar gelombangnya ngalir halus */
-.dots span:nth-child(1) {
-  animation-delay: 0s;
-}
+.dots span:nth-child(1) { animation-delay: 0s; }
+.dots span:nth-child(2) { animation-delay: 0.2s; }
+.dots span:nth-child(3) { animation-delay: 0.4s; }
 
-.dots span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.dots span:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-/* Keyframe Denyut Smooth (Scale + Opacity + Soft Glow) */
 @keyframes geminiPulse {
   0%, 100% {
     transform: scale(0.65);
     opacity: 0.35;
-    box-shadow: 0 0 0 0 rgba(166, 111, 122, 0);
+    box-shadow: 0 0 0 0 rgba(0,0,0,0);
   }
   50% {
     transform: scale(1.15);
     opacity: 1;
-    box-shadow: 0 0 8px rgba(166, 111, 122, 0.4);
+    box-shadow: 0 0 8px var(--theme-glow);
   }
 }
 
@@ -879,18 +790,9 @@ footer {
   font-weight: 500;
   color: #334155;
   font-size: 13px;
-  font-family: 'Roboto', sans-serif;
 }
 
-#toastContainer,
-.toast-container { 
-  position: fixed; 
-  top: 20px; 
-  right: 20px; 
-  z-index: 10000 !important; 
-}
-
-/* Custom Dropdown Styling */
+/* CUSTOM DROPDOWN STYLING */
 .custom-dropdown {
   position: relative;
   width: 100%;
@@ -904,7 +806,7 @@ footer {
   display: inline-flex;
   align-items: center;
   background: #ffffff;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-light);
 }
 
 .dropdown-selected {
@@ -918,7 +820,7 @@ footer {
   box-sizing: border-box;
   font-size: 13px;
   font-weight: 500;
-  color: #1e293b;
+  color: var(--text-dark);
 }
 
 .dropdown-menu {
@@ -926,15 +828,13 @@ footer {
   top: calc(100% + 4px);
   bottom: auto;
   left: 0;
-
   width: 100%;
   min-width: 100%;
   max-width: 100%;
-
   max-height: 250px;
   overflow-y: auto;
   background: #ffffff;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-light);
   border-radius: 12px;
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   display: none;
@@ -943,52 +843,23 @@ footer {
   box-sizing: border-box;
 }
 
-.dropdown-menu::-webkit-scrollbar {
-  width: 5px;
-}
-
-.dropdown-menu::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
-  border-radius: 10px;
-}
-
-.custom-dropdown.open .dropdown-menu {
-  display: flex;
-}
+.custom-dropdown.open .dropdown-menu { display: flex; }
 
 .dropdown-item {
   padding: 9px 14px;
   text-align: left !important;
   font-size: 12.5px;
-  color: #1e293b;
+  color: var(--text-dark);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .dropdown-item:hover {
   background: #f1f5f9;
-  color: #A66F7A;
+  color: var(--primary);
 }
 
-.custom-dropdown.open .dropdown-selected svg {
-  transform: rotate(180deg);
-}
-
-.custom-dropdown.drop-up .dropdown-menu {
-  top: auto !important;
-  bottom: calc(100% + 4px) !important;
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-  z-index: 999999 !important;
-}
-
-.custom-dropdown.drop-up .dropdown-selected svg {
-  transform: rotate(180deg) !important;
-}
-
-.custom-dropdown.drop-up.open .dropdown-selected svg {
-  transform: rotate(0deg) !important;
-}
+.custom-dropdown.open .dropdown-selected svg { transform: rotate(180deg); }
 
 .filter-input-text {
   width: 100%;
@@ -996,62 +867,23 @@ footer {
   height: 38px;
   padding: 0 14px;
   border-radius: 12px !important;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-light);
   background: #ffffff;
   font-size: 13px;
   font-family: 'Roboto', sans-serif;
-  color: #1e293b;
+  color: var(--text-dark);
   box-sizing: border-box;
   outline: none;
   transition: all 0.2s ease;
 }
 
-.filter-input-text:focus,
-input[type="text"]:focus {
-  border-color: #A66F7A;
-  box-shadow: 0 0 0 3px rgba(166, 111, 122, 0.15);
-}
-
-#tbodySiswa .custom-dropdown.drop-up > .dropdown-menu {
-  top: auto !important;
-  bottom: calc(100% + 4px) !important;
-  max-height: 250px !important;
-  overflow-y: auto !important;
-  z-index: 999999 !important;
-}
-
-.status-badge-btn,
-#tbodySiswa .custom-dropdown .dropdown-selected {
-  box-sizing: border-box !important;
-  height: 32px !important;
-  min-height: 32px !important;
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-  line-height: 1.2 !important;
-  vertical-align: middle;
-}
-
-#tbodySiswa td:has(.custom-dropdown),
-#tbodySiswa td:has(.status-badge-btn) {
-  vertical-align: middle;
-}
-
-@keyframes spinSync {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.sync-spinning {
-  animation: spinSync 1s linear infinite;
-  transform-origin: center;
-  flex-shrink: 0;
+.filter-input-text:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--theme-glow);
 }
 
 /* ==========================================================================
-   10. SYNC STATUS PANEL & SPINNER FIX
-   ========================================================================== */
-/* ==========================================================================
-   10. SYNC STATUS PANEL (LAYOUT SEJAJAR HORIZONTAL)
+   10. SYNC STATUS PANEL
    ========================================================================== */
 .sync-status-panel {
   display: inline-flex;
@@ -1077,7 +909,7 @@ input[type="text"]:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px; /* Jarak antara teks Offline & tombol */
+  gap: 8px;
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
@@ -1090,7 +922,6 @@ input[type="text"]:focus {
   flex-shrink: 0;
 }
 
-/* ANIMASI SPINNER MINI SAGE / MERAH */
 .sync-mini-spinner {
   display: inline-block !important;
   width: 13px !important;
@@ -1123,12 +954,6 @@ input[type="text"]:focus {
   white-space: nowrap;
 }
 
-.sync-status-detail:empty::after {
-  content: "\00a0";
-  visibility: hidden;
-}
-
-/* STATE PENDING & SYNCING */
 .sync-status-panel[data-state="pending"],
 .sync-status-panel[data-state="syncing"] {
   border-color: #fecdd3 !important;
@@ -1136,12 +961,6 @@ input[type="text"]:focus {
   color: #9f1239 !important;
 }
 
-.sync-status-panel[data-state="pending"] .sync-status-dot,
-.sync-status-panel[data-state="syncing"] .sync-status-dot {
-  display: none !important;
-}
-
-/* STATE ERROR & OFFLINE */
 .sync-status-panel[data-state="error"],
 .sync-status-panel[data-state="offline"] {
   border-color: #fca5a5 !important;
@@ -1149,42 +968,22 @@ input[type="text"]:focus {
   color: #991b1b !important;
 }
 
-.sync-status-panel[data-state="offline"] .sync-status-dot {
-  display: none !important;
-}
-
-/* TOMBOL KIRIM DATA PENDING (SEJAJAR HORIZONTAL) */
 .sync-retry-button {
   display: none !important;
-  margin: 0 0 0 4px !important; /* Spasi samping agar tidak nempel ke teks Offline */
+  margin: 0 0 0 4px !important;
   padding: 4px 10px !important;
   height: 28px !important;
   border: none;
   border-radius: 6px;
   background: #dc2626;
   color: #ffffff !important;
-  font-family: inherit;
   font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 5px rgba(220, 38, 38, 0.2);
   white-space: nowrap;
 }
 
-.sync-retry-button:hover {
-  background: #b91c1c;
-  transform: translateY(-1px);
-}
-
-/* PAKSA SEMBUNYIKAN KETIKA TERSIMPAN / MENYIMPAN */
-.sync-status-panel[data-state="saved"] #retrySyncButton,
-.sync-status-panel[data-state="syncing"] #retrySyncButton,
-#retrySyncButton[hidden] {
-  display: none !important;
-}
-
-/* TAMPILKAN TOMBOL SAAT ERROR ATAU OFFLINE */
 .sync-status-panel[data-state="error"] #retrySyncButton:not([hidden]),
 .sync-status-panel[data-state="offline"] #retrySyncButton:not([hidden]) {
   display: inline-flex !important;
@@ -1192,16 +991,7 @@ input[type="text"]:focus {
   justify-content: center;
 }
 
-/* SEMBUNYIKAN CAPTION BAWAH SAAT TOMBOL MUNCUL AGAR KARTU TETAP TIPIS */
-.sync-status-panel[data-state="error"]:has(#retrySyncButton:not([hidden])) .sync-status-detail,
-.sync-status-panel[data-state="offline"]:has(#retrySyncButton:not([hidden])) .sync-status-detail {
-  display: none !important;
-}
-
-@keyframes syncRotate {
-  to { transform: rotate(360deg); }
-}
-
+@keyframes syncRotate { to { transform: rotate(360deg); } }
 @keyframes syncOnlinePulse {
   0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
   70% { box-shadow: 0 0 0 5px rgba(34, 197, 94, 0); }
@@ -1209,7 +999,7 @@ input[type="text"]:focus {
 }
 
 /* ==========================================================================
-   11. TOAST NOTIFIKASI MODERN SCANNER
+   11. TOAST NOTIFIKASI MODERN
    ========================================================================== */
 #appToast {
   position: fixed;
@@ -1265,18 +1055,8 @@ input[type="text"]:focus {
   gap: 2px;
 }
 
-.toast-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #1e293b;
-}
-
-.toast-message {
-  font-size: 12px;
-  font-weight: 500;
-  color: #64748b;
-  line-height: 1.35;
-}
+.toast-title { font-size: 13px; font-weight: 700; color: var(--text-dark); }
+.toast-message { font-size: 12px; font-weight: 500; color: #64748b; line-height: 1.35; }
 
 .toast-close-btn {
   background: transparent !important;
@@ -1287,264 +1067,4 @@ input[type="text"]:focus {
   padding: 0 !important;
   height: auto !important;
   line-height: 1 !important;
-}
-
-.toast-close-btn:hover {
-  color: #475569 !important;
-}
-
-/* ==========================================================================
-   FINAL LOGIN ALIGNMENT FIX — logo | divider | title + centered compact button
-   ========================================================================== */
-body.login-body .login-title-row {
-  display: flex !important;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 16px !important;
-  width: 100% !important;
-  margin: 0 0 26px !important;
-  text-align: left !important;
-}
-
-body.login-body .login-title-row .logo {
-  display: block !important;
-  width: 54px !important;
-  height: 54px !important;
-  max-width: 54px !important;
-  max-height: 54px !important;
-  flex: 0 0 54px !important;
-  object-fit: contain !important;
-  margin: 0 !important;
-}
-
-body.login-body .login-title-divider {
-  display: block !important;
-  width: 1px !important;
-  height: 44px !important;
-  flex: 0 0 1px !important;
-  background: #DED2CE !important;
-}
-
-body.login-body .login-title-row .login-heading {
-  flex: 0 1 auto !important;
-  min-width: 0 !important;
-  margin: 0 !important;
-  text-align: left !important;
-}
-
-body.login-body .login-title-row .login-heading h2 {
-  margin: 0 !important;
-  color: #292524 !important;
-  font-size: clamp(20px, 2vw, 27px) !important;
-  line-height: 1.25 !important;
-  text-align: left !important;
-  white-space: normal !important;
-}
-
-body.login-body .login-form {
-  width: 100%;
-}
-
-body.login-body .login-form > .login-btn,
-body.login-body .container-login .login-btn {
-  display: inline-flex !important;
-  width: auto !important;
-  min-width: 120px !important;
-  max-width: 180px !important;
-  justify-self: center !important;
-  align-self: center !important;
-  margin-left: auto !important;
-  margin-right: auto !important;
-  padding: 0 22px !important;
-}
-
-@media (max-width: 820px) {
-  body.login-body .login-title-row {
-    gap: 12px !important;
-  }
-
-  body.login-body .login-title-row .logo {
-    width: 48px !important;
-    height: 48px !important;
-    max-width: 48px !important;
-    max-height: 48px !important;
-    flex-basis: 48px !important;
-  }
-
-  body.login-body .login-title-divider {
-    height: 36px !important;
-  }
-
-  body.login-body .login-title-row .login-heading h2 {
-    font-size: clamp(19px, 4.2vw, 25px) !important;
-  }
-}
-
-
-/* FINAL TWEAK: compact one-line login title + center the entire right panel */
-body.login-body > .container-login > .login-content {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  align-items: stretch !important;
-  align-self: stretch !important;
-  min-height: 100% !important;
-  padding-top: clamp(24px, 3vw, 42px) !important;
-  padding-bottom: clamp(24px, 3vw, 42px) !important;
-}
-
-body.login-body .login-title-row {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 12px !important;
-  width: 100% !important;
-  margin: 0 0 28px !important;
-}
-
-body.login-body .login-title-row .logo {
-  width: 48px !important;
-  height: 48px !important;
-  max-width: 48px !important;
-  max-height: 48px !important;
-  flex: 0 0 48px !important;
-  object-fit: contain !important;
-}
-
-body.login-body .login-title-divider {
-  height: 38px !important;
-  flex: 0 0 1px !important;
-}
-
-body.login-body .login-title-row .login-heading {
-  flex: 0 1 auto !important;
-  min-width: 0 !important;
-}
-
-body.login-body .login-title-row .login-heading h2 {
-  font-size: clamp(18px, 1.65vw, 22px) !important;
-  line-height: 1.2 !important;
-  white-space: nowrap !important;
-  letter-spacing: -0.025em !important;
-  margin: 0 !important;
-}
-
-body.login-body .login-form {
-  width: 100% !important;
-  gap: 13px !important;
-}
-
-body.login-body .login-form > .login-btn {
-  width: auto !important;
-  min-width: 120px !important;
-  max-width: 180px !important;
-  justify-self: center !important;
-  align-self: center !important;
-  margin: 4px auto 0 !important;
-}
-
-body.login-body .login-footer {
-  margin-top: 24px !important;
-}
-
-@media (max-width: 820px) {
-  body.login-body > .container-login > .login-content {
-    min-height: auto !important;
-    padding: 30px clamp(22px, 7vw, 48px) 28px !important;
-  }
-
-  body.login-body .login-title-row {
-    gap: 10px !important;
-    margin-bottom: 24px !important;
-  }
-
-  body.login-body .login-title-row .logo {
-    width: 44px !important;
-    height: 44px !important;
-    flex-basis: 44px !important;
-  }
-
-  body.login-body .login-title-divider {
-    height: 34px !important;
-  }
-
-  body.login-body .login-title-row .login-heading h2 {
-    font-size: clamp(16px, 3.5vw, 21px) !important;
-    white-space: normal !important;
-  }
-}
-
-
-/* ============================================================
-   SISENSI LOGIN — TRUE VERTICAL CENTERING
-   Balance top and bottom whitespace around the right content.
-   ============================================================ */
-body.login-body > .container-login {
-  align-items: stretch !important;
-}
-
-body.login-body > .container-login > .login-content {
-  display: flex !important;
-  flex-direction: column !important;
-  justify-content: center !important;
-  align-items: stretch !important;
-  align-self: stretch !important;
-  height: auto !important;
-  min-height: 425px !important;
-  box-sizing: border-box !important;
-  padding-top: clamp(24px, 3vw, 42px) !important;
-  padding-bottom: clamp(24px, 3vw, 42px) !important;
-}
-
-body.login-body > .container-login > .login-content > .login-title-row {
-  margin-top: 0 !important;
-}
-
-body.login-body > .container-login > .login-content > .login-form {
-  margin-top: 0 !important;
-  margin-bottom: 0 !important;
-}
-
-body.login-body > .container-login > .login-content > .error-msg:empty {
-  display: none !important;
-  min-height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-body.login-body > .container-login > .login-content > .login-footer {
-  margin-bottom: 0 !important;
-}
-
-@media (max-width: 820px) {
-  body.login-body > .container-login > .login-content {
-    min-height: 0 !important;
-    height: auto !important;
-    padding-top: 30px !important;
-    padding-bottom: 30px !important;
-    transform: translateY(10px);
-  }
-}
-
-/* ==========================================================================
-   5. FIX DROPDOWN OVERFLOW & Z-INDEX
-   ========================================================================== */
-.card, 
-.table-responsive {
-  overflow: visible !important;
-}
-
-#tbodySiswa tr:has(.custom-dropdown.open) {
-  z-index: 99999 !important;
-  position: relative !important;
-}
-
-#tbodySiswa td:has(.custom-dropdown.open) {
-  position: relative !important;
-  z-index: 99999 !important;
-}
-
-.custom-dropdown .dropdown-menu {
-  z-index: 999999 !important;
 }
