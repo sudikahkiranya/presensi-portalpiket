@@ -1298,22 +1298,26 @@ async function clearSystemCache() {
     return;
   }
 
-  // Tampilkan loading overlay jika ada
   const loadingOverlay = document.getElementById("loadingOverlay");
   if (loadingOverlay) loadingOverlay.classList.add("active");
 
   try {
-    // 1. POST ke Apps Script
-    const response = await fetch(SCRIPT_URL, {
+    // 💡 Pakai API_URL sesuai variabel konfigurasi kamu
+    const response = await fetch(API_URL, {
       method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      headers: { 
+        "Content-Type": "text/plain;charset=utf-8" 
+      },
       body: JSON.stringify({ action: "clearSystemConfigCache" })
     });
+
+    if (!response.ok) {
+      throw new Error(`HTTP Error Status: ${response.status}`);
+    }
 
     const result = await response.json();
 
     if (result.success) {
-      // 2. Clear Local Storage (Tetap simpan pilihan warna tema user)
       const activeTheme = localStorage.getItem("sisensi_active_theme");
       
       localStorage.clear();
@@ -1323,7 +1327,6 @@ async function clearSystemCache() {
         localStorage.setItem("sisensi_active_theme", activeTheme);
       }
 
-      // 3. Hard Reload Halaman Browser
       window.location.reload(true);
     } else {
       alert("Gagal membersihkan cache server: " + (result.message || "Unknown error"));
@@ -1331,7 +1334,7 @@ async function clearSystemCache() {
     }
   } catch (error) {
     console.error("Error clearing cache:", error);
-    alert("Terjadi kesalahan koneksi saat membersihkan cache server.");
+    alert("Terjadi kesalahan koneksi saat membersihkan cache server. Detail: " + error.message);
     if (loadingOverlay) loadingOverlay.classList.remove("active");
   }
 }
