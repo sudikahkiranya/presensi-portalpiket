@@ -998,7 +998,7 @@ footer {
    CUSTOM DROPDOWN MENU (BEBAS PANAH SCROLLBAR 100%)
    ========================================================================== */
 /* ==========================================================================
-   CUSTOM DROPDOWN MENU (SCROLLBAR & PANAH DIGESER KE DALAM)
+   CUSTOM DROPDOWN MENU (CLIPPING WRAPPER - PANAH TERPOTONG 100%)
    ========================================================================== */
 .dropdown-menu {
   position: absolute;
@@ -1009,54 +1009,73 @@ footer {
   min-width: 100%;
   max-width: 100%;
   max-height: 200px;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
   background: #ffffff;
   border: 1px solid var(--border-light);
   border-radius: 12px;
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
   display: none;
-  flex-direction: column;
   z-index: 99999 !important;
   box-sizing: border-box;
-  padding: 6px 4px 6px 0; /* 💡 Padding kanan memberi jarak aman dari border-radius */
+  
+  /* 💡 UNCI CLIPPER: Potong semua hal yang keluar dari sudut border-radius */
+  overflow: hidden !important;
+  padding: 0;
+}
 
-  /* Firefox */
+.custom-dropdown.open .dropdown-menu { 
+  display: block !important; 
+}
+
+/* CONTAINER SCROLL DI DALAM WRAPPER */
+.dropdown-menu-inner {
+  width: 100%;
+  max-height: 198px;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 5px 0;
+  box-sizing: border-box;
+
+  /* Sembunyikan scrollbar native jika didukung */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
 
-/* 🎯 PAKSA UKURAN SCROLLBAR DAN BERI BORDER TRANSPARAN UNTUK MEMASUKKAN PANAH/TRACK KE DALAM */
-.dropdown-menu::-webkit-scrollbar {
-  width: 12px !important; /* Lebar total termasuk inset offset */
+/* STYLING SCROLLBAR WEBKIT (THUMB TIPIS & TANPA BUTTON) */
+.dropdown-menu-inner::-webkit-scrollbar {
+  width: 5px !important;
 }
 
-.dropdown-menu::-webkit-scrollbar-track {
+.dropdown-menu-inner::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.dropdown-menu-inner::-webkit-scrollbar-track {
   background: transparent !important;
-  border-left: 6px solid transparent !important; /* Push track ke dalam */
-  background-clip: padding-box !important;
-  margin: 8px 0 !important; /* Jarak aman atas-bawah dari lengkungan sudut */
 }
 
-/* STYLING THUMB SCROLLBAR KAPSUL */
-.dropdown-menu::-webkit-scrollbar-thumb {
+.dropdown-menu-inner::-webkit-scrollbar-thumb {
   background: #cbd5e1 !important;
   border-radius: 10px !important;
-  border-left: 6px solid transparent !important; /* Ikut masuk ke dalam */
-  background-clip: padding-box !important;
 }
 
-.dropdown-menu::-webkit-scrollbar-thumb:hover {
+.dropdown-menu-inner::-webkit-scrollbar-thumb:hover {
   background: #94a3b8 !important;
-  background-clip: padding-box !important;
 }
 
-/* 🎯 PANAH NATIVE TETAP KENA OFFSET BORDER TRANSPARAN SEHINGGA IKUT MASUK KE DALAM */
-.dropdown-menu::-webkit-scrollbar-button {
-  background: transparent !important;
-  border-left: 6px solid transparent !important;
-  background-clip: padding-box !important;
-  height: 10px !important;
+.dropdown-item {
+  padding: 9px 14px;
+  text-align: left !important;
+  font-size: 12.5px;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dropdown-item:hover {
+  background: #f1f5f9;
+  color: var(--primary);
 }
 
 .custom-dropdown.open .dropdown-menu { display: flex; }

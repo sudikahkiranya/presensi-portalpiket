@@ -1181,11 +1181,14 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
         <polyline points="6 9 12 15 18 9"></polyline>
       </svg>
     </div>
-    <div class="dropdown-menu"></div>
+    <div class="dropdown-menu">
+      <div class="dropdown-menu-inner"></div>
+    </div>
   `;
 
   const textSpan = containerElement.querySelector(".dropdown-text");
-  const menu = containerElement.querySelector(".dropdown-menu");
+  const menuOuter = containerElement.querySelector(".dropdown-menu");
+  const menuInner = containerElement.querySelector(".dropdown-menu-inner");
   const selectedBox = containerElement.querySelector(".dropdown-selected");
 
   const currentObj = optionsArray.find(opt => opt.value === selectedValue) || optionsArray[0];
@@ -1198,7 +1201,7 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
     div.className = `dropdown-item ${item.class || ""}`;
     div.setAttribute("data-value", item.value);
     div.innerText = item.label;
-    menu.appendChild(div);
+    menuInner.appendChild(div);
   });
 
   selectedBox.onclick = function(e) {
@@ -1210,7 +1213,7 @@ function createCustomDropdown(containerElement, optionsArray, selectedValue, onS
     openCustomDropdown(containerElement);
   };
 
-  menu.onclick = function(e) {
+  menuOuter.onclick = function(e) {
     e.stopPropagation();
     const item = e.target.closest(".dropdown-item");
     if (!item) return;
