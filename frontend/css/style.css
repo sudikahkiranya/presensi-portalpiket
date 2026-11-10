@@ -1078,7 +1078,7 @@ footer {
 }
 
 /* ==========================================================================
-   12. LOGIN PAGE STYLES (THEMED & ORNAMENTED)
+   12. LOGIN PAGE STYLES (THEMED & BULATAN BACKGROUND ORNAMEN)
    ========================================================================== */
 body.login-body {
   margin: 0;
@@ -1092,11 +1092,11 @@ body.login-body {
   color: var(--text-dark);
   background: var(--bg-page);
   position: relative;
-  overflow-x: hidden;
+  overflow: hidden;
   transition: background 0.3s ease;
 }
 
-/* ORNAMEN SETENGAH BULATAN BACKGROUND (NGIKUTIN PALET TEMA) */
+/* ORNAMEN SETENGAH BULATAN BACKGROUND (SERAGAM SCANNER & NGikutin PALET) */
 body.login-body::before,
 body.login-body::after {
   content: "";
@@ -1104,27 +1104,25 @@ body.login-body::after {
   border-radius: 50%;
   pointer-events: none;
   z-index: 0;
+  background: var(--primary);
+  opacity: 0.12;
   transition: background 0.3s ease, opacity 0.3s ease;
 }
 
 /* Bulatan Kanan Atas */
 body.login-body::before {
-  width: 320px;
-  height: 320px;
-  top: -120px;
-  right: -120px;
-  background: radial-gradient(circle, var(--theme-glow) 0%, rgba(255,255,255,0) 70%);
-  opacity: 0.85;
+  width: 380px;
+  height: 380px;
+  top: -150px;
+  right: -150px;
 }
 
 /* Bulatan Kiri Bawah */
 body.login-body::after {
-  width: 420px;
-  height: 420px;
-  bottom: -160px;
-  left: -160px;
-  background: radial-gradient(circle, var(--theme-glow) 0%, rgba(255,255,255,0) 70%);
-  opacity: 0.85;
+  width: 450px;
+  height: 450px;
+  bottom: -180px;
+  left: -180px;
 }
 
 body.login-body * { box-sizing: border-box; }
@@ -1205,7 +1203,6 @@ body.login-body > .container-login {
   min-width: 0;
 }
 
-/* LOGO SEKOLAH (DIBESARKAN) */
 .login-title-row {
   display: flex;
   flex-direction: column;
@@ -1219,17 +1216,16 @@ body.login-body > .container-login {
   display: block;
   width: auto;
   height: auto;
-  max-height: 76px; /* Dibesarkan dari 62px */
+  max-height: 76px;
   object-fit: contain;
   margin: 0 auto;
 }
 
-/* JUDUL PORTAL PRESENSI PIKET (DIKECILKAN DIKIT) */
 .login-heading { text-align: center; }
 .login-heading h2 {
   margin: 0;
   color: var(--text-dark);
-  font-size: 21px; /* Dikecilkan dari 30px */
+  font-size: 21px;
   line-height: 1.3;
   font-weight: 700;
   letter-spacing: -.02em;
@@ -1264,7 +1260,6 @@ body.login-body > .container-login {
   background: #fff; 
 }
 
-/* IKON SHOW/HIDE PASSWORD (DIKECILKAN BIAR PAS) */
 .password-toggle {
   position: absolute !important; right: 10px !important; top: 50% !important;
   transform: translateY(-50%) !important; display: inline-flex !important;
@@ -1277,7 +1272,7 @@ body.login-body > .container-login {
 }
 
 .password-toggle svg {
-  width: 16px !important; /* Ukuran icon diperkecil ke 16px */
+  width: 16px !important;
   height: 16px !important;
 }
 
@@ -1286,11 +1281,10 @@ body.login-body > .container-login {
   color: var(--primary) !important;
 }
 
-/* TOMBOL MASUK (ALIGN CENTER PERFECT) */
 .container-login .login-btn {
   width: 100%;
   max-width: 170px;
-  margin: 10px auto 0 auto; /* Margin auto kiri & kanan = Center! */
+  margin: 10px auto 0 auto;
   padding: 0 20px;
   height: 42px;
   min-height: 42px;
