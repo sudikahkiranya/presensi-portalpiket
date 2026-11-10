@@ -888,7 +888,7 @@ footer {
 .modal-actions { margin-top: 15px; display: flex; gap: 10px; justify-content: center; }
 .notif-modal-stack { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
 
-/* LOADING OVERLAY MODERN MINIMALIS */
+/* LOADING OVERLAY MODERN MINIMALIS (DOTS ENGINE) */
 #loadingOverlay {
   display: none;
   position: fixed;
@@ -971,6 +971,7 @@ footer {
   align-items: center;
   background: #ffffff;
   border: 1px solid var(--border-light);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .dropdown-selected {
@@ -987,8 +988,14 @@ footer {
   color: var(--text-dark);
 }
 
+/* 💡 DITAMBAHKAN: ANIMASI ROTASI CHEVRON BIAR SMOOTH */
+.dropdown-selected svg {
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
 /* ==========================================================================
-   CUSTOM DROPDOWN MENU (HAPUS ARROW PANAH 100% TANPA SISA)
+   CUSTOM DROPDOWN MENU (BEBAS PANAH SCROLLBAR 100%)
    ========================================================================== */
 .dropdown-menu {
   position: absolute;
@@ -998,57 +1005,56 @@ footer {
   width: 100%;
   min-width: 100%;
   max-width: 100%;
-  max-height: 220px;
-  overflow-y: auto;
+  max-height: 200px;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
   background: #ffffff;
   border: 1px solid var(--border-light);
   border-radius: 12px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
   display: none;
   flex-direction: column;
   z-index: 99999 !important;
   box-sizing: border-box;
-  padding: 6px 0;
-  
-  /* Hilangkan scrollbar panah di Firefox & Chromium */
+  padding: 5px 0;
+
+  /* Untuk Firefox */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
 
-/* 1. SELEKTOR UTAMA HILANGKAN PANAH ARROW SCROLLBAR (CHROME / EDGE / SAFARI) */
-.dropdown-menu::-webkit-scrollbar-button {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  -webkit-appearance: none !important;
-}
-
-.dropdown-menu::-webkit-scrollbar-button:start:decrement,
-.dropdown-menu::-webkit-scrollbar-button:end:increment,
-.dropdown-menu::-webkit-scrollbar-button:vertical:start:decrement,
-.dropdown-menu::-webkit-scrollbar-button:vertical:end:increment {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-}
-
-/* 2. TRACK SCROLLBAR DENGAN MARGIN SUPAYA BORDER-RADIUS RADIUS TIDAK DITABRAK */
+/* WEBKIT ENGINE (CHROME / EDGE / SAFARI / OPERA) */
 .dropdown-menu::-webkit-scrollbar {
-  width: 5px;
+  width: 6px !important;
+  height: 0px !important;
 }
 
+/* HAPUS TOTAL TOMBOL ARROW NATIVE */
+.dropdown-menu::-webkit-scrollbar-button,
+.dropdown-menu::-webkit-scrollbar-button:single-button,
+.dropdown-menu::-webkit-scrollbar-button:vertical:decrement,
+.dropdown-menu::-webkit-scrollbar-button:vertical:increment,
+.dropdown-menu::-webkit-scrollbar-button:start:decrement,
+.dropdown-menu::-webkit-scrollbar-button:end:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* TRACK & THUMB SCROLLBAR MELAYANG */
 .dropdown-menu::-webkit-scrollbar-track {
-  background: transparent;
-  margin: 6px 0; /* Jarak aman dari ujung sudut border-radius */
+  background: transparent !important;
+  margin: 6px 0 !important;
 }
 
 .dropdown-menu::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
+  background: #cbd5e1 !important;
+  border-radius: 10px !important;
 }
 
 .dropdown-menu::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #94a3b8 !important;
 }
 
 .custom-dropdown.open .dropdown-menu { display: flex; }
