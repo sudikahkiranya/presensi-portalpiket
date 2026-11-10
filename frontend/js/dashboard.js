@@ -106,8 +106,12 @@ function toggleThemePopover(event) {
 
 function selectTheme(themeName, isUserAction = true) {
   const cleanTheme = String(themeName).toLowerCase();
+  
+  // Tempel atribut ke <html> dan <body> agar zero-flash 100% bekerja sempurna
+  document.documentElement.setAttribute("data-theme", cleanTheme);
   document.body.setAttribute("data-theme", cleanTheme);
 
+  // Update State Swatch
   document.querySelectorAll(".color-swatch").forEach(swatch => {
     swatch.classList.toggle("active", swatch.dataset.theme === cleanTheme);
   });

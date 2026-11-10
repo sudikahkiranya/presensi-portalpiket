@@ -1,8 +1,9 @@
 /* ==========================================================================
-   1. COLOR PALETTE ENGINE & CSS VARIABLES (THEMATIC & DYNAMIC)
+   1. COLOR PALETTE ENGINE & CSS VARIABLES (SUPPORT ZERO-FLASH)
    ========================================================================== */
-:root {
-  /* Default Theme: Burgundy */
+:root,
+html[data-theme="burgundy"],
+body[data-theme="burgundy"] {
   --theme-glow-rgb: 130, 70, 83;
   --theme-glow: rgba(var(--theme-glow-rgb), 0.18);
   --primary: #824653;
@@ -13,6 +14,7 @@
   --border-light: #cbd5e1;
 }
 
+html[data-theme="green"],
 body[data-theme="green"] {
   --theme-glow-rgb: 16, 185, 129;
   --primary: #059669;
@@ -21,6 +23,7 @@ body[data-theme="green"] {
   --bg-page: #f0fdf4;
 }
 
+html[data-theme="blue"],
 body[data-theme="blue"] {
   --theme-glow-rgb: 37, 99, 235;
   --primary: #2563eb;
@@ -29,6 +32,7 @@ body[data-theme="blue"] {
   --bg-page: #eff6ff;
 }
 
+html[data-theme="orange"],
 body[data-theme="orange"] {
   --theme-glow-rgb: 234, 88, 12;
   --primary: #ea580c;
@@ -37,6 +41,7 @@ body[data-theme="orange"] {
   --bg-page: #fff7ed;
 }
 
+html[data-theme="purple"],
 body[data-theme="purple"] {
   --theme-glow-rgb: 147, 51, 234;
   --primary: #9333ea;
@@ -45,6 +50,7 @@ body[data-theme="purple"] {
   --bg-page: #faf5ff;
 }
 
+html[data-theme="gold"],
 body[data-theme="gold"] {
   --theme-glow-rgb: 217, 119, 6;
   --primary: #d97706;
@@ -53,6 +59,7 @@ body[data-theme="gold"] {
   --bg-page: #fffbeb;
 }
 
+html[data-theme="black"],
 body[data-theme="black"] {
   --theme-glow-rgb: 30, 41, 59;
   --primary: #0f172a;
@@ -61,6 +68,7 @@ body[data-theme="black"] {
   --bg-page: #f8fafc;
 }
 
+html[data-theme="white"],
 body[data-theme="white"] {
   --theme-glow-rgb: 100, 116, 139;
   --primary: #475569;

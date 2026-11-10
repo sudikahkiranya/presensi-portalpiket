@@ -26,6 +26,25 @@
     })();
   </script>
 
+  <script>
+    (function() {
+      // Setel tema instan ke <html> sebelum CSS dirender
+      const savedTheme = localStorage.getItem("sisensi_active_theme") || "burgundy";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+
+      // Cek sesi user instan
+      const user = localStorage.getItem("piket_user");
+      if (!user) {
+        window.location.replace("/");
+      } else {
+        document.addEventListener("DOMContentLoaded", function() {
+          const antiFlash = document.getElementById("antiFlashStyle");
+          if (antiFlash) antiFlash.remove();
+        });
+      }
+    })();
+  </script>
+
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
