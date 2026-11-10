@@ -956,7 +956,9 @@ footer {
   font-size: 13px;
 }
 
-/* CUSTOM DROPDOWN STYLING */
+/* ==========================================================================
+   CUSTOM DROPDOWN
+   ========================================================================== */
 .custom-dropdown {
   position: relative;
   width: 100%;
@@ -973,7 +975,7 @@ footer {
   border: 1px solid var(--border-light);
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-
+ 
 .dropdown-selected {
   width: 100%;
   height: 100%;
@@ -987,18 +989,19 @@ footer {
   font-weight: 500;
   color: var(--text-dark);
 }
-
-/* 💡 DITAMBAHKAN: ANIMASI ROTASI CHEVRON BIAR SMOOTH */
+ 
+/* Animasi rotasi chevron */
 .dropdown-selected svg {
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
 }
-
+ 
+.custom-dropdown.open .dropdown-selected svg {
+  transform: rotate(180deg);
+}
+ 
 /* ==========================================================================
-   CUSTOM DROPDOWN MENU (BEBAS PANAH SCROLLBAR 100%)
-   ========================================================================== */
-/* ==========================================================================
-   CUSTOM DROPDOWN MENU (CLIPPING WRAPPER - PANAH TERPOTONG 100%)
+   DROPDOWN MENU (OUTER = CLIPPER MELENGKUNG)
    ========================================================================== */
 .dropdown-menu {
   position: absolute;
@@ -1014,94 +1017,89 @@ footer {
   border-radius: 12px;
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
   display: none;
-  z-index: 99999 !important;
+  z-index: 99999;
   box-sizing: border-box;
-  
-  /* 💡 UNCI CLIPPER: Potong semua hal yang keluar dari sudut border-radius */
-  overflow: hidden !important;
+  overflow: hidden;   /* potong apapun yang keluar dari lengkungan */
   padding: 0;
 }
-
-.custom-dropdown.open .dropdown-menu { 
-  display: block !important; 
+ 
+.custom-dropdown.open .dropdown-menu {
+  display: block;
 }
-
-/* CONTAINER SCROLL DI DALAM WRAPPER */
+ 
+/* ==========================================================================
+   INNER = AREA SCROLL
+   JANGAN pakai scrollbar-width / scrollbar-color di sini, karena Chrome baru
+   akan mengabaikan semua aturan ::-webkit-scrollbar (panah muncul lagi).
+   ========================================================================== */
 .dropdown-menu-inner {
   width: 100%;
   max-height: 198px;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 5px 0;
   box-sizing: border-box;
-
-  /* Sembunyikan scrollbar native jika didukung */
-  scrollbar-width: thin;
-  scrollbar-color: #cbd5e1 transparent;
 }
-
-/* STYLING SCROLLBAR WEBKIT (THUMB TIPIS & TANPA BUTTON) */
+ 
+/* Scrollbar tipis tanpa tombol panah (Chrome / Edge / Safari) */
 .dropdown-menu-inner::-webkit-scrollbar {
-  width: 5px !important;
+  width: 5px;
 }
-
+ 
 .dropdown-menu-inner::-webkit-scrollbar-button {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
+  display: none;
+  width: 0;
+  height: 0;
 }
-
+ 
 .dropdown-menu-inner::-webkit-scrollbar-track {
-  background: transparent !important;
+  background: transparent;
+  margin: 8px 0;   /* thumb berhenti sebelum area lengkung; naikkan kalau masih nabrak */
 }
-
+ 
 .dropdown-menu-inner::-webkit-scrollbar-thumb {
-  background: #cbd5e1 !important;
-  border-radius: 10px !important;
+  background: #cbd5e1;
+  border-radius: 10px;
 }
-
+ 
 .dropdown-menu-inner::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8 !important;
+  background: #94a3b8;
 }
-
+ 
+/* Firefox (scrollbar thin-nya memang tanpa panah) */
+@supports not selector(::-webkit-scrollbar) {
+  .dropdown-menu-inner {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+  }
+}
+ 
+/* ==========================================================================
+   ITEM
+   ========================================================================== */
 .dropdown-item {
   padding: 9px 14px;
-  text-align: left !important;
+  text-align: left;
   font-size: 12.5px;
   color: var(--text-dark);
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
 }
-
+ 
 .dropdown-item:hover {
   background: #f1f5f9;
   color: var(--primary);
 }
-
-.custom-dropdown.open .dropdown-menu { display: flex; }
-
-.dropdown-item {
-  padding: 9px 14px;
-  text-align: left !important;
-  font-size: 12.5px;
-  color: var(--text-dark);
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.dropdown-item:hover {
-  background: #f1f5f9;
-  color: var(--primary);
-}
-
-.custom-dropdown.open .dropdown-selected svg { transform: rotate(180deg); }
-
+ 
+/* ==========================================================================
+   FILTER INPUT TEXT
+   ========================================================================== */
 .filter-input-text {
   width: 100%;
   min-width: 180px;
   height: 38px;
   padding: 0 14px;
-  border-radius: 12px !important;
+  border-radius: 12px;
   border: 1px solid var(--border-light);
   background: #ffffff;
   font-size: 13px;
@@ -1111,7 +1109,7 @@ footer {
   outline: none;
   transition: all 0.2s ease;
 }
-
+ 
 .filter-input-text:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--theme-glow);
