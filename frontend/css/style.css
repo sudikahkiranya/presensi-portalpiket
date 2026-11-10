@@ -987,6 +987,9 @@ footer {
   color: var(--text-dark);
 }
 
+/* ==========================================================================
+   CUSTOM DROPDOWN MENU (SCROLLBAR CLEAN TANPA ARROW PANAH)
+   ========================================================================== */
 .dropdown-menu {
   position: absolute;
   top: calc(100% + 4px);
@@ -1005,33 +1008,37 @@ footer {
   flex-direction: column;
   z-index: 99999 !important;
   box-sizing: border-box;
-  padding: 4px 0;
+  padding: 6px 0;
   
-  /* Hilangkan panah scrollbar bawaan di browser Firefox */
+  /* Firefox */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
 
-/* HILANGKAN ARROW PANAH JADUL DI WEBKIT (CHROME/EDGE/SAFARI) */
-.dropdown-menu::-webkit-scrollbar-button {
+/* 💡 HILANGKAN TOTAL ARROW PANAH ATAS & BAWAH DI CHROME/EDGE/SAFARI */
+.dropdown-menu::-webkit-scrollbar-button,
+.dropdown-menu::-webkit-scrollbar-button:single-button,
+.dropdown-menu::-webkit-scrollbar-button:vertical:decrement,
+.dropdown-menu::-webkit-scrollbar-button:vertical:increment {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
+  background: transparent !important;
 }
 
-/* THUMB SCROLLBAR TIPIS MODERN & FLUID */
+/* TRACK SCROLLBAR DENGAN MARGIN BIAR BORDER RADIUS ATAS-BAWAH TETAP MULUS */
 .dropdown-menu::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
 }
 
 .dropdown-menu::-webkit-scrollbar-track {
   background: transparent;
-  margin: 6px 0; /* Memberi jarak agar thumb tidak menabrak sudut border-radius */
+  margin: 6px 0; /* Memberi ruang di ujung atas & bawah agar thumb melengkung rapi */
 }
 
 .dropdown-menu::-webkit-scrollbar-thumb {
   background: #cbd5e1;
-  border-radius: 20px;
+  border-radius: 10px;
 }
 
 .dropdown-menu::-webkit-scrollbar-thumb:hover {
