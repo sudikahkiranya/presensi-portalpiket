@@ -757,6 +757,23 @@ tr:nth-child(even) td { background-color: #f8fafc; }
   box-sizing: border-box;
 }
 
+th:first-child {
+  border-top-left-radius: 11px;
+}
+
+th:last-child {
+  border-top-right-radius: 11px;
+}
+
+/* LENGKUNGKAN KIRI BAWAH DAN KANAN BAWAH UNTUK BARIS TERAKHIR (JIKA ADA DATA) */
+#tbodySiswa tr:last-child td:first-child {
+  border-bottom-left-radius: 11px;
+}
+
+#tbodySiswa tr:last-child td:last-child {
+  border-bottom-right-radius: 11px;
+}
+
 /* ==========================================================================
    7. STATUS CHIPS & BADGES
    ========================================================================== */
@@ -978,16 +995,47 @@ footer {
   width: 100%;
   min-width: 100%;
   max-width: 100%;
-  max-height: 250px;
+  max-height: 220px;
   overflow-y: auto;
   background: #ffffff;
   border: 1px solid var(--border-light);
   border-radius: 12px;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
   display: none;
   flex-direction: column;
   z-index: 99999 !important;
   box-sizing: border-box;
+  padding: 4px 0;
+  
+  /* Hilangkan panah scrollbar bawaan di browser Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* HILANGKAN ARROW PANAH JADUL DI WEBKIT (CHROME/EDGE/SAFARI) */
+.dropdown-menu::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* THUMB SCROLLBAR TIPIS MODERN & FLUID */
+.dropdown-menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 6px 0; /* Memberi jarak agar thumb tidak menabrak sudut border-radius */
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 20px;
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .custom-dropdown.open .dropdown-menu { display: flex; }
