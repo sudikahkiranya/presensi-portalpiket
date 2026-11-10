@@ -1,5 +1,10 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbxR0bwVJCXQY5DQKawqOBQO6vNwU8UMFLJ3AuBytSRgQR3TW9rJZ0r58JGkL2u_HxYMhw/exec";
 
+(function initLoginTheme() {
+  const savedTheme = localStorage.getItem("sisensi_active_theme") || "burgundy";
+  document.body.setAttribute("data-theme", savedTheme);
+})();
+
 function showLoading(text = "Memproses...") {
   const el = document.getElementById("loadingOverlay");
   const label = document.getElementById("loadingText");
