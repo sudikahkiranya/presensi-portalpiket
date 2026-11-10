@@ -1293,6 +1293,49 @@ function openCustomDropdown(dropdown) {
   menu.style.setProperty("overflow-y", "auto", "important");
 }
 
+async function clearSystemCache() {
+  if (!confirm("Bersihkan cache konfigurasi server dan browser, lalu muat ulang halaman?")) {
+    return;
+  }
+
+  // Tampilkan loading overlay jika ada
+  const loadingOverlay = document.getElementById("loadingOverlay");
+  if (loadingOverlay) loadingOverlay.classList.add("active");
+
+  try {
+    // 1. POST ke Apps Script
+    const response = await fetch(SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ action: "clearSystemConfigCache" })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      // 2. Clear Local Storage (Tetap simpan pilihan warna tema user)
+      const activeTheme = localStorage.getItem("sisensi_active_theme");
+      
+      localStorage.clear();
+      sessionStorage.clear();
+
+      if (activeTheme) {
+        localStorage.setItem("sisensi_active_theme", activeTheme);
+      }
+
+      // 3. Hard Reload Halaman Browser
+      window.location.reload(true);
+    } else {
+      alert("Gagal membersihkan cache server: " + (result.message || "Unknown error"));
+      if (loadingOverlay) loadingOverlay.classList.remove("active");
+    }
+  } catch (error) {
+    console.error("Error clearing cache:", error);
+    alert("Terjadi kesalahan koneksi saat membersihkan cache server.");
+    if (loadingOverlay) loadingOverlay.classList.remove("active");
+  }
+}
+
 document.addEventListener("click", function(e) {
   if (e.target.closest(".custom-dropdown")) return;
   document.querySelectorAll(".custom-dropdown.open").forEach(function(el) {

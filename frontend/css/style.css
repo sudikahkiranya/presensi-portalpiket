@@ -196,6 +196,7 @@ main {
   gap: 12px;
 }
 
+/* FIX ANOMALI HOVER JITTER ON ICON BUTTONS */
 .header-icon-btn {
   width: 40px !important;
   height: 40px !important;
@@ -204,19 +205,130 @@ main {
   background: #ffffff !important;
   border: none !important;
   cursor: pointer;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   box-shadow: 0 2px 8px rgba(0,0,0,0.1) !important;
   color: var(--primary) !important;
-  font-size: 16px;
-  transition: transform 0.2s ease, background 0.2s ease !important;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.2s ease !important;
   flex-shrink: 0;
+  transform-origin: center center;
+  backface-visibility: hidden;
+  will-change: transform;
 }
 
 .header-icon-btn:hover {
-  transform: scale(1.06) !important;
+  transform: scale(1.08) translateZ(0) !important;
   background: #ffffff !important;
+}
+
+/* MENJAGA POSISI SVG TETAP PRESISI DI TENGAH */
+.header-icon-btn svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+  pointer-events: none;
+  transform: translateZ(0);
+}
+
+/* USER PROFILE DROPDOWN COMPACT */
+.profile-popover {
+  width: 250px;
+  padding: 14px;
+}
+
+.profile-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.profile-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.profile-role {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--primary-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+.profile-action-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* BUTTON ACTION UTILITAS (CLEAR CACHE & LOGOUT) */
+.profile-action-btn {
+  width: 34px !important;
+  height: 34px !important;
+  min-width: 34px !important;
+  padding: 0 !important;
+  border-radius: 9px !important;
+  cursor: pointer;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0;
+  transition: all 0.2s ease !important;
+  border: 1px solid transparent !important;
+}
+
+/* TOMBOL CLEAR CACHE (AMBER/GOLD) */
+.profile-action-btn.btn-clear-cache {
+  background: #fffbeb !important;
+  color: #d97706 !important;
+  border-color: #fde68a !important;
+}
+
+.profile-action-btn.btn-clear-cache:hover {
+  background: #d97706 !important;
+  color: #ffffff !important;
+  border-color: #d97706 !important;
+  transform: scale(1.06) !important;
+}
+
+/* TOMBOL LOGOUT (RED) */
+.profile-action-btn.btn-logout {
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border-color: #fecaca !important;
+}
+
+.profile-action-btn.btn-logout:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+  transform: scale(1.06) !important;
+}
+
+.profile-action-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  display: block;
 }
 
 /* ==========================================================================
