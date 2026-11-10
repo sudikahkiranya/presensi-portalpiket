@@ -988,7 +988,7 @@ footer {
 }
 
 /* ==========================================================================
-   CUSTOM DROPDOWN MENU (SCROLLBAR CLEAN TANPA ARROW PANAH)
+   CUSTOM DROPDOWN MENU (HAPUS ARROW PANAH 100% TANPA SISA)
    ========================================================================== */
 .dropdown-menu {
   position: absolute;
@@ -1010,30 +1010,36 @@ footer {
   box-sizing: border-box;
   padding: 6px 0;
   
-  /* Firefox */
+  /* Hilangkan scrollbar panah di Firefox & Chromium */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
 
-/* 💡 HILANGKAN TOTAL ARROW PANAH ATAS & BAWAH DI CHROME/EDGE/SAFARI */
-.dropdown-menu::-webkit-scrollbar-button,
-.dropdown-menu::-webkit-scrollbar-button:single-button,
-.dropdown-menu::-webkit-scrollbar-button:vertical:decrement,
-.dropdown-menu::-webkit-scrollbar-button:vertical:increment {
+/* 1. SELEKTOR UTAMA HILANGKAN PANAH ARROW SCROLLBAR (CHROME / EDGE / SAFARI) */
+.dropdown-menu::-webkit-scrollbar-button {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
-  background: transparent !important;
+  -webkit-appearance: none !important;
 }
 
-/* TRACK SCROLLBAR DENGAN MARGIN BIAR BORDER RADIUS ATAS-BAWAH TETAP MULUS */
+.dropdown-menu::-webkit-scrollbar-button:start:decrement,
+.dropdown-menu::-webkit-scrollbar-button:end:increment,
+.dropdown-menu::-webkit-scrollbar-button:vertical:start:decrement,
+.dropdown-menu::-webkit-scrollbar-button:vertical:end:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* 2. TRACK SCROLLBAR DENGAN MARGIN SUPAYA BORDER-RADIUS RADIUS TIDAK DITABRAK */
 .dropdown-menu::-webkit-scrollbar {
   width: 5px;
 }
 
 .dropdown-menu::-webkit-scrollbar-track {
   background: transparent;
-  margin: 6px 0; /* Memberi ruang di ujung atas & bawah agar thumb melengkung rapi */
+  margin: 6px 0; /* Jarak aman dari ujung sudut border-radius */
 }
 
 .dropdown-menu::-webkit-scrollbar-thumb {
