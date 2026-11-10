@@ -296,61 +296,76 @@ main {
 .blackswatch { background: #0f172a !important; }
 .whiteswatch { background: #94a3b8 !important; }
 
-/* USER PROFILE DROPDOWN STYLES */
+/* USER PROFILE DROPDOWN COMPACT (LOGOUT SEBELAH NAMA) */
 .profile-popover {
-  width: 220px;
-  padding: 16px;
+  width: 240px;
+  padding: 14px;
 }
 
-.profile-popover-user {
-  text-align: left;
+.profile-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.profile-info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
 }
 
 .profile-name {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 700;
   color: var(--text-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
 .profile-role {
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
   color: var(--primary-soft);
-  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
 }
 
-.profile-popover-divider {
-  height: 1px;
-  background: #e2e8f0;
-  margin: 12px 0;
-}
-
-.profile-logout-item {
-  width: 100% !important;
+.profile-logout-btn {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  padding: 0 !important;
+  border-radius: 10px !important;
   background: #fef2f2 !important;
   color: #dc2626 !important;
   border: 1px solid #fecaca !important;
-  border-radius: 10px !important;
-  padding: 8px 12px !important;
-  font-size: 12.5px !important;
-  font-weight: 600 !important;
   cursor: pointer;
-  display: flex !important;
+  display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 8px !important;
-  height: 36px !important;
-  transition: background 0.2s ease !important;
+  flex-shrink: 0;
+  transition: all 0.2s ease !important;
 }
 
-.profile-logout-item:hover {
-  background: #fee2e2 !important;
+.profile-logout-btn:hover {
+  background: #dc2626 !important;
+  color: #ffffff !important;
+  border-color: #dc2626 !important;
+  transform: scale(1.05) translateY(0) !important;
 }
 
-.logout-icon { 
-  width: 16px; 
-  height: 16px; 
-  stroke: #dc2626; 
+.profile-logout-btn svg {
+  width: 17px;
+  height: 17px;
+  stroke: currentColor;
+  transition: stroke 0.2s ease;
 }
 
 /* ==========================================================================
