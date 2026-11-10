@@ -1078,7 +1078,7 @@ footer {
 }
 
 /* ==========================================================================
-   12. LOGIN PAGE STYLES (THEMED & BULATAN BACKGROUND ORNAMEN)
+   12. LOGIN PAGE STYLES (ORNAMEN BULATAN BACKGROUND EXPORT SCANNER)
    ========================================================================== */
 body.login-body {
   margin: 0;
@@ -1090,39 +1090,21 @@ body.login-body {
   justify-content: center;
   font-family: 'Poppins', sans-serif;
   color: var(--text-dark);
-  background: var(--bg-page);
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
   transition: background 0.3s ease;
+
+  /* 🎯 BULATAN BACKGROUND PRESISI (DIAMBIL LANGSUNG DARI ENGINE APP SCANNER) */
+  background:
+    radial-gradient(circle at 100% 0%, rgba(var(--theme-glow-rgb),.16) 0 120px, transparent 121px),
+    radial-gradient(circle at 0% 100%, rgba(var(--theme-glow-rgb),.10) 0 150px, transparent 151px),
+    linear-gradient(135deg, var(--bg-page) 0%, #ffffff 55%, var(--bg-page) 100%) !important;
 }
 
-/* ORNAMEN SETENGAH BULATAN BACKGROUND (SERAGAM SCANNER & NGikutin PALET) */
+/* Hapus elemen pseudoelement bulatan lama agar tidak bentrok */
 body.login-body::before,
 body.login-body::after {
-  content: "";
-  position: fixed;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-  background: var(--primary);
-  opacity: 0.12;
-  transition: background 0.3s ease, opacity 0.3s ease;
-}
-
-/* Bulatan Kanan Atas */
-body.login-body::before {
-  width: 380px;
-  height: 380px;
-  top: -150px;
-  right: -150px;
-}
-
-/* Bulatan Kiri Bawah */
-body.login-body::after {
-  width: 450px;
-  height: 450px;
-  bottom: -180px;
-  left: -180px;
+  display: none !important;
 }
 
 body.login-body * { box-sizing: border-box; }
@@ -1141,7 +1123,7 @@ body.login-body > .container-login {
   margin: auto;
   border: 1px solid var(--border-light);
   border-radius: 26px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.97);
   box-shadow: 0 24px 70px var(--theme-glow);
   transition: box-shadow 0.3s ease;
 }
