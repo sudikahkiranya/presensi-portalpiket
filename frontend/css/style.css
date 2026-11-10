@@ -1078,7 +1078,7 @@ footer {
 }
 
 /* ==========================================================================
-   12. LOGIN PAGE STYLES (THEMED & DINAMIS)
+   12. LOGIN PAGE STYLES (THEMED & ORNAMENTED)
    ========================================================================== */
 body.login-body {
   margin: 0;
@@ -1091,12 +1091,47 @@ body.login-body {
   font-family: 'Poppins', sans-serif;
   color: var(--text-dark);
   background: var(--bg-page);
+  position: relative;
+  overflow-x: hidden;
   transition: background 0.3s ease;
+}
+
+/* ORNAMEN SETENGAH BULATAN BACKGROUND (NGIKUTIN PALET TEMA) */
+body.login-body::before,
+body.login-body::after {
+  content: "";
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  transition: background 0.3s ease, opacity 0.3s ease;
+}
+
+/* Bulatan Kanan Atas */
+body.login-body::before {
+  width: 320px;
+  height: 320px;
+  top: -120px;
+  right: -120px;
+  background: radial-gradient(circle, var(--theme-glow) 0%, rgba(255,255,255,0) 70%);
+  opacity: 0.85;
+}
+
+/* Bulatan Kiri Bawah */
+body.login-body::after {
+  width: 420px;
+  height: 420px;
+  bottom: -160px;
+  left: -160px;
+  background: radial-gradient(circle, var(--theme-glow) 0%, rgba(255,255,255,0) 70%);
+  opacity: 0.85;
 }
 
 body.login-body * { box-sizing: border-box; }
 
 body.login-body > .container-login {
+  position: relative;
+  z-index: 1;
   width: min(790px, calc(100vw - 40px)) !important;
   max-width: 790px !important;
   min-width: 0;
@@ -1166,30 +1201,58 @@ body.login-body > .container-login {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: clamp(22px, 3.2vw, 46px);
+  padding: clamp(28px, 3.5vw, 46px);
   min-width: 0;
 }
 
-.login-brand { display: flex; justify-content: center; margin-bottom: 22px; }
-.container-login .logo { display: block; width: min(180px, 100%); height: auto; max-height: 62px; object-fit: contain; margin: 0 auto; }
+/* LOGO SEKOLAH (DIBESARKAN) */
+.login-title-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  gap: 10px;
+}
 
-.login-heading { text-align: center; margin-bottom: 20px; }
-.login-heading h2 { margin: 0 0 8px; color: var(--text-dark); font-size: clamp(23px, 2.3vw, 30px); line-height: 1.3; font-weight: 700; letter-spacing: -.035em; }
-.login-heading p { margin: 0; color: #64748b; font-size: 13px; line-height: 1.7; }
+.container-login .logo {
+  display: block;
+  width: auto;
+  height: auto;
+  max-height: 76px; /* Dibesarkan dari 62px */
+  object-fit: contain;
+  margin: 0 auto;
+}
 
-.login-form { display: grid; gap: 13px; }
-.login-field label { display: block; margin: 0 0 8px; color: var(--text-dark); font-size: 13px; font-weight: 600; }
+/* JUDUL PORTAL PRESENSI PIKET (DIKECILKAN DIKIT) */
+.login-heading { text-align: center; }
+.login-heading h2 {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: 21px; /* Dikecilkan dari 30px */
+  line-height: 1.3;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.login-field label { display: block; margin: 0 0 6px; color: var(--text-dark); font-size: 13px; font-weight: 600; }
 
 .login-input-wrap { position: relative; }
 .login-input-wrap .field-icon {
-  position: absolute; left: 17px; top: 50%; transform: translateY(-50%);
-  width: 20px; height: 20px; color: var(--primary-soft); pointer-events: none;
+  position: absolute; left: 15px; top: 50%; transform: translateY(-50%);
+  width: 18px; height: 18px; color: var(--primary-soft); pointer-events: none;
 }
 
 .container-login .login-input {
-  width: 100%; height: 42px; margin: 0; padding: 0 44px 0 46px;
+  width: 100%; height: 42px; margin: 0; padding: 0 40px 0 44px;
   border: 1.5px solid var(--border-light); border-radius: 12px; outline: none;
-  background: #ffffff; color: var(--text-dark); font: 400 14px 'Poppins', sans-serif;
+  background: #ffffff; color: var(--text-dark); font: 400 13.5px 'Poppins', sans-serif;
   text-align: left; transition: border-color .2s, box-shadow .2s;
 }
 
@@ -1201,19 +1264,21 @@ body.login-body > .container-login {
   background: #fff; 
 }
 
-.password-field, .password-wrapper, .password-input-wrap, .input-password-wrap {
-  position: relative; width: 100%;
-}
-
+/* IKON SHOW/HIDE PASSWORD (DIKECILKAN BIAR PAS) */
 .password-toggle {
   position: absolute !important; right: 10px !important; top: 50% !important;
   transform: translateY(-50%) !important; display: inline-flex !important;
   align-items: center !important; justify-content: center !important;
-  width: 32px !important; height: 32px !important; padding: 0 !important;
-  margin: 0 !important; border: 0 !important; border-radius: 8px !important;
+  width: 28px !important; height: 28px !important; padding: 0 !important;
+  margin: 0 !important; border: 0 !important; border-radius: 6px !important;
   background: transparent !important; color: var(--primary-soft) !important;
   opacity: 1 !important; visibility: visible !important; z-index: 5 !important;
   cursor: pointer !important; transition: background 0.2s, color 0.2s;
+}
+
+.password-toggle svg {
+  width: 16px !important; /* Ukuran icon diperkecil ke 16px */
+  height: 16px !important;
 }
 
 .password-toggle:hover {
@@ -1221,29 +1286,38 @@ body.login-body > .container-login {
   color: var(--primary) !important;
 }
 
+/* TOMBOL MASUK (ALIGN CENTER PERFECT) */
 .container-login .login-btn {
-  width: auto; min-width: 140px; max-width: 200px; align-self: center; padding: 0 24px;
-  min-height: 42px; margin: 6px 0 0; border: 0; border-radius: 12px;
-  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  background: var(--primary) !important; color: white !important;
-  font: 600 14px 'Poppins', sans-serif; cursor: pointer;
-  box-shadow: 0 8px 18px var(--theme-glow); 
+  width: 100%;
+  max-width: 170px;
+  margin: 10px auto 0 auto; /* Margin auto kiri & kanan = Center! */
+  padding: 0 20px;
+  height: 42px;
+  min-height: 42px;
+  border: 0;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: var(--primary) !important;
+  color: white !important;
+  font: 600 14px 'Poppins', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 6px 16px var(--theme-glow);
   transition: transform .18s, background .18s, box-shadow .18s;
 }
 
 .container-login .login-btn:hover { 
   transform: translateY(-1px); 
   background: var(--primary-hover) !important; 
-  box-shadow: 0 12px 22px var(--theme-glow); 
+  box-shadow: 0 10px 20px var(--theme-glow); 
 }
 
 .container-login .login-btn:active { transform: translateY(0); }
-.login-btn svg { width: 20px; height: 20px; }
+.login-btn svg { width: 18px; height: 18px; }
 
-.login-footer { display: flex; align-items: center; justify-content: center; gap: 13px; margin-top: 20px; color: #94a3b8; font-size: 11px; text-align: center; }
-.login-footer::before, .login-footer::after { content: ""; height: 1px; width: 34px; background: var(--border-light); }
-
-.container-login .error-msg { min-height: 0; margin-top: 12px; color: #ef4444; font-size: 12px; text-align: center; font-weight: 500; }
+.container-login .error-msg { min-height: 0; margin-top: 10px; color: #ef4444; font-size: 12px; text-align: center; font-weight: 500; }
 
 @media (min-width: 821px) {
   body.login-body > .container-login {
@@ -1264,7 +1338,7 @@ body.login-body > .container-login {
   .visual-copy h3 { font-size: 23px; }
   .visual-copy p { max-width: 290px; font-size: 12px; }
   .login-content { padding: 32px clamp(22px, 7vw, 48px) 28px; }
-  .login-heading h2 { font-size: clamp(20px, 4.5vw, 26px); }
+  .login-heading h2 { font-size: 20px; }
 }
 
 @media (max-width: 420px) {
@@ -1274,6 +1348,6 @@ body.login-body > .container-login {
   .visual-copy h3 { font-size: 20px; }
   .visual-copy p { font-size: 11px; line-height: 1.6; }
   .login-content { padding: 26px 20px 23px; }
-  .container-login .login-input { height: 46px; border-radius: 12px; }
-  .container-login .login-btn { height: 44px; min-width: 130px; border-radius: 12px; }
+  .container-login .login-input { height: 42px; border-radius: 12px; }
+  .container-login .login-btn { height: 42px; max-width: 100%; border-radius: 12px; }
 }

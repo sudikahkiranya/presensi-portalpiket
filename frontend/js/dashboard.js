@@ -122,7 +122,7 @@ function selectTheme(themeName, isUserAction = true) {
     } catch (e) {}
     const popover = document.getElementById("themePopover");
     if (popover) popover.classList.remove("is-open");
-    showToast(`Tema visual diubah ke ${cleanTheme.toUpperCase()}!`, "info");
+    // Toast notifikasi sengaja dihilangkan agar pergantian tema terasa lebih clean & seamless
   }
 }
 
