@@ -1018,34 +1018,38 @@ footer {
   box-sizing: border-box;
   padding: 5px 0;
 
-  /* Untuk Firefox */
+  /* Untuk Firefox: sembunyikan scrollbar atau buat tipis tanpa panah */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
 
-/* WEBKIT ENGINE (CHROME / EDGE / SAFARI / OPERA) */
-.dropdown-menu::-webkit-scrollbar {
-  width: 6px !important;
-  height: 0px !important;
-}
-
-/* HAPUS TOTAL TOMBOL ARROW NATIVE */
-.dropdown-menu::-webkit-scrollbar-button,
-.dropdown-menu::-webkit-scrollbar-button:single-button,
-.dropdown-menu::-webkit-scrollbar-button:vertical:decrement,
-.dropdown-menu::-webkit-scrollbar-button:vertical:increment,
-.dropdown-menu::-webkit-scrollbar-button:start:decrement,
-.dropdown-menu::-webkit-scrollbar-button:end:increment {
+/* 🎯 MATIKAN TOTAL SCROLLBAR BUTTONS (PANAH ATAS & BAWAH) DI WEBKIT/CHROME */
+.dropdown-menu::-webkit-scrollbar-button {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
   background: transparent !important;
 }
 
-/* TRACK & THUMB SCROLLBAR MELAYANG */
+.dropdown-menu::-webkit-scrollbar-button:start,
+.dropdown-menu::-webkit-scrollbar-button:end,
+.dropdown-menu::-webkit-scrollbar-button:vertical:decrement,
+.dropdown-menu::-webkit-scrollbar-button:vertical:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+/* 🎯 PAKSA SCROLLBAR HANYA BERUPA TRACK DAN THUMB KAPSUL TIPIS */
+.dropdown-menu::-webkit-scrollbar {
+  width: 5px !important;
+  height: 0px !important;
+}
+
 .dropdown-menu::-webkit-scrollbar-track {
   background: transparent !important;
-  margin: 6px 0 !important;
+  margin: 6px 0 !important; /* Supaya thumb kapsul ga melintasi border-radius */
 }
 
 .dropdown-menu::-webkit-scrollbar-thumb {
