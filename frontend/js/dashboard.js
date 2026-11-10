@@ -1293,51 +1293,72 @@ function openCustomDropdown(dropdown) {
   menu.style.setProperty("overflow-y", "auto", "important");
 }
 
+// ⚡ FUNGSI CLEAR CACHE INSTAN TANPA CONFIRM ALERT
 async function clearSystemCache() {
-  if (!confirm("Bersihkan cache konfigurasi server dan browser, lalu muat ulang halaman?")) {
-    return;
-  }
-
   const loadingOverlay = document.getElementById("loadingOverlay");
   if (loadingOverlay) loadingOverlay.classList.add("active");
 
+  // Tutup popover
+  const profilePopover = document.getElementById("profilePopover");
+  if (profilePopover) profilePopover.classList.remove("is-open");
+
   try {
-    // 💡 Pakai API_URL sesuai variabel konfigurasi kamu
+    // Post ke BE GAS (API_URL)
     const response = await fetch(API_URL, {
       method: "POST",
-      headers: { 
-        "Content-Type": "text/plain;charset=utf-8" 
-      },
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({ action: "clearSystemConfigCache" })
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP Error Status: ${response.status}`);
+    if (response.ok) {
+      await response.json();
     }
-
-    const result = await response.json();
-
-    if (result.success) {
-      const activeTheme = localStorage.getItem("sisensi_active_theme");
-      
-      localStorage.clear();
-      sessionStorage.clear();
-
-      if (activeTheme) {
-        localStorage.setItem("sisensi_active_theme", activeTheme);
-      }
-
-      window.location.reload(true);
-    } else {
-      alert("Gagal membersihkan cache server: " + (result.message || "Unknown error"));
-      if (loadingOverlay) loadingOverlay.classList.remove("active");
-    }
-  } catch (error) {
-    console.error("Error clearing cache:", error);
-    alert("Terjadi kesalahan koneksi saat membersihkan cache server. Detail: " + error.message);
-    if (loadingOverlay) loadingOverlay.classList.remove("active");
+  } catch (err) {
+    console.warn("Soft warning clear cache BE:", err);
+  } finally {
+    // Langsung hard reload halaman tanpa mengubah localStorage user/login
+    window.location.reload(true);
   }
 }
+
+// 💡 PERBAIKAN POPOVER TOGGLE & SAFE CLICK OUTSIDE LISTENER
+function toggleThemePopover(e) {
+  if (e) e.stopPropagation();
+  const themePopover = document.getElementById("themePopover");
+  const profilePopover = document.getElementById("profilePopover");
+  
+  if (profilePopover) profilePopover.classList.remove("is-open");
+  if (themePopover) themePopover.classList.toggle("is-open");
+}
+
+function toggleProfilePopover(e) {
+  if (e) e.stopPropagation();
+  const themePopover = document.getElementById("themePopover");
+  const profilePopover = document.getElementById("profilePopover");
+
+  if (themePopover) themePopover.classList.remove("is-open");
+  if (profilePopover) profilePopover.classList.toggle("is-open");
+}
+
+// Global click outside handler dengan Null-Checking (Bebas error TypeError)
+document.addEventListener("click", function (e) {
+  const themePopover = document.getElementById("themePopover");
+  const themeBtn = document.getElementById("themePickerBtn");
+  const profilePopover = document.getElementById("profilePopover");
+  const profileBtn = document.getElementById("profilePickerBtn");
+
+  if (themePopover && themeBtn) {
+    if (!themePopover.contains(e.target) && !themeBtn.contains(e.target)) {
+      themePopover.classList.remove("is-open");
+    }
+  }
+
+  if (profilePopover && profileBtn) {
+    if (!profilePopover.contains(e.target) && !profileBtn.contains(e.target)) {
+      profilePopover.classList.remove("is-open");
+    }
+  }
+});
 
 document.addEventListener("click", function(e) {
   if (e.target.closest(".custom-dropdown")) return;

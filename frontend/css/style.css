@@ -197,6 +197,7 @@ main {
 }
 
 /* FIX ANOMALI HOVER JITTER ON ICON BUTTONS */
+/* FIX ANOMALI HOVER JITTER ON ICON BUTTONS */
 .header-icon-btn {
   width: 40px !important;
   height: 40px !important;
@@ -222,7 +223,6 @@ main {
   background: #ffffff !important;
 }
 
-/* MENJAGA POSISI SVG TETAP PRESISI DI TENGAH */
 .header-icon-btn svg {
   width: 20px;
   height: 20px;
@@ -234,7 +234,7 @@ main {
 
 /* USER PROFILE DROPDOWN COMPACT */
 .profile-popover {
-  width: 250px;
+  width: 240px;
   padding: 14px;
 }
 
@@ -273,62 +273,74 @@ main {
   line-height: 1.2;
 }
 
-.profile-action-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-/* BUTTON ACTION UTILITAS (CLEAR CACHE & LOGOUT) */
-.profile-action-btn {
-  width: 34px !important;
-  height: 34px !important;
-  min-width: 34px !important;
+/* TOMBOL LOGOUT ATAS */
+.profile-action-btn.btn-logout {
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
   padding: 0 !important;
-  border-radius: 9px !important;
+  border-radius: 10px !important;
+  background: #fef2f2 !important;
+  color: #dc2626 !important;
+  border: 1px solid #fecaca !important;
   cursor: pointer;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   flex-shrink: 0;
   transition: all 0.2s ease !important;
-  border: 1px solid transparent !important;
-}
-
-/* TOMBOL CLEAR CACHE (AMBER/GOLD) */
-.profile-action-btn.btn-clear-cache {
-  background: #fffbeb !important;
-  color: #d97706 !important;
-  border-color: #fde68a !important;
-}
-
-.profile-action-btn.btn-clear-cache:hover {
-  background: #d97706 !important;
-  color: #ffffff !important;
-  border-color: #d97706 !important;
-  transform: scale(1.06) !important;
-}
-
-/* TOMBOL LOGOUT (RED) */
-.profile-action-btn.btn-logout {
-  background: #fef2f2 !important;
-  color: #dc2626 !important;
-  border-color: #fecaca !important;
 }
 
 .profile-action-btn.btn-logout:hover {
   background: #dc2626 !important;
   color: #ffffff !important;
   border-color: #dc2626 !important;
-  transform: scale(1.06) !important;
+  transform: scale(1.05) !important;
 }
 
-.profile-action-btn svg {
-  width: 16px;
-  height: 16px;
+.profile-action-btn.btn-logout svg {
+  width: 17px;
+  height: 17px;
   stroke: currentColor;
-  display: block;
+}
+
+/* DIVIDER */
+.profile-popover-divider {
+  height: 1px;
+  background: #e2e8f0;
+  margin: 12px 0 10px;
+}
+
+/* TOMBOL CLEAR CACHE BAWAH (AMBER/WARNING STYLE) */
+.profile-clear-cache-item {
+  width: 100% !important;
+  height: 36px !important;
+  padding: 0 12px !important;
+  border-radius: 9px !important;
+  background: #fffbeb !important;
+  color: #d97706 !important;
+  border: 1px solid #fde68a !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  transition: all 0.2s ease !important;
+}
+
+.profile-clear-cache-item:hover {
+  background: #d97706 !important;
+  color: #ffffff !important;
+  border-color: #d97706 !important;
+}
+
+.profile-clear-cache-item svg.warning-icon {
+  width: 15px;
+  height: 15px;
+  stroke: currentColor;
+  flex-shrink: 0;
 }
 
 /* ==========================================================================
