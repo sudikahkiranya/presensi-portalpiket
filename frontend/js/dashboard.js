@@ -738,8 +738,8 @@ function updateSyncStatus() {
 
   if (!online) {
     // Kondisi 3 (Offline Idle) & Kondisi 4 (Offline + Pending)
-    const offlineLabel = pendingForDate > 0 ? `Offline • ${pendingForDate} antrean` : "Offline";
-    const offlineCaption = pendingForDate > 0 ? "Otomatis terkirim saat online kembali" : `Sync terakhir: ${lastText}`;
+    const offlineLabel = pendingForDate > 0 ? `Offline • ${pendingForDate} data pending` : "Offline";
+    const offlineCaption = pendingForDate > 0 ? "Otomatis terkirim saat online kembali" : `Update terakhir: ${lastText}`;
     setSyncStatus("offline", offlineLabel, offlineCaption, "", false);
   } else if (syncInProgress) {
     // Kondisi 2 (Online Syncing)
@@ -750,7 +750,7 @@ function updateSyncStatus() {
     setSyncStatus("syncing", `Menyimpan ${pendingForDate} data...`, "Mengirim perubahan ke server...", "", false);
   } else {
     // Kondisi 1 (Online Idle)
-    setSyncStatus("saved", "Online", `Sync terakhir: ${lastText}`, "", false);
+    setSyncStatus("saved", "Online", `Update terakhir: ${lastText}`, "", false);
   }
 }
 
@@ -940,7 +940,7 @@ async function syncPendingUpdates(showOverlay = false) {
       }
     }
   } catch (err) {
-    console.warn("[Sync] Gagal menyinkronkan antrean:", err);
+    console.warn("[Sync] Gagal menyinkronkan data pending:", err);
     failed = true;
   } finally {
     syncInProgress = false;
