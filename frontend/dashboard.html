@@ -185,6 +185,19 @@
   </div>
 </div>
 
+<!-- DISPENSASI MODAL -->
+<div id="dispensasiModal" class="modal-overlay">
+  <div class="modal-box dispensasi-modal-box">
+    <h3 class="dispensasi-modal-title">Keterangan Dispensasi</h3>
+    <p id="dispensasiStudentInfo" class="dispensasi-modal-desc">Masukkan alasan/kegiatan dispensasi siswa:</p>
+    <input type="text" id="inputKetDispensasi" class="filter-input-text" placeholder="Contoh: Lomba FLS2N / Tugas OSIS" onkeydown="if(event.key==='Enter'){ event.preventDefault(); submitDispensasi(); }">
+    <div class="dispensasi-modal-actions">
+      <button type="button" class="btn-cancel" onclick="closeDispensasiModal()">Batal</button>
+      <button type="button" class="btn-confirm" onclick="submitDispensasi()">Simpan</button>
+    </div>
+  </div>
+</div>
+
 <!-- LOADING OVERLAY MODERN MINIMALIS -->
 <div id="loadingOverlay">
   <div>
@@ -243,6 +256,16 @@
           <div class="jumlah-data-box" id="boxJumlahPrakerin">
             <label>Jumlah<br>Prakerin</label>
             <span id="jumlahPrakerin">0</span>
+          </div>
+
+          <div class="jumlah-data-box" id="boxJumlahDispensasi" style="display: none;">
+            <label>Jumlah<br>Dispensasi</label>
+            <span id="jumlahDispensasi">0</span>
+          </div>
+
+          <div class="jumlah-data-box" id="boxJumlahLibur" style="display: none;">
+            <label>Jumlah<br>Libur</label>
+            <span id="jumlahLibur">0</span>
           </div>
         </div>
       </div>

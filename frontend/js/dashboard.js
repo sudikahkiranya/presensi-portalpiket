@@ -29,6 +29,7 @@ const masterStatusList = [
   { value: 'Izin', label: 'Izin', class: 'status-izin' },
   { value: 'Alpa', label: 'Alpa', class: 'status-alpa' },
   { value: 'Hadir Tidak Presensi', label: 'Hadir Tidak Presensi', class: 'status-htp' },
+  { value: 'Dispensasi', label: 'Dispensasi', class: 'status-dispensasi' },
   { value: 'Libur', label: 'Libur', class: 'status-libur' },
   { value: 'Prakerin', label: 'Prakerin', class: 'status-prakerin' }
 ];
@@ -38,7 +39,9 @@ const manualStatusList = [
   { value: "Hadir Tidak Presensi", label: "Hadir Tidak Presensi" },
   { value: "Alpa", label: "Alpa" },
   { value: "Sakit", label: "Sakit" },
-  { value: "Izin", label: "Izin" }
+  { value: "Izin", label: "Izin" },
+  { value: "Dispensasi", label: "Dispensasi" },
+  { value: "Libur", label: "Libur" }
 ];
 
 window.systemConfig = {};
@@ -397,6 +400,13 @@ function renderStatusBadge(statusTd, s, value) {
     createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
       cleanupListeners();
       if (newValue && newValue !== value) {
+        if (newValue === "Dispensasi") {
+          // Kembalikan tampilan ke badge lama dulu sambil menunggu user isi modal
+          statusTd.innerHTML = "";
+          renderStatusBadge(statusTd, s, value);
+          openDispensasiModal(statusTd, s, value);
+          return;
+        }
         processStatusChange(s.rowIndex, newValue, s.tanggal);
         statusTd.innerHTML = "";
         renderStatusBadge(statusTd, s, newValue);
@@ -407,7 +417,6 @@ function renderStatusBadge(statusTd, s, value) {
     });
 
     statusTd.appendChild(dropdownWrapper);
-
     openCustomDropdown(dropdownWrapper);
 
     const resetToBadge = function() {
@@ -435,15 +444,71 @@ function renderStatusBadge(statusTd, s, value) {
   statusTd.appendChild(wrapper);
 }
 
+// 💡 HANDLER MODAL KETERANGAN DISPENSASI
+let pendingDispensasiContext = null;
+
+function openDispensasiModal(statusTd, studentObj, oldValue) {
+  pendingDispensasiContext = { statusTd, studentObj, oldValue };
+  const modal = document.getElementById("dispensasiModal");
+  const infoEl = document.getElementById("dispensasiStudentInfo");
+  const inputEl = document.getElementById("inputKetDispensasi");
+
+  if (infoEl) {
+    infoEl.textContent = `Masukkan alasan/kegiatan dispensasi untuk ${studentObj.nama || "siswa"}:`;
+  }
+  if (inputEl) {
+    inputEl.value = studentObj.keterangan || "";
+  }
+  if (modal) {
+    modal.classList.add("active");
+    setTimeout(() => inputEl && inputEl.focus(), 50);
+  }
+}
+
+function closeDispensasiModal() {
+  const modal = document.getElementById("dispensasiModal");
+  if (modal) modal.classList.remove("active");
+  pendingDispensasiContext = null;
+}
+
+function submitDispensasi() {
+  const inputEl = document.getElementById("inputKetDispensasi");
+  const keterangan = inputEl ? inputEl.value.trim() : "";
+
+  if (!keterangan) {
+    showToast("Keterangan dispensasi wajib diisi!", "error");
+    if (inputEl) inputEl.focus();
+    return;
+  }
+
+  if (pendingDispensasiContext) {
+    const { statusTd, studentObj } = pendingDispensasiContext;
+    studentObj.keterangan = keterangan;
+    
+    processStatusChange(studentObj.rowIndex, "Dispensasi", studentObj.tanggal, keterangan);
+    statusTd.innerHTML = "";
+    renderStatusBadge(statusTd, studentObj, "Dispensasi");
+  }
+
+  closeDispensasiModal();
+}
+
 function updateStatistik(data) {
   let hadir = 0;
   let tidakHadir = 0;
   let prakerin = 0;
+  let dispensasi = 0;
+  let libur = 0;
 
   data.forEach(s => {
     const status = String(s.statusMasuk ?? "").trim().toLowerCase();
 
-    if (!status || status === "belum presensi") return;
+    if (!status || status === "belum presensi" || status === "kosong") return;
+
+    if (status === "libur") {
+      libur++;
+      return;
+    }
 
     if (status.includes("prakerin") || status.includes("pkl")) {
       prakerin++;
@@ -455,7 +520,18 @@ function updateStatistik(data) {
       return;
     }
 
-    if (status.includes("tepat waktu") || status.includes("terlambat") || status.includes("hadir tidak presensi")) {
+    if (status.includes("dispensasi")) {
+      dispensasi++;
+      hadir++; // Dispensasi tetap dihitung sebagai Hadir (tugas sekolah)
+      return;
+    }
+
+    if (
+      status.includes("tepat waktu") ||
+      status.includes("terlambat") ||
+      status.includes("hadir tidak presensi") ||
+      status === "htp"
+    ) {
       hadir++;
     }
   });
@@ -464,15 +540,25 @@ function updateStatistik(data) {
   const jumlahHadirEl = document.getElementById("jumlahHadir");
   const jumlahTidakHadirEl = document.getElementById("jumlahTidakHadir");
   const jumlahPrakerinEl = document.getElementById("jumlahPrakerin");
+  const jumlahDispensasiEl = document.getElementById("jumlahDispensasi");
+  const jumlahLiburEl = document.getElementById("jumlahLibur");
 
   if (jumlahDataEl) jumlahDataEl.textContent = data.length;
   if (jumlahHadirEl) jumlahHadirEl.textContent = hadir;
   if (jumlahTidakHadirEl) jumlahTidakHadirEl.textContent = tidakHadir;
   if (jumlahPrakerinEl) jumlahPrakerinEl.textContent = prakerin;
+  if (jumlahDispensasiEl) jumlahDispensasiEl.textContent = dispensasi;
+  if (jumlahLiburEl) jumlahLiburEl.textContent = libur;
 
   const boxPrakerin = document.getElementById("boxJumlahPrakerin");
   if (boxPrakerin) boxPrakerin.style.display = prakerin > 0 ? "" : "none";
-} 
+
+  const boxDispensasi = document.getElementById("boxJumlahDispensasi");
+  if (boxDispensasi) boxDispensasi.style.display = dispensasi > 0 ? "" : "none";
+
+  const boxLibur = document.getElementById("boxJumlahLibur");
+  if (boxLibur) boxLibur.style.display = libur > 0 ? "" : "none";
+}
 
 function applyFilter() {
   const kelas = document.getElementById("filterKelas")?.getAttribute("data-value") || "";
@@ -701,19 +787,23 @@ function initSyncStatus() {
   refreshServerSyncStatus(getSelectedAttendanceDate());
 }
 
-function processStatusChange(rowIndex, newValue, tanggal) {
+function processStatusChange(rowIndex, newValue, tanggal, keterangan = "") {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   const piketID = user ? user.nama : "Petugas";
   const timestamp = new Date().toISOString();
 
   const targetSiswa = window.dataSiswa.find(s => Number(s.rowIndex) === Number(rowIndex));
-  if (targetSiswa) targetSiswa.statusMasuk = newValue;
+  if (targetSiswa) {
+    targetSiswa.statusMasuk = newValue;
+    targetSiswa.keterangan = keterangan;
+  }
 
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   const existingIdx = queue.findIndex(item => Number(item.rowIndex) === Number(rowIndex));
 
   if (existingIdx > -1) {
     queue[existingIdx].statusMasuk = newValue;
+    queue[existingIdx].keterangan = keterangan;
     queue[existingIdx].timestamp = timestamp;
     if (targetSiswa) queue[existingIdx].namaSiswa = targetSiswa.nama || targetSiswa.Nama || targetSiswa.namaSiswa || queue[existingIdx].namaSiswa || "Siswa";
     if (tanggal) queue[existingIdx].tanggal = tanggal;
@@ -721,6 +811,7 @@ function processStatusChange(rowIndex, newValue, tanggal) {
     queue.push({
       rowIndex: parseInt(rowIndex, 10),
       statusMasuk: newValue,
+      keterangan: keterangan,
       piketID: piketID,
       tanggal: tanggal || (targetSiswa ? targetSiswa.tanggal : ""),
       namaSiswa: targetSiswa ? (targetSiswa.nama || targetSiswa.Nama || targetSiswa.namaSiswa || "Siswa") : "Siswa",
