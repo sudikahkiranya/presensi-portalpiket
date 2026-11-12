@@ -355,7 +355,7 @@ function initFilters(data = null) {
     data.forEach(s => {
       const status = String(s.statusMasuk ?? "").trim();
       if (status) availableStatuses.add(status);
-      else availableStatuses.add("Kosong");
+      else availableStatuses.add("Belum Presensi"); // 👈 Diubah dari "Kosong"
     });
   }
 
@@ -382,7 +382,7 @@ function renderStatusBadge(statusTd, s, value) {
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
   badgeBtn.innerHTML = `
-    <span>${value || "-- Belum Diatur --"}</span>
+    <span>${value || "Belum Presensi"}</span>
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -579,7 +579,7 @@ function applyFilter() {
       .filter(s => (!tingkat || String(s.tingkat).trim().toLowerCase() === String(tingkat).trim().toLowerCase()))
       .filter(s => {
         if (!status) return true;
-        if (status === "Kosong") return !s.statusMasuk;
+        if (status === "Belum Presensi") return !s.statusMasuk; // 👈 Diubah dari "Kosong"
         return s.statusMasuk === status;
       })
       .filter(s => !nama || (s.nama && s.nama.toLowerCase().includes(nama)));
@@ -823,6 +823,7 @@ function processStatusChange(rowIndex, newValue, tanggal, keterangan = "") {
 
   localStorage.setItem("piket_pending_updates", JSON.stringify(queue));
   updatePendingBadge();
+  initFilters(window.dataSiswa); // 👈 Refresh opsi dropdown filter status secara real-time
   applyFilter();
   updateSyncStatus();
 
