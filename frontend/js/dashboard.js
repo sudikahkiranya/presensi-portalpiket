@@ -700,24 +700,29 @@ function setSyncStatus(state, label, caption, detail, showRetry = false) {
   const captionEl = document.getElementById("syncStatusCaption");
   const detailEl = document.getElementById("syncLastUpdated");
   const retry = document.getElementById("retrySyncButton");
+
   panel.dataset.state = state;
+
   if (icon) {
-    if (state === "syncing") {
-      icon.innerHTML = '<span class="sync-mini-spinner" aria-hidden="true"></span>';
-    } else {
-      const iconNames = { saved: "check", offline: "wifi-off", error: "alert-circle", pending: "clock" };
-      const iconName = iconNames[state] || "clock";
-      icon.innerHTML = `<i data-lucide="${iconName}"></i>`;
-      if (window.lucide && typeof window.lucide.createIcons === "function") {
-        window.lucide.createIcons();
-      }
+    const iconNames = {
+      saved: "cloud",
+      syncing: "cloud-upload",
+      pending: "cloud-upload",
+      offline: "cloud-off",
+      error: "alert-circle"
+    };
+    const iconName = iconNames[state] || "cloud";
+    icon.innerHTML = `<i data-lucide="${iconName}"></i>`;
+    if (window.lucide && typeof window.lucide.createIcons === "function") {
+      window.lucide.createIcons();
     }
   }
+
   if (labelEl) labelEl.textContent = label;
-  if (captionEl) captionEl.textContent = state === "syncing" ? "\u00a0" : (caption || "\u00a0");
+  if (captionEl) captionEl.textContent = caption || detail || "\u00a0";
   if (detailEl) {
-    detailEl.textContent = detail || "";
-    detailEl.hidden = !detail;
+    detailEl.textContent = "";
+    detailEl.hidden = true;
   }
   if (retry) retry.hidden = !showRetry;
 }
@@ -732,14 +737,20 @@ function updateSyncStatus() {
   const lastText = lastSync ? formatSyncDateTime(lastSync) : (serverStatus ? serverStatus.formatted : "Memuat riwayat…");
 
   if (!online) {
-    setSyncStatus("offline", "Offline", pendingForDate ? `${pendingForDate} perubahan menunggu koneksi` : `Sinkronisasi terakhir: ${lastText}`, "", pendingForDate > 0);
+    // Kondisi 3 (Offline Idle) & Kondisi 4 (Offline + Pending)
+    const offlineLabel = pendingForDate > 0 ? `Offline • ${pendingForDate} antrean` : "Offline";
+    const offlineCaption = pendingForDate > 0 ? "Otomatis terkirim saat online kembali" : `Sync terakhir: ${lastText}`;
+    setSyncStatus("offline", offlineLabel, offlineCaption, "", false);
   } else if (syncInProgress) {
+    // Kondisi 2 (Online Syncing)
     const activeCount = Math.max(queue.length, 1);
-    setSyncStatus("syncing", `Menyimpan ${activeCount} data...`, "", currentSyncStudent ? `Memproses: ${currentSyncStudent}` : "", false);
+    setSyncStatus("syncing", `Menyimpan ${activeCount} data...`, currentSyncStudent ? `Memproses: ${currentSyncStudent}` : "Mengirim ke server...", "", false);
   } else if (pendingForDate > 0) {
-    setSyncStatus("syncing", `Menyimpan ${pendingForDate} data...`, pendingForDate > 1 ? `${pendingForDate} data sedang menunggu giliran pengiriman` : "Mengirim perubahan ke server...", "", false);
+    // Kondisi 2b (Online menunggu giliran kirim)
+    setSyncStatus("syncing", `Menyimpan ${pendingForDate} data...`, "Mengirim perubahan ke server...", "", false);
   } else {
-    setSyncStatus("saved", "Tersimpan", `Sinkronisasi terakhir: ${lastText}`, "", false);
+    // Kondisi 1 (Online Idle)
+    setSyncStatus("saved", "Online", `Sync terakhir: ${lastText}`, "", false);
   }
 }
 
@@ -881,7 +892,7 @@ async function syncPendingUpdates(showOverlay = false) {
       const item = queue[0];
       const totalRemaining = queue.length;
       currentSyncStudent = item.namaSiswa || item.nama || "data siswa";
-      setSyncStatus("syncing", totalRemaining > 1 ? `Menyimpan ${totalRemaining} data...` : "Menyimpan 1 data...", "", `Memproses: ${currentSyncStudent}`, false);
+      setSyncStatus("syncing", `Menyimpan ${totalRemaining} data...`, `Memproses: ${currentSyncStudent}`, "", false);
 
       const response = await fetch(API_URL, {
         method: "POST",
@@ -915,7 +926,7 @@ async function syncPendingUpdates(showOverlay = false) {
       updatePendingBadge();
       const remainingNow = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]").length;
       if (remainingNow > 0) {
-        setSyncStatus("syncing", `Menyimpan ${remainingNow} data...`, "", "", false);
+        setSyncStatus("syncing", `Menyimpan ${remainingNow} data...`, "Menyiapkan data berikutnya...", "", false);
       } else {
         setSyncStatus("syncing", "Menyimpan...", "", "", false);
       }
