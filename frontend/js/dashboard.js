@@ -35,7 +35,7 @@ const masterStatusList = [
 ];
 
 const manualStatusList = [
-  { value: "", label: "-- Pilih Status --" },
+  { value: "RESET", label: "-- Reset Status --" },
   { value: "Hadir Tidak Presensi", label: "Hadir Tidak Presensi" },
   { value: "Alpa", label: "Alpa" },
   { value: "Sakit", label: "Sakit" },
@@ -397,19 +397,21 @@ function renderStatusBadge(statusTd, s, value) {
     const dropdownWrapper = document.createElement("div");
     dropdownWrapper.className = "status-dropdown-cell-wrapper";
 
-    createCustomDropdown(dropdownWrapper, manualStatusList, value, function(newValue) {
+    createCustomDropdown(dropdownWrapper, manualStatusList, value || "RESET", function(newValue) {
       cleanupListeners();
-      if (newValue && newValue !== value) {
-        if (newValue === "Dispensasi") {
-          // Kembalikan tampilan ke badge lama dulu sambil menunggu user isi modal
+      // Ubah nilai "RESET" menjadi string kosong ""
+      const finalValue = (newValue === "RESET") ? "" : newValue;
+
+      if (finalValue !== value) {
+        if (finalValue === "Dispensasi") {
           statusTd.innerHTML = "";
           renderStatusBadge(statusTd, s, value);
           openDispensasiModal(statusTd, s, value);
           return;
         }
-        processStatusChange(s.rowIndex, newValue, s.tanggal);
+        processStatusChange(s.rowIndex, finalValue, s.tanggal, "");
         statusTd.innerHTML = "";
-        renderStatusBadge(statusTd, s, newValue);
+        renderStatusBadge(statusTd, s, finalValue);
       } else {
         statusTd.innerHTML = "";
         renderStatusBadge(statusTd, s, value);
@@ -1383,8 +1385,12 @@ function openCustomDropdown(dropdown) {
     menu.style.setProperty("box-shadow", "0 6px 16px rgba(0,0,0,0.08)", "important");
   }
 
-  menu.style.setProperty("max-height", "250px", "important");
-  menu.style.setProperty("overflow-y", "auto", "important");
+  // Jangan paksa scroll jika dropdown berada di dalam tabel (#tbodySiswa)
+  if (!dropdown.closest("#tbodySiswa")) {
+    menu.style.setProperty("max-height", "250px", "important");
+    menu.style.setProperty("overflow-y", "auto", "important");
+  }
+
 }
 
 // ⚡ FUNGSI CLEAR CACHE INSTAN TANPA CONFIRM ALERT

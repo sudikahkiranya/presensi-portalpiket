@@ -594,7 +594,8 @@ button:disabled {
 
 .filter-group {
   display: grid;
-  grid-template-columns: repeat(4, minmax(95px, 1fr)); /* Dropdown lebih ringkas */
+  /* Kelas (115px) | Tingkat (85px) | Status (145px) | Nama Siswa (Sisa ruang penuh!) */
+  grid-template-columns: 115px 85px 145px minmax(160px, 1fr);
   align-items: end;
   gap: 8px;
   width: 100%;
@@ -800,6 +801,13 @@ th:last-child {
 
 #tbodySiswa tr:last-child td:last-child {
   border-bottom-right-radius: 11px;
+}
+
+/* DROPDOWN STATUS DI TABEL TAMPIL PENUH TANPA SCROLL */
+#tbodySiswa .dropdown-menu,
+#tbodySiswa .dropdown-menu-inner {
+  max-height: none !important;
+  overflow-y: visible !important;
 }
 
 /* ==========================================================================
