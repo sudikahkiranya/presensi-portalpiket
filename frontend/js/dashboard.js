@@ -704,15 +704,18 @@ function setSyncStatus(state, label, caption, detail, showRetry = false) {
   panel.dataset.state = state;
 
   if (icon) {
-    const tablerIcons = {
-      saved: "ti ti-cloud",
-      syncing: "ti ti-cloud-upload",
-      pending: "ti ti-cloud-upload",
-      offline: "ti ti-cloud-off",
-      error: "ti ti-alert-circle"
+    const svgIcons = {
+      // Tabler Cloud (Bulat Proporsional)
+      saved: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878"/></svg>`,
+      // Tabler Cloud Upload
+      syncing: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1"/><path d="M9 15l3 -3l3 3"/><path d="M12 12l0 9"/></svg>`,
+      pending: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1"/><path d="M9 15l3 -3l3 3"/><path d="M12 12l0 9"/></svg>`,
+      // Tabler Cloud Off (Tersimpan lokal, aman 100% saat offline)
+      offline: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M18.72 18.727h-12.063c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773"/><path d="M13.5 5.1c1.38 .23 2.62 .95 3.47 2.05c.85 1.1 1.24 2.48 1.07 3.85h.99c1.913 0 3.464 1.56 3.464 3.486c0 .96 -.386 1.83 -1.01 2.46"/></svg>`,
+      // Alert Circle
+      error: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
     };
-    const iconClass = tablerIcons[state] || "ti ti-cloud";
-    icon.innerHTML = `<i class="${iconClass}"></i>`;
+    icon.innerHTML = svgIcons[state] || svgIcons.saved;
   }
 
   if (labelEl) labelEl.textContent = label;

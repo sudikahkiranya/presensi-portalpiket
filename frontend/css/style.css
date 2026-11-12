@@ -1190,7 +1190,7 @@ footer {
 }
 
 /* ==========================================================================
-   10. SYNC STATUS PANEL (ADAPTIVE WIDTH & BREATHING CLOUD)
+   10. SYNC STATUS PANEL (ADAPTIVE WIDTH & EDGE-GLOW INLINE SVG CLOUD)
    ========================================================================== */
 .sync-status-panel {
   display: inline-flex;
@@ -1229,17 +1229,15 @@ footer {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 18px;
-  line-height: 1;
 }
 
 #syncStatusIcon svg {
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
 }
 
-/* Efek Nafas Halus saat Online */
-.sync-status-panel[data-state="saved"] #syncStatusIcon i {
+/* Efek Pendaran Cahaya (Glow) Kedip Halus di Pinggiran Garis Awan saat Online */
+.sync-status-panel[data-state="saved"] #syncStatusIcon svg {
   animation: cloudEdgeGlow 2.4s ease-in-out infinite;
 }
 
@@ -1264,7 +1262,7 @@ footer {
   color: #b45309 !important;
 }
 
-.sync-status-panel[data-state="syncing"] #syncStatusIcon i {
+.sync-status-panel[data-state="syncing"] #syncStatusIcon svg {
   animation: syncCloudPulse 1.2s ease-in-out infinite;
 }
 
@@ -1301,11 +1299,11 @@ footer {
 @keyframes cloudEdgeGlow {
   0%, 100% {
     opacity: 1;
-    text-shadow: 0 0 0 rgba(34, 197, 94, 0);
+    filter: drop-shadow(0 0 0 rgba(34, 197, 94, 0));
   }
   50% {
     opacity: 0.72;
-    text-shadow: 0 0 8px rgba(34, 197, 94, 0.75), 0 0 14px rgba(34, 197, 94, 0.45);
+    filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.85));
   }
 }
 
