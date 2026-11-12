@@ -576,17 +576,17 @@ button:disabled {
 .admin-date-picker { display: inline-block; }
 
 /* ==========================================================================
-   5. FILTERS & COUNTER BOX
+   5. FILTERS & COUNTER BOX (AUTO-FIT PROPORSIONAL ANTI-OVERLAP)
    ========================================================================== */
 .filter-wrapper {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 456px;
+  grid-template-columns: minmax(0, 1fr) auto; /* Kolom kanan otomatis ikut jumlah kotak */
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   width: 100%;
   box-sizing: border-box;
   margin-bottom: 20px;
-  padding: 14px;
+  padding: 12px 14px;
   background: #f1f5f9;
   border: 1px solid var(--border-light);
   border-radius: 14px;
@@ -594,9 +594,9 @@ button:disabled {
 
 .filter-group {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(95px, 1fr)); /* Dropdown lebih ringkas */
   align-items: end;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   min-width: 0;
 }
@@ -604,45 +604,51 @@ button:disabled {
 .filter-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   min-width: 0;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--primary);
 }
 
+/* Override min-width bawaan agar dropdown & input bisa fleksibel */
 .filter-item .custom-dropdown,
 .filter-item .filter-input-text {
-  width: 100%;
-  min-width: 0;
+  width: 100% !important;
+  min-width: 0 !important;
+  padding: 0 10px;
+}
+
+.filter-item .dropdown-selected {
+  padding: 0 10px;
+  font-size: 12.5px;
 }
 
 .statistik-wrapper {
   display: flex;
   align-items: stretch;
   justify-content: flex-end;
-  gap: 8px;
-  width: 456px;
-  max-width: 100%;
+  gap: 6px;
+  width: auto;
   min-width: 0;
   margin: 0;
 }
 
 .jumlah-data-box {
   display: flex;
-  flex: 0 0 104px;
+  flex: 0 0 82px;           /* Diperkecil dari 104px jadi 82px agar muat 6 box dengan lega */
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 104px;
+  width: 82px;
   min-width: 0;
-  min-height: 86px;
+  min-height: 76px;
   box-sizing: border-box;
-  padding: 8px 4px;
+  padding: 6px 4px;
   margin: 0;
   background: #fff;
   border: 1px solid var(--border-light);
-  border-radius: 11px;
+  border-radius: 10px;
   text-align: center;
 }
 
@@ -651,35 +657,35 @@ button:disabled {
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 24px;
-  margin-bottom: 4px;
-  font-size: 10px;
-  line-height: 1.2;
+  min-height: 22px;
+  margin-bottom: 3px;
+  font-size: 9.5px;
+  line-height: 1.15;
   font-weight: 700;
   color: var(--primary);
   text-align: center;
-  overflow-wrap: anywhere;
 }
 
 .jumlah-data-box span {
   display: block;
-  font-size: 18px;
+  font-size: 16.5px;
   line-height: 1.2;
   font-weight: 800;
   color: var(--primary-soft);
 }
 
-@media (max-width: 1200px) {
+/* Breakpoint Tablet / Layar Menengah: Statistik otomatis turun ke bawah filter dengan rapi */
+@media (max-width: 1280px) {
   .filter-wrapper { grid-template-columns: minmax(0, 1fr); }
   .filter-group { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .statistik-wrapper { display: flex; justify-content: flex-end; width: 100%; }
-  .jumlah-data-box { flex: 1 1 0; width: auto; }
+  .statistik-wrapper { display: flex; flex-wrap: wrap; justify-content: flex-start; width: 100%; }
+  .jumlah-data-box { flex: 1 1 90px; width: auto; }
 }
 
 @media (max-width: 600px) {
   .filter-wrapper { padding: 12px; }
   .filter-group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .statistik-wrapper { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .statistik-wrapper { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .jumlah-data-box { width: 100%; }
 }
 
