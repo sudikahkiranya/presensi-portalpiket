@@ -594,11 +594,12 @@ button:disabled {
 
 .filter-group {
   display: grid;
-  /* Kelas (115px) | Tingkat (85px) | Status (145px) | Nama Siswa (Sisa ruang penuh!) */
-  grid-template-columns: 115px 85px 145px minmax(160px, 1fr);
+  /* Kelas (125px) | Tingkat (105px) | Status (165px) | Nama Siswa (220px) */
+  grid-template-columns: 125px 105px 165px 220px;
   align-items: end;
-  gap: 8px;
-  width: 100%;
+  gap: 10px;
+  width: max-content;
+  max-width: 100%;
   min-width: 0;
 }
 
