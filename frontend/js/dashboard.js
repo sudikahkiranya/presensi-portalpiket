@@ -750,6 +750,9 @@ async function submitBulkStatusChange() {
     const targetSiswa = window.dataSiswa.find(s => Number(s.rowIndex) === Number(rowIdx));
     if (!targetSiswa) return;
 
+    // Simpan status sebelum diubah untuk ditampilkan di progress checklist
+    const prevStatus = String(targetSiswa.statusMasuk || "").trim() || "Belum Presensi";
+
     let finalStatus = targetVal;
     if (isReset) {
       finalStatus = popInitialStatusSnapshot(targetSiswa, targetSiswa.tanggal);
@@ -769,6 +772,7 @@ async function submitBulkStatusChange() {
       tanggal: targetSiswa.tanggal || getSelectedAttendanceDate(),
       namaSiswa: targetSiswa.nama || targetSiswa.Nama || targetSiswa.namaSiswa || "Siswa",
       kelasLabel: formatNamaKelas(targetSiswa.kelas, targetSiswa.tingkat),
+      prevStatus: prevStatus,
       timestamp: timestamp
     };
 
@@ -814,8 +818,8 @@ async function submitBulkStatusChange() {
     progressListEl.innerHTML = processedItems.map(item => `
       <div class="bulk-progress-row" data-row="${item.rowIndex}">
         <div class="bulk-student-info">
-          <span class="bulk-student-name">${item.namaSiswa}</span>
-          <span class="bulk-student-meta">${item.kelasLabel} → <strong>${item.statusMasuk || "Belum Presensi"}</strong></span>
+          <span class="bulk-student-name">${item.namaSiswa} <span style="font-weight: 500; color: #64748b;">(${item.kelasLabel})</span></span>
+          <span class="bulk-student-meta">${item.prevStatus} → <strong>${item.statusMasuk || "Belum Presensi"}</strong></span>
         </div>
         <span class="bulk-progress-badge is-processing">Memproses...</span>
       </div>
@@ -826,14 +830,18 @@ async function submitBulkStatusChange() {
   syncTimer = null;
 
   if (!navigator.onLine) {
-    processedItems.forEach((item, idx) => {
-      const badge = progressListEl?.querySelector(`.bulk-progress-row[data-row="${item.rowIndex}"] .bulk-progress-badge`);
+    for (let idx = 0; idx < processedItems.length; idx++) {
+      const item = processedItems[idx];
+      const rowEl = progressListEl?.querySelector(`.bulk-progress-row[data-row="${item.rowIndex}"]`);
+      const badge = rowEl?.querySelector(".bulk-progress-badge");
       if (badge) {
         badge.className = "bulk-progress-badge is-offline";
         badge.textContent = "✓ Tersimpan Lokal";
       }
+      if (rowEl) rowEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
       if (counterEl) counterEl.textContent = `${idx + 1} / ${processedItems.length}`;
-    });
+      await new Promise(r => setTimeout(r, 90));
+    }
     if (statusTextEl) statusTextEl.textContent = "Tersimpan di perangkat (otomatis terkirim saat online).";
     if (closeBtn) {
       closeBtn.disabled = false;
@@ -846,14 +854,19 @@ async function submitBulkStatusChange() {
     await new Promise(r => setTimeout(r, 150));
   }
 
-  await syncPendingUpdates(false);
+  // Kirim batch dengan silentToast = true agar toast tidak mendahului animasi checklist
+  await syncPendingUpdates(false, true);
   const remainingQueue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   let completedCount = 0;
+
+  // Atur jeda per item agar terasa natural satu per satu (lebih cepat jika > 20 siswa)
+  const stepDelay = processedItems.length <= 10 ? 140 : (processedItems.length <= 25 ? 85 : 45);
 
   for (let i = 0; i < processedItems.length; i++) {
     const item = processedItems[i];
     const stillQueued = remainingQueue.some(q => Number(q.rowIndex) === Number(item.rowIndex) && q.timestamp === item.timestamp);
-    const badge = progressListEl?.querySelector(`.bulk-progress-row[data-row="${item.rowIndex}"] .bulk-progress-badge`);
+    const rowEl = progressListEl?.querySelector(`.bulk-progress-row[data-row="${item.rowIndex}"]`);
+    const badge = rowEl?.querySelector(".bulk-progress-badge");
 
     if (!stillQueued) {
       completedCount++;
@@ -868,16 +881,19 @@ async function submitBulkStatusChange() {
       }
     }
 
+    if (rowEl) rowEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
     if (counterEl) counterEl.textContent = `${completedCount} / ${processedItems.length}`;
-    if (processedItems.length <= 50) {
-      await new Promise(r => setTimeout(r, 35));
-    }
+    await new Promise(r => setTimeout(r, stepDelay));
   }
 
   if (statusTextEl) {
     statusTextEl.textContent = (completedCount === processedItems.length)
       ? `Selesai! ${completedCount} data siswa berhasil diperbarui.`
       : `${completedCount} berhasil, ${processedItems.length - completedCount} menunggu koneksi stabil.`;
+  }
+
+  if (completedCount > 0) {
+    showToast(`Berhasil menyimpan perubahan ${completedCount} siswa.`, "success", 3500);
   }
 
   if (closeBtn) {
@@ -1289,7 +1305,7 @@ async function triggerAutoSync() {
   await syncPendingUpdates(false);
 }
 
-async function syncPendingUpdates(showOverlay = false) {
+async function syncPendingUpdates(showOverlay = false, silentToast = false) {
   if (syncInProgress) return { success: false, synced: 0, busy: true };
 
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
@@ -1355,9 +1371,9 @@ async function syncPendingUpdates(showOverlay = false) {
       if (batch.length === 1) {
         const syncedName = batch[0].namaSiswa || batch[0].nama || "Siswa";
         syncedNames.push(syncedName);
-        showToast(`Update data ${syncedName} berhasil disimpan.`, "success", 3500);
+        if (!silentToast) showToast(`Update data ${syncedName} berhasil disimpan.`, "success", 3500);
       } else {
-        showToast(`Berhasil menyimpan perubahan ${batch.length} siswa.`, "success", 3500);
+        if (!silentToast) showToast(`Berhasil menyimpan perubahan ${batch.length} siswa.`, "success", 3500);
       }
 
       updatePendingBadge();
