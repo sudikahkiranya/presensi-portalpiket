@@ -1158,7 +1158,7 @@ function updateSyncStatus() {
   } else if (syncInProgress) {
     // Kondisi 2 (Online Syncing)
     const activeCount = Math.max(queue.length, 1);
-    setSyncStatus("syncing", `Menyimpan ${activeCount} data...`, currentSyncStudent ? `Memproses: ${currentSyncStudent}` : "Mengirim ke server...", "", false);
+    setSyncStatus("syncing", `Menyimpan ${activeCount} data...`, currentSyncStudent ? `Menyimpan: ${currentSyncStudent}` : "Mengirim ke server...", "", false);
   } else if (pendingForDate > 0) {
     // Kondisi 2b (Online menunggu giliran kirim)
     setSyncStatus("syncing", `Menyimpan ${pendingForDate} data...`, "Mengirim perubahan ke server...", "", false);
@@ -1349,7 +1349,7 @@ async function syncPendingUpdates(showOverlay = false, silentToast = false) {
         ? (batch[0].namaSiswa || batch[0].nama || "data siswa")
         : `${batch.length} data siswa`;
 
-      setSyncStatus("syncing", `Menyimpan ${totalRemaining} data...`, `Memproses: ${currentSyncStudent}`, "", false);
+      setSyncStatus("syncing", `Menyimpan ${totalRemaining} data...`, `Menyimpan: ${currentSyncStudent}`, "", false);
 
       const response = await fetch(API_URL, {
         method: "POST",
@@ -1607,20 +1607,45 @@ function showSyncResultModal(names = [], count = 0) {
   modal.classList.add("active");
 }
 
+function openErrorModal(message, title = "Rekap Tidak Dapat Diproses") {
+  const modal = document.getElementById("errorModal");
+  const titleEl = document.getElementById("errorTitle");
+  const msgEl = document.getElementById("errorMessage");
+
+  if (titleEl) titleEl.textContent = title;
+  if (msgEl) msgEl.textContent = message || "Terjadi kesalahan saat memproses data.";
+
+  if (modal) {
+    document.body.classList.add("modal-open");
+    modal.classList.add("active");
+  } else {
+    showToast(message, "error");
+  }
+}
+
 function closeNotif() {
   const modal = document.getElementById("notifModal");
   if (!modal) return;
   if (modal.dataset.mode === "sync-result") {
-    const pdfLink = document.getElementById("pdfLink");
+    const pdfCard = document.getElementById("rekapPdfCard");
     const waButton = document.getElementById("btnKirimWA");
-    if (pdfLink) pdfLink.parentElement.hidden = false;
+    const msgEl = document.getElementById("notifMessage");
+    if (pdfCard) pdfCard.hidden = false;
     if (waButton) waButton.hidden = false;
+    if (msgEl) msgEl.hidden = true;
     delete modal.dataset.mode;
   }
   modal.classList.remove("active");
+  document.body.classList.remove("modal-open");
 }
-function closeError() { document.getElementById("errorModal")?.classList.remove("active"); }
+
+function closeError() {
+  document.getElementById("errorModal")?.classList.remove("active");
+  document.body.classList.remove("modal-open");
+}
+
 function closeConfirm() { document.getElementById("confirmModal")?.classList.remove("active"); }
+
 function handleConfirmYes() {
   if (typeof window.onConfirmCallback === "function") window.onConfirmCallback();
   closeConfirm();
@@ -1652,7 +1677,7 @@ let latestPdfUrl = "";
 async function cetakRekap() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   if (!user) {
-    showToast("Silakan login terlebih dahulu", "error");
+    openErrorModal("Silakan login terlebih dahulu.", "Sesi Tidak Valid");
     return;
   }
 
@@ -1671,7 +1696,7 @@ async function cetakRekap() {
 
     if (dataCek.result > 0) {
       hideLoading();
-      showToast(`Masih ada ${dataCek.result} data status masuk yang belum diisi!`, "error");
+      openErrorModal(`Masih ada ${dataCek.result} data status masuk yang belum diisi! Silakan lengkapi terlebih dahulu sebelum membuat rekap.`);
       return;
     }
 
@@ -1697,16 +1722,29 @@ async function cetakRekap() {
     latestPdfUrl = pdfUrl;
 
     const pdfLinkEl = document.getElementById("pdfLink");
+    const pdfCardEl = document.getElementById("rekapPdfCard");
+    const waButtonEl = document.getElementById("btnKirimWA");
+    const titleEl = document.getElementById("notifTitle");
+    const subEl = document.getElementById("notifSubtitle");
     const notifModalEl = document.getElementById("notifModal");
 
+    if (titleEl) titleEl.textContent = "Rekap Presensi Selesai Dibuat";
+    if (subEl) subEl.textContent = `Dokumen PDF tanggal ${tanggalSelected} siap dilihat atau dibagikan.`;
+    if (pdfCardEl) pdfCardEl.hidden = false;
+    if (waButtonEl) waButtonEl.hidden = false;
     if (pdfLinkEl) pdfLinkEl.href = pdfUrl;
-    if (notifModalEl) notifModalEl.classList.add("active");
-    else window.open(pdfUrl, "_blank");
+
+    if (notifModalEl) {
+      document.body.classList.add("modal-open");
+      notifModalEl.classList.add("active");
+    } else {
+      window.open(pdfUrl, "_blank");
+    }
 
   } catch (err) {
     console.error(err);
-    showToast(`Gagal: ${err.message}`, "error");
     hideLoading();
+    openErrorModal(err.message || "Terjadi kesalahan saat membuat rekap presensi.");
   }
 }
 

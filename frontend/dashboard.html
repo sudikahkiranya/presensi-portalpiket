@@ -161,27 +161,87 @@
   </div>
 </div>
 
-<!-- NOTIF MODAL -->
+<!-- NOTIF MODAL (REKAP SELESAI) -->
 <div id="notifModal" class="modal-overlay">
-  <div class="modal-box">
-    <h3 id="notifTitle">✅ Rekap Presensi Hari Ini selesai dibuat</h3>
-    <p id="notifMessage" hidden></p>
-    <p><a id="pdfLink" href="#" target="_blank">Lihat Rekap PDF</a></p>
-    <div class="notif-modal-stack">
-      <button type="button" id="btnKirimWA" onclick="kirimRekapGrupWA()">
-        📱 Kirim Rekap ke Grup WA
+  <div class="modal-box rekap-modal-box">
+    <div class="rekap-modal-header">
+      <div class="rekap-icon-badge is-success">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+      </div>
+      <div class="rekap-header-text">
+        <h3 id="notifTitle" class="rekap-modal-title">Rekap Presensi Selesai Dibuat</h3>
+        <p id="notifSubtitle" class="rekap-modal-subtitle">Dokumen PDF berhasil dibuat dan siap dibagikan.</p>
+      </div>
+    </div>
+
+    <p id="notifMessage" class="rekap-plain-message" hidden></p>
+
+    <!-- Kartu Preview Link PDF -->
+    <div id="rekapPdfCard" class="rekap-file-card">
+      <div class="rekap-file-info">
+        <div class="rekap-pdf-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+        </div>
+        <div class="rekap-file-meta">
+          <span class="rekap-file-name">Laporan Rekap Presensi.pdf</span>
+          <span class="rekap-file-hint">Klik untuk membuka dokumen di tab baru</span>
+        </div>
+      </div>
+      <a id="pdfLink" href="#" target="_blank" class="rekap-open-pdf-btn">
+        <span>Lihat PDF</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <line x1="10" y1="14" x2="21" y2="3"></line>
+        </svg>
+      </a>
+    </div>
+
+    <div class="rekap-modal-footer">
+      <button type="button" class="btn-cancel" onclick="closeNotif()">Tutup</button>
+      <button type="button" id="btnKirimWA" class="btn-wa-send" onclick="kirimRekapGrupWA()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        <span>Kirim ke Grup WA</span>
       </button>
-      <button type="button" class="btn-slate" onclick="closeNotif()">Tutup</button>
     </div>
   </div>
 </div>
 
-<!-- ERROR MODAL -->
+<!-- ERROR MODAL (PERINGATAN / GAGAL REKAP) -->
 <div id="errorModal" class="modal-overlay">
-  <div class="modal-box">
-    <h3 class="text-danger">❌ Rekap tidak dapat diproses</h3>
-    <p id="errorMessage"></p>
-    <button class="btn-danger" onclick="closeError()">OK</button>
+  <div class="modal-box rekap-modal-box">
+    <div class="rekap-modal-header">
+      <div class="rekap-icon-badge is-error">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      </div>
+      <div class="rekap-header-text">
+        <h3 id="errorTitle" class="rekap-modal-title">Rekap Tidak Dapat Diproses</h3>
+        <p class="rekap-modal-subtitle">Terdapat kendala yang perlu diselesaikan terlebih dahulu.</p>
+      </div>
+    </div>
+
+    <div class="rekap-error-alert">
+      <p id="errorMessage"></p>
+    </div>
+
+    <div class="rekap-modal-footer">
+      <button type="button" class="btn-danger" onclick="closeError()">Mengerti</button>
+    </div>
   </div>
 </div>
 
