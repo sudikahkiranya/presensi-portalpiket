@@ -466,7 +466,6 @@ function renderStatusBadge(statusTd, s, value) {
   if (value === "Dispensasi" && ketText) {
     const noteEl = document.createElement("div");
     noteEl.className = "dispensasi-note-sub";
-    noteEl.setAttribute("data-tooltip", ketText);
     noteEl.innerHTML = `<span class="dispensasi-note-text">${ketText}</span>`;
     wrapper.appendChild(noteEl);
   }
