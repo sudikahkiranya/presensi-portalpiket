@@ -1731,8 +1731,20 @@ async function cetakRekap() {
     if (titleEl) titleEl.textContent = "Rekap Presensi Selesai Dibuat";
     if (subEl) subEl.textContent = `Dokumen PDF tanggal ${tanggalSelected} siap dilihat atau dibagikan.`;
     if (pdfCardEl) pdfCardEl.hidden = false;
-    if (waButtonEl) waButtonEl.hidden = false;
     if (pdfLinkEl) pdfLinkEl.href = pdfUrl;
+
+    // Reset tombol WA ke kondisi aktif semula setiap kali cetak rekap baru
+    if (waButtonEl) {
+      waButtonEl.hidden = false;
+      waButtonEl.disabled = false;
+      waButtonEl.innerHTML = `
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+        <span>Kirim ke Grup WA</span>
+      `;
+    }
 
     if (notifModalEl) {
       document.body.classList.add("modal-open");
@@ -1751,7 +1763,8 @@ async function cetakRekap() {
 async function kirimRekapGrupWA() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   if (!user) {
-    showToast("Silakan login terlebih dahulu", "error");
+    closeNotif();
+    openErrorModal("Silakan login terlebih dahulu.", "Sesi Tidak Valid");
     return;
   }
 
@@ -1759,6 +1772,9 @@ async function kirimRekapGrupWA() {
   const dateVal = document.getElementById("selectedDate")?.value || getLocalDateString();
   const tanggalSelected = (user.role === "Admin") ? dateVal : getLocalDateString();
   const pdfUrl = latestPdfUrl || "";
+
+  const btnWA = document.getElementById("btnKirimWA");
+  const subEl = document.getElementById("notifSubtitle");
 
   showLoading("Sedang mengirim rekap presensi ke Grup WhatsApp...");
 
@@ -1768,12 +1784,31 @@ async function kirimRekapGrupWA() {
     const result = await response.json();
 
     hideLoading();
-    if (result.success) showToast(result.message || "Rekap berhasil dikirim ke Grup WA!", "success");
-    else showToast("Gagal mengirim WA: " + (result.message || "Terjadi kesalahan server."), "error");
+
+    if (result.success) {
+      showToast(result.message || "Rekap berhasil dikirim ke Grup WA!", "success", 3500);
+
+      if (btnWA) {
+        btnWA.disabled = true;
+        btnWA.innerHTML = `
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Terkirim ke Grup WA</span>
+        `;
+      }
+      if (subEl) {
+        subEl.textContent = "Dokumen PDF berhasil dibuat dan telah dikirim ke Grup WhatsApp.";
+      }
+    } else {
+      closeNotif();
+      openErrorModal(result.message || "Terjadi kesalahan server saat mengirim ke WhatsApp.", "Gagal Mengirim WhatsApp");
+    }
   } catch (err) {
     hideLoading();
     console.error("❌ Error kirimRekapGrupWA:", err);
-    showToast("Terjadi kesalahan koneksi saat mengirim ke WA.", "error");
+    closeNotif();
+    openErrorModal("Terjadi kesalahan koneksi saat mengirim rekap ke Grup WhatsApp.", "Gagal Mengirim WhatsApp");
   }
 }
 
