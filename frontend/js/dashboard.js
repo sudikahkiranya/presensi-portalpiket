@@ -181,9 +181,18 @@ function hideLoading() {
 
 function initFormPiket() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
+  const today = new Date().toLocaleDateString("id-ID");
 
-  if (!user) {
-    window.location.href = "index";
+  // Jika belum login atau tanggal sesi berbeda (ganti hari), bersihkan sesi & snapshot
+  if (!user || (user.loginDate && user.loginDate !== today)) {
+    localStorage.removeItem("piketID");
+    localStorage.removeItem("namaPetugas");
+    localStorage.removeItem("role");
+    localStorage.removeItem("loginDate");
+    localStorage.removeItem("piket_user");
+    localStorage.removeItem("piket_status_snapshots");
+    sessionStorage.removeItem("piket_selected_date");
+    window.location.replace("index");
     return;
   }
 
@@ -399,19 +408,27 @@ function renderStatusBadge(statusTd, s, value) {
 
     createCustomDropdown(dropdownWrapper, manualStatusList, value || "RESET", function(newValue) {
       cleanupListeners();
-      // Ubah nilai "RESET" menjadi string kosong ""
-      const finalValue = (newValue === "RESET") ? "" : newValue;
 
-      if (finalValue !== value) {
-        if (finalValue === "Dispensasi") {
+      if (newValue === "RESET") {
+        const restoredStatus = popInitialStatusSnapshot(s, s.tanggal);
+        saveInitialStatusSnapshot({ ...s, statusMasuk: restoredStatus }, s.tanggal);
+
+        processStatusChange(s.rowIndex, restoredStatus, s.tanggal, "", true);
+        statusTd.innerHTML = "";
+        renderStatusBadge(statusTd, s, restoredStatus);
+        return;
+      }
+
+      if (newValue !== value) {
+        if (newValue === "Dispensasi") {
           statusTd.innerHTML = "";
           renderStatusBadge(statusTd, s, value);
           openDispensasiModal(statusTd, s, value);
           return;
         }
-        processStatusChange(s.rowIndex, finalValue, s.tanggal, "");
+        processStatusChange(s.rowIndex, newValue, s.tanggal, "", false);
         statusTd.innerHTML = "";
-        renderStatusBadge(statusTd, s, finalValue);
+        renderStatusBadge(statusTd, s, newValue);
       } else {
         statusTd.innerHTML = "";
         renderStatusBadge(statusTd, s, value);
@@ -800,31 +817,71 @@ function initSyncStatus() {
   refreshServerSyncStatus(getSelectedAttendanceDate());
 }
 
-function processStatusChange(rowIndex, newValue, tanggal, keterangan = "") {
+const SNAPSHOT_STORAGE_KEY = "piket_status_snapshots";
+
+function getSnapshotKey(siswa, tanggalFallback) {
+  const tgl = normalizeDateKey(siswa?.tanggal || tanggalFallback || getSelectedAttendanceDate());
+  const id = siswa?.idSiswa || siswa?.id_siswa || siswa?.nisn || siswa?.rowIndex;
+  return `${tgl}_${id}`;
+}
+
+function saveInitialStatusSnapshot(siswa, tanggalFallback) {
+  if (!siswa) return;
+  const key = getSnapshotKey(siswa, tanggalFallback);
+  const snapshots = JSON.parse(localStorage.getItem(SNAPSHOT_STORAGE_KEY) || "{}");
+
+  // Hanya simpan jika belum ada snapshot sebelumnya (agar status asli pertama tidak tertimpa)
+  if (!Object.prototype.hasOwnProperty.call(snapshots, key)) {
+    snapshots[key] = siswa.statusMasuk || "";
+    localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(snapshots));
+  }
+}
+
+function popInitialStatusSnapshot(siswa, tanggalFallback) {
+  if (!siswa) return "";
+  const key = getSnapshotKey(siswa, tanggalFallback);
+  const snapshots = JSON.parse(localStorage.getItem(SNAPSHOT_STORAGE_KEY) || "{}");
+  const originalStatus = Object.prototype.hasOwnProperty.call(snapshots, key) ? snapshots[key] : "";
+
+  delete snapshots[key];
+  localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(snapshots));
+  return originalStatus;
+}
+
+function processStatusChange(rowIndex, newValue, tanggal, keterangan = "", isReset = false) {
   const user = JSON.parse(localStorage.getItem("piket_user"));
-  const piketID = user ? user.nama : "Petugas";
+  const piketID = isReset ? "" : (user ? user.nama : "Petugas");
   const timestamp = new Date().toISOString();
 
   const targetSiswa = window.dataSiswa.find(s => Number(s.rowIndex) === Number(rowIndex));
+  let finalStatus = newValue;
+
   if (targetSiswa) {
-    targetSiswa.statusMasuk = newValue;
-    targetSiswa.keterangan = keterangan;
+    if (isReset) {
+      finalStatus = popInitialStatusSnapshot(targetSiswa, tanggal);
+    } else {
+      saveInitialStatusSnapshot(targetSiswa, tanggal);
+    }
+
+    targetSiswa.statusMasuk = finalStatus;
+    targetSiswa.keterangan = isReset ? "" : keterangan;
   }
 
   let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   const existingIdx = queue.findIndex(item => Number(item.rowIndex) === Number(rowIndex));
 
   if (existingIdx > -1) {
-    queue[existingIdx].statusMasuk = newValue;
-    queue[existingIdx].keterangan = keterangan;
+    queue[existingIdx].statusMasuk = finalStatus;
+    queue[existingIdx].keterangan = isReset ? "" : keterangan;
+    queue[existingIdx].piketID = piketID;
     queue[existingIdx].timestamp = timestamp;
     if (targetSiswa) queue[existingIdx].namaSiswa = targetSiswa.nama || targetSiswa.Nama || targetSiswa.namaSiswa || queue[existingIdx].namaSiswa || "Siswa";
     if (tanggal) queue[existingIdx].tanggal = tanggal;
   } else {
     queue.push({
       rowIndex: parseInt(rowIndex, 10),
-      statusMasuk: newValue,
-      keterangan: keterangan,
+      statusMasuk: finalStatus,
+      keterangan: isReset ? "" : keterangan,
       piketID: piketID,
       tanggal: tanggal || (targetSiswa ? targetSiswa.tanggal : ""),
       namaSiswa: targetSiswa ? (targetSiswa.nama || targetSiswa.Nama || targetSiswa.namaSiswa || "Siswa") : "Siswa",
@@ -834,7 +891,7 @@ function processStatusChange(rowIndex, newValue, tanggal, keterangan = "") {
 
   localStorage.setItem("piket_pending_updates", JSON.stringify(queue));
   updatePendingBadge();
-  initFilters(window.dataSiswa); // 👈 Refresh opsi dropdown filter status secara real-time
+  initFilters(window.dataSiswa);
   applyFilter();
   updateSyncStatus();
 
@@ -1102,6 +1159,7 @@ function logout() {
   localStorage.removeItem("namaPetugas");
   localStorage.removeItem("role");
   localStorage.removeItem("loginDate");
+  localStorage.removeItem("piket_status_snapshots"); // 👈 Tambahkan ini
   sessionStorage.removeItem("piket_selected_date");
   window.location.replace("/");
 }

@@ -28,13 +28,14 @@ window.addEventListener("DOMContentLoaded", function () {
 
   // Jika tanggal login berbeda, hapus data sesi saja
   if (savedDate && savedDate !== today) {
-    localStorage.removeItem("piketID");
-    localStorage.removeItem("namaPetugas");
-    localStorage.removeItem("role");
-    localStorage.removeItem("loginDate");
-    localStorage.removeItem("piket_user");
-    return;
-  }
+  localStorage.removeItem("piketID");
+  localStorage.removeItem("namaPetugas");
+  localStorage.removeItem("role");
+  localStorage.removeItem("loginDate");
+  localStorage.removeItem("piket_user");
+  localStorage.removeItem("piket_status_snapshots"); // 👈 Tambahkan ini
+  return;
+}
 
   // Pastikan data sesi individual dan objek pengguna sama-sama tersedia
   if (savedID && savedNama && savedDate === today && savedUser) {
