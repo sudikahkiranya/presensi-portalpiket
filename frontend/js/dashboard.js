@@ -800,6 +800,8 @@ async function submitBulkStatusChange() {
   const progressListEl = document.getElementById("bulkProgressList");
   const closeBtn = document.getElementById("btnCloseBulkProgress");
 
+  const cloudUploadIcon = `<span class="mini-cloud-upload"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1"/><path d="M9 15l3 -3l3 3"/><path d="M12 12l0 9"/></svg></span>`;
+
   if (selectionView) selectionView.style.display = "none";
   if (progressView) progressView.style.display = "flex";
   if (titleEl) titleEl.textContent = "Proses Update Massal";
@@ -811,7 +813,8 @@ async function submitBulkStatusChange() {
   if (counterEl) counterEl.textContent = `0 / ${processedItems.length}`;
   if (closeBtn) {
     closeBtn.disabled = true;
-    closeBtn.textContent = "Memproses...";
+    closeBtn.className = "btn-saving";
+    closeBtn.innerHTML = `${cloudUploadIcon}<span>Menyimpan...</span>`;
   }
 
   if (progressListEl) {
@@ -821,7 +824,7 @@ async function submitBulkStatusChange() {
           <span class="bulk-student-name">${item.namaSiswa} <span style="font-weight: 500; color: #64748b;">(${item.kelasLabel})</span></span>
           <span class="bulk-student-meta">${item.prevStatus} → <strong>${item.statusMasuk || "Belum Presensi"}</strong></span>
         </div>
-        <span class="bulk-progress-badge is-processing">Memproses...</span>
+        <span class="bulk-progress-badge is-processing">${cloudUploadIcon}Menyimpan...</span>
       </div>
     `).join("");
   }
@@ -845,6 +848,7 @@ async function submitBulkStatusChange() {
     if (statusTextEl) statusTextEl.textContent = "Tersimpan di perangkat (otomatis terkirim saat online).";
     if (closeBtn) {
       closeBtn.disabled = false;
+      closeBtn.className = "btn-confirm";
       closeBtn.textContent = "Tutup";
     }
     return;
@@ -898,6 +902,7 @@ async function submitBulkStatusChange() {
 
   if (closeBtn) {
     closeBtn.disabled = false;
+    closeBtn.className = "btn-confirm";
     closeBtn.textContent = "Tutup";
   }
 }
@@ -1151,7 +1156,7 @@ function updateSyncStatus() {
   } else if (syncInProgress) {
     // Kondisi 2 (Online Syncing)
     const activeCount = Math.max(queue.length, 1);
-    setSyncStatus("syncing", `Menyimpan ${activeCount} data...`, currentSyncStudent ? `Memproses: ${currentSyncStudent}` : "Mengirim ke server...", "", false);
+    setSyncStatus("syncing", `Menyimpan ${activeCount} data...`, "Mengirim perubahan ke server...", "", false);
   } else if (pendingForDate > 0) {
     // Kondisi 2b (Online menunggu giliran kirim)
     setSyncStatus("syncing", `Menyimpan ${pendingForDate} data...`, "Mengirim perubahan ke server...", "", false);
@@ -1342,7 +1347,7 @@ async function syncPendingUpdates(showOverlay = false, silentToast = false) {
         ? (batch[0].namaSiswa || batch[0].nama || "data siswa")
         : `${batch.length} data siswa`;
 
-      setSyncStatus("syncing", `Menyimpan ${totalRemaining} data...`, `Memproses: ${currentSyncStudent}`, "", false);
+      setSyncStatus("syncing", `Menyimpan ${totalRemaining} data...`, "Mengirim perubahan ke server...", "", false);
 
       const response = await fetch(API_URL, {
         method: "POST",

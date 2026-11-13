@@ -1729,6 +1729,35 @@ body.modal-open {
 }
 
 /* ==========================================================================
+   IKON CLOUD UPLOAD MINI & STATE BUTTON MENYIMPAN (BULK PROGRESS)
+   ========================================================================== */
+.mini-cloud-upload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  animation: syncCloudPulse 1.2s ease-in-out infinite;
+}
+
+.mini-cloud-upload svg {
+  width: 15px;
+  height: 15px;
+}
+
+.bulk-progress-badge .mini-cloud-upload svg {
+  width: 13px;
+  height: 13px;
+}
+
+.btn-saving {
+  background: #f59e0b !important;
+  color: #ffffff !important;
+  opacity: 1 !important;
+  cursor: wait !important;
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
+}
+
+/* ==========================================================================
    12. LOGIN PAGE STYLES (ORNAMEN BULATAN BACKGROUND EXPORT SCANNER)
    ========================================================================== */
 body.login-body {
