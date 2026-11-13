@@ -1158,7 +1158,7 @@ function updateSyncStatus() {
   } else if (syncInProgress) {
     // Kondisi 2 (Online Syncing)
     const activeCount = Math.max(queue.length, 1);
-    setSyncStatus("syncing", `Menyimpan ${activeCount} data...`, "Mengirim perubahan ke server...", "", false);
+    setSyncStatus("syncing", `Menyimpan ${activeCount} data...`, currentSyncStudent ? `Memproses: ${currentSyncStudent}` : "Mengirim ke server...", "", false);
   } else if (pendingForDate > 0) {
     // Kondisi 2b (Online menunggu giliran kirim)
     setSyncStatus("syncing", `Menyimpan ${pendingForDate} data...`, "Mengirim perubahan ke server...", "", false);
@@ -1349,7 +1349,7 @@ async function syncPendingUpdates(showOverlay = false, silentToast = false) {
         ? (batch[0].namaSiswa || batch[0].nama || "data siswa")
         : `${batch.length} data siswa`;
 
-      setSyncStatus("syncing", `Menyimpan ${totalRemaining} data...`, "Mengirim perubahan ke server...", "", false);
+      setSyncStatus("syncing", `Menyimpan ${totalRemaining} data...`, `Memproses: ${currentSyncStudent}`, "", false);
 
       const response = await fetch(API_URL, {
         method: "POST",
