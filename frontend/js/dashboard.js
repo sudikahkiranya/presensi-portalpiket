@@ -826,7 +826,6 @@ async function submitBulkStatusChange() {
   syncTimer = null;
 
   if (!navigator.onLine) {
-    // Jika offline, tandai semua tersimpan lokal dan aktifkan tombol Tutup
     processedItems.forEach((item, idx) => {
       const badge = progressListEl?.querySelector(`.bulk-progress-row[data-row="${item.rowIndex}"] .bulk-progress-badge`);
       if (badge) {
@@ -843,12 +842,11 @@ async function submitBulkStatusChange() {
     return;
   }
 
-  // Tunggu jika ada proses sync satuan yang kebetulan sedang berjalan
   while (syncInProgress) {
     await new Promise(r => setTimeout(r, 150));
   }
 
-  const result = await syncPendingUpdates(false);
+  await syncPendingUpdates(false);
   const remainingQueue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   let completedCount = 0;
 
@@ -871,7 +869,6 @@ async function submitBulkStatusChange() {
     }
 
     if (counterEl) counterEl.textContent = `${completedCount} / ${processedItems.length}`;
-    // Beri jeda visual halus (35ms) agar petugas bisa melihat centang berjalan rapi
     if (processedItems.length <= 50) {
       await new Promise(r => setTimeout(r, 35));
     }
