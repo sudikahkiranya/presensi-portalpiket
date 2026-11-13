@@ -540,8 +540,19 @@ function openBulkModal() {
   }
 
   bulkSelectedRows.clear();
+  document.body.classList.add("modal-open");
 
   const modal = document.getElementById("bulkModal");
+  const selectionView = document.getElementById("bulkSelectionView");
+  const progressView = document.getElementById("bulkProgressView");
+  const titleEl = document.getElementById("bulkModalTitle");
+  const subEl = document.getElementById("bulkModalSubtitle");
+
+  if (titleEl) titleEl.textContent = "Ubah Status Massal";
+  if (subEl) subEl.textContent = "Filter dan centang siswa yang ingin diubah statusnya sekaligus.";
+  if (selectionView) selectionView.style.display = "flex";
+  if (progressView) progressView.style.display = "none";
+
   const namaInput = document.getElementById("bulkFilterNama");
   const dispInput = document.getElementById("bulkDispensasiInput");
   if (namaInput) namaInput.value = "";
@@ -576,21 +587,306 @@ function openBulkModal() {
   }
 
   if (bulkTargetEl) {
-    const targetOptions = [
-      { value: "", label: "-- Pilih Status Baru --" },
-      ...manualStatusList
-    ];
-    createCustomDropdown(bulkTargetEl, targetOptions, "", (val) => {
+    // Gunakan manualStatusList langsung tanpa memasukkan placeholder ke dalam opsi menu
+    createCustomDropdown(bulkTargetEl, manualStatusList, "RESET", (val) => {
       if (dispInput) {
         dispInput.style.display = (val === "Dispensasi") ? "block" : "none";
         if (val === "Dispensasi") setTimeout(() => dispInput.focus(), 40);
       }
       updateBulkSelectionUI();
     });
+
+    // Setel teks awal sebagai placeholder (data-value kosong sampai petugas memilih)
+    const textSpan = bulkTargetEl.querySelector(".dropdown-text");
+    if (textSpan) textSpan.innerText = "-- Pilih Status Baru --";
+    bulkTargetEl.setAttribute("data-value", "");
   }
 
   renderBulkStudentList();
   if (modal) modal.classList.add("active");
+}
+
+function closeBulkModal() {
+  const modal = document.getElementById("bulkModal");
+  if (modal) modal.classList.remove("active");
+  document.body.classList.remove("modal-open");
+  bulkSelectedRows.clear();
+}
+
+function getFilteredBulkStudents() {
+  const kelas = document.getElementById("bulkFilterKelas")?.getAttribute("data-value") || "";
+  const tingkat = document.getElementById("bulkFilterTingkat")?.getAttribute("data-value") || "";
+  const status = document.getElementById("bulkFilterStatus")?.getAttribute("data-value") || "";
+  const nama = document.getElementById("bulkFilterNama")?.value.toLowerCase().trim() || "";
+
+  return window.dataSiswa
+    .filter(s => (!kelas || s.kelas === kelas))
+    .filter(s => (!tingkat || String(s.tingkat).trim().toLowerCase() === String(tingkat).trim().toLowerCase()))
+    .filter(s => {
+      if (!status) return true;
+      if (status === "Belum Presensi") return !s.statusMasuk;
+      return s.statusMasuk === status;
+    })
+    .filter(s => !nama || (s.nama && s.nama.toLowerCase().includes(nama)));
+}
+
+function renderBulkStudentList() {
+  const listEl = document.getElementById("bulkStudentList");
+  if (!listEl) return;
+
+  const filtered = getFilteredBulkStudents();
+  const visibleCountEl = document.getElementById("bulkVisibleCount");
+  if (visibleCountEl) visibleCountEl.textContent = filtered.length;
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `<div class="bulk-empty-state">Tidak ada siswa yang sesuai dengan filter.</div>`;
+    updateBulkSelectionUI();
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  filtered.forEach(s => {
+    const rowIdx = Number(s.rowIndex);
+    const isChecked = bulkSelectedRows.has(rowIdx);
+    const statusVal = s.statusMasuk || "";
+    const matchStatus = masterStatusList.find(m => m.value === statusVal);
+    const badgeClass = matchStatus ? matchStatus.class : "status-kosong";
+
+    const row = document.createElement("div");
+    row.className = `bulk-student-row${isChecked ? " is-checked" : ""}`;
+    row.innerHTML = `
+      <div class="bulk-student-left">
+        <input type="checkbox" ${isChecked ? "checked" : ""}>
+        <div class="bulk-student-info">
+          <span class="bulk-student-name">${s.nama || "-"}</span>
+          <span class="bulk-student-meta">${formatNamaKelas(s.kelas, s.tingkat)} • Tingkat ${s.tingkat || "-"}</span>
+        </div>
+      </div>
+      <span class="bulk-status-chip ${badgeClass}">${statusVal || "Belum Presensi"}</span>
+    `;
+
+    const cb = row.querySelector("input[type='checkbox']");
+    row.onclick = function(e) {
+      if (e.target !== cb) cb.checked = !cb.checked;
+      if (cb.checked) {
+        bulkSelectedRows.add(rowIdx);
+        row.classList.add("is-checked");
+      } else {
+        bulkSelectedRows.delete(rowIdx);
+        row.classList.remove("is-checked");
+      }
+      updateBulkSelectionUI();
+    };
+
+    fragment.appendChild(row);
+  });
+
+  listEl.innerHTML = "";
+  listEl.appendChild(fragment);
+  updateBulkSelectionUI();
+}
+
+function toggleBulkSelectAll(checked) {
+  const filtered = getFilteredBulkStudents();
+  filtered.forEach(s => {
+    const rowIdx = Number(s.rowIndex);
+    if (checked) bulkSelectedRows.add(rowIdx);
+    else bulkSelectedRows.delete(rowIdx);
+  });
+  renderBulkStudentList();
+}
+
+function updateBulkSelectionUI() {
+  const filtered = getFilteredBulkStudents();
+  const selectAllCb = document.getElementById("bulkSelectAll");
+  const badgeEl = document.getElementById("bulkSelectedBadge");
+  const applyBtn = document.getElementById("btnApplyBulk");
+  const targetVal = document.getElementById("bulkTargetStatus")?.getAttribute("data-value") || "";
+
+  const totalSelected = bulkSelectedRows.size;
+
+  if (selectAllCb) {
+    const allVisibleSelected = filtered.length > 0 && filtered.every(s => bulkSelectedRows.has(Number(s.rowIndex)));
+    selectAllCb.checked = allVisibleSelected;
+    selectAllCb.indeterminate = !allVisibleSelected && filtered.some(s => bulkSelectedRows.has(Number(s.rowIndex)));
+  }
+
+  if (badgeEl) badgeEl.textContent = `${totalSelected} siswa dipilih`;
+  if (applyBtn) {
+    applyBtn.textContent = `Terapkan (${totalSelected})`;
+    applyBtn.disabled = (totalSelected === 0 || !targetVal);
+  }
+}
+
+async function submitBulkStatusChange() {
+  const targetVal = document.getElementById("bulkTargetStatus")?.getAttribute("data-value") || "";
+  const keterangan = document.getElementById("bulkDispensasiInput")?.value.trim() || "";
+
+  if (bulkSelectedRows.size === 0) {
+    showToast("Pilih minimal satu siswa terlebih dahulu.", "error");
+    return;
+  }
+
+  if (!targetVal) {
+    showToast("Pilih status tujuan terlebih dahulu.", "error");
+    return;
+  }
+
+  if (targetVal === "Dispensasi" && !keterangan) {
+    showToast("Keterangan dispensasi wajib diisi!", "error");
+    document.getElementById("bulkDispensasiInput")?.focus();
+    return;
+  }
+
+  const user = JSON.parse(localStorage.getItem("piket_user"));
+  const isReset = (targetVal === "RESET");
+  const piketID = isReset ? "" : (user ? user.nama : "Petugas");
+  const timestamp = new Date().toISOString();
+
+  let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
+  const processedItems = [];
+
+  bulkSelectedRows.forEach(rowIdx => {
+    const targetSiswa = window.dataSiswa.find(s => Number(s.rowIndex) === Number(rowIdx));
+    if (!targetSiswa) return;
+
+    let finalStatus = targetVal;
+    if (isReset) {
+      finalStatus = popInitialStatusSnapshot(targetSiswa, targetSiswa.tanggal);
+    } else {
+      saveInitialStatusSnapshot(targetSiswa, targetSiswa.tanggal);
+    }
+
+    targetSiswa.statusMasuk = finalStatus;
+    targetSiswa.keterangan = isReset ? "" : (finalStatus === "Dispensasi" ? keterangan : "");
+
+    const existingIdx = queue.findIndex(item => Number(item.rowIndex) === Number(rowIdx));
+    const entry = {
+      rowIndex: parseInt(rowIdx, 10),
+      statusMasuk: finalStatus,
+      keterangan: targetSiswa.keterangan,
+      piketID: piketID,
+      tanggal: targetSiswa.tanggal || getSelectedAttendanceDate(),
+      namaSiswa: targetSiswa.nama || targetSiswa.Nama || targetSiswa.namaSiswa || "Siswa",
+      kelasLabel: formatNamaKelas(targetSiswa.kelas, targetSiswa.tingkat),
+      timestamp: timestamp
+    };
+
+    if (existingIdx > -1) queue[existingIdx] = entry;
+    else queue.push(entry);
+
+    processedItems.push(entry);
+  });
+
+  localStorage.setItem("piket_pending_updates", JSON.stringify(queue));
+
+  // Perbarui tabel utama di belakang layar
+  updatePendingBadge();
+  initFilters(window.dataSiswa);
+  applyFilter();
+  updateSyncStatus();
+
+  // Alihkan modal ke tampilan Progress Checklist (tutup manual oleh petugas)
+  const selectionView = document.getElementById("bulkSelectionView");
+  const progressView = document.getElementById("bulkProgressView");
+  const titleEl = document.getElementById("bulkModalTitle");
+  const subEl = document.getElementById("bulkModalSubtitle");
+  const statusTextEl = document.getElementById("bulkProgressStatusText");
+  const counterEl = document.getElementById("bulkProgressCounter");
+  const progressListEl = document.getElementById("bulkProgressList");
+  const closeBtn = document.getElementById("btnCloseBulkProgress");
+
+  if (selectionView) selectionView.style.display = "none";
+  if (progressView) progressView.style.display = "flex";
+  if (titleEl) titleEl.textContent = "Proses Update Massal";
+  if (subEl) subEl.textContent = isReset
+    ? "Mengembalikan status siswa terpilih ke kondisi awal."
+    : `Mengubah status ${processedItems.length} siswa menjadi "${targetVal}".`;
+
+  if (statusTextEl) statusTextEl.textContent = navigator.onLine ? "Menyimpan data ke server..." : "Mode Offline: Menyimpan ke antrean lokal...";
+  if (counterEl) counterEl.textContent = `0 / ${processedItems.length}`;
+  if (closeBtn) {
+    closeBtn.disabled = true;
+    closeBtn.textContent = "Memproses...";
+  }
+
+  if (progressListEl) {
+    progressListEl.innerHTML = processedItems.map(item => `
+      <div class="bulk-progress-row" data-row="${item.rowIndex}">
+        <div class="bulk-student-info">
+          <span class="bulk-student-name">${item.namaSiswa}</span>
+          <span class="bulk-student-meta">${item.kelasLabel} → <strong>${item.statusMasuk || "Belum Presensi"}</strong></span>
+        </div>
+        <span class="bulk-progress-badge is-processing">Memproses...</span>
+      </div>
+    `).join("");
+  }
+
+  clearTimeout(syncTimer);
+  syncTimer = null;
+
+  if (!navigator.onLine) {
+    // Jika offline, tandai semua tersimpan lokal dan aktifkan tombol Tutup
+    processedItems.forEach((item, idx) => {
+      const badge = progressListEl?.querySelector(`.bulk-progress-row[data-row="${item.rowIndex}"] .bulk-progress-badge`);
+      if (badge) {
+        badge.className = "bulk-progress-badge is-offline";
+        badge.textContent = "✓ Tersimpan Lokal";
+      }
+      if (counterEl) counterEl.textContent = `${idx + 1} / ${processedItems.length}`;
+    });
+    if (statusTextEl) statusTextEl.textContent = "Tersimpan di perangkat (otomatis terkirim saat online).";
+    if (closeBtn) {
+      closeBtn.disabled = false;
+      closeBtn.textContent = "Tutup";
+    }
+    return;
+  }
+
+  // Tunggu jika ada proses sync satuan yang kebetulan sedang berjalan
+  while (syncInProgress) {
+    await new Promise(r => setTimeout(r, 150));
+  }
+
+  const result = await syncPendingUpdates(false);
+  const remainingQueue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
+  let completedCount = 0;
+
+  for (let i = 0; i < processedItems.length; i++) {
+    const item = processedItems[i];
+    const stillQueued = remainingQueue.some(q => Number(q.rowIndex) === Number(item.rowIndex) && q.timestamp === item.timestamp);
+    const badge = progressListEl?.querySelector(`.bulk-progress-row[data-row="${item.rowIndex}"] .bulk-progress-badge`);
+
+    if (!stillQueued) {
+      completedCount++;
+      if (badge) {
+        badge.className = "bulk-progress-badge is-done";
+        badge.textContent = "✓ Berhasil";
+      }
+    } else {
+      if (badge) {
+        badge.className = "bulk-progress-badge is-error";
+        badge.textContent = "⏳ Antre Ulang";
+      }
+    }
+
+    if (counterEl) counterEl.textContent = `${completedCount} / ${processedItems.length}`;
+    // Beri jeda visual halus (35ms) agar petugas bisa melihat centang berjalan rapi
+    if (processedItems.length <= 50) {
+      await new Promise(r => setTimeout(r, 35));
+    }
+  }
+
+  if (statusTextEl) {
+    statusTextEl.textContent = (completedCount === processedItems.length)
+      ? `Selesai! ${completedCount} data siswa berhasil diperbarui.`
+      : `${completedCount} berhasil, ${processedItems.length - completedCount} menunggu koneksi stabil.`;
+  }
+
+  if (closeBtn) {
+    closeBtn.disabled = false;
+    closeBtn.textContent = "Tutup";
+  }
 }
 
 function closeBulkModal() {
@@ -1741,7 +2037,7 @@ function openCustomDropdown(dropdown) {
   }
 
   // Jangan paksa scroll jika dropdown berada di dalam tabel (#tbodySiswa)
-  if (!dropdown.closest("#tbodySiswa")) {
+  if (!dropdown.closest("#tbodySiswa") && dropdown.id !== "bulkTargetStatus") {
     menu.style.setProperty("max-height", "250px", "important");
     menu.style.setProperty("overflow-y", "auto", "important");
   }

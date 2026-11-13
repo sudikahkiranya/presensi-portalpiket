@@ -1634,6 +1634,100 @@ footer {
   gap: 8px;
 }
 
+/* Kunci scroll panel utama saat modal aktif */
+html:has(body.modal-open),
+body.modal-open {
+  overflow: hidden !important;
+  height: 100vh !important;
+}
+
+.bulk-view-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.bulk-student-list {
+  overscroll-behavior: contain;
+}
+
+/* Tampilkan semua opsi dropdown status di modal bulk tanpa scroll */
+#bulkTargetStatus .dropdown-menu,
+#bulkTargetStatus .dropdown-menu-inner {
+  max-height: none !important;
+  overflow-y: visible !important;
+}
+
+/* Progress Checklist Styles */
+.bulk-progress-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid var(--border-light);
+  border-bottom: none;
+  border-radius: 10px 10px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.bulk-progress-list {
+  max-height: 340px;
+}
+
+.bulk-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 14px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.bulk-progress-row:last-child {
+  border-bottom: none;
+}
+
+.bulk-progress-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bulk-progress-badge.is-processing {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.bulk-progress-badge.is-done {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.bulk-progress-badge.is-offline {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.bulk-progress-badge.is-error {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.bulk-progress-footer {
+  justify-content: flex-end !important;
+}
+
 /* ==========================================================================
    12. LOGIN PAGE STYLES (ORNAMEN BULATAN BACKGROUND EXPORT SCANNER)
    ========================================================================== */
