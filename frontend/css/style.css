@@ -1196,6 +1196,53 @@ footer {
   box-shadow: 0 0 0 3px var(--theme-glow);
 }
 
+/* ==========================================================================
+   SEARCH INPUT WRAPPER & TOMBOL CLEAR (✕)
+   ========================================================================== */
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.search-input-wrapper .filter-input-text {
+  padding-right: 32px !important;
+}
+
+.search-clear-btn {
+  position: absolute !important;
+  right: 8px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 50% !important;
+  background: #e2e8f0 !important;
+  color: #475569 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease !important;
+}
+
+.search-clear-btn[hidden] {
+  display: none !important;
+}
+
+.search-clear-btn:hover {
+  background: var(--primary) !important;
+  color: #ffffff !important;
+  transform: translateY(-50%) !important;
+}
+
 .dispensasi-modal-box {
   width: 360px !important;
   max-width: calc(100vw - 32px);

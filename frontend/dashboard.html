@@ -226,7 +226,10 @@
         </div>
         <div class="filter-item">
           <label for="bulkFilterNama">Nama Siswa:</label>
-          <input type="text" id="bulkFilterNama" class="filter-input-text" placeholder="Cari nama..." onkeyup="renderBulkStudentList()">
+          <div class="search-input-wrapper">
+            <input type="text" id="bulkFilterNama" class="filter-input-text" placeholder="Cari nama..." oninput="handleSearchInput(this, 'clearBulkFilterNamaBtn', renderBulkStudentList)">
+            <button type="button" id="clearBulkFilterNamaBtn" class="search-clear-btn" onclick="clearSearchInput('bulkFilterNama', 'clearBulkFilterNamaBtn', renderBulkStudentList)" title="Hapus pencarian" hidden>✕</button>
+          </div>
         </div>
       </div>
 
@@ -306,9 +309,11 @@
 
           <div class="filter-item">
             <label for="filterNama">Nama Siswa:</label>
-            <input type="text" id="filterNama" class="filter-input-text" placeholder="Cari nama..." onkeyup="applyFilter()">
+            <div class="search-input-wrapper">
+              <input type="text" id="filterNama" class="filter-input-text" placeholder="Cari nama..." oninput="handleSearchInput(this, 'clearFilterNamaBtn', applyFilter)">
+              <button type="button" id="clearFilterNamaBtn" class="search-clear-btn" onclick="clearSearchInput('filterNama', 'clearFilterNamaBtn', applyFilter)" title="Hapus pencarian" hidden>✕</button>
+            </div>
           </div>
-        </div>
 
         <div class="statistik-wrapper">
           <div class="jumlah-data-box">

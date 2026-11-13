@@ -554,8 +554,10 @@ function openBulkModal() {
   if (progressView) progressView.style.display = "none";
 
   const namaInput = document.getElementById("bulkFilterNama");
+  const clearBulkBtn = document.getElementById("clearBulkFilterNamaBtn");
   const dispInput = document.getElementById("bulkDispensasiInput");
   if (namaInput) namaInput.value = "";
+  if (clearBulkBtn) clearBulkBtn.hidden = true;
   if (dispInput) {
     dispInput.value = "";
     dispInput.style.display = "none";
@@ -1951,6 +1953,75 @@ document.addEventListener("click", function(e) {
   document.querySelectorAll(".custom-dropdown.open").forEach(function(el) {
     closeCustomDropdown(el);
   });
+});
+
+/* ==========================================================================
+   SEARCH CLEAR BUTTON & KEYBOARD SHORTCUT (ESC)
+   ========================================================================== */
+function handleSearchInput(inputEl, clearBtnId, callbackFn) {
+  const clearBtn = document.getElementById(clearBtnId);
+  if (clearBtn) {
+    clearBtn.hidden = !inputEl.value;
+  }
+  if (typeof callbackFn === "function") callbackFn();
+}
+
+function clearSearchInput(inputId, clearBtnId, callbackFn) {
+  const inputEl = document.getElementById(inputId);
+  const clearBtn = document.getElementById(clearBtnId);
+  if (inputEl) {
+    inputEl.value = "";
+    inputEl.focus();
+  }
+  if (clearBtn) clearBtn.hidden = true;
+  if (typeof callbackFn === "function") callbackFn();
+}
+
+document.addEventListener("keydown", function (e) {
+  if (e.key !== "Escape") return;
+
+  // 1. Jika ada custom dropdown yang terbuka, tutup dropdown-nya dulu
+  const openDropdowns = document.querySelectorAll(".custom-dropdown.open");
+  if (openDropdowns.length > 0) {
+    openDropdowns.forEach(el => closeCustomDropdown(el));
+    return;
+  }
+
+  // 2. Cek modal aktif dari prioritas paling atas
+  const dispensasiModal = document.getElementById("dispensasiModal");
+  if (dispensasiModal && dispensasiModal.classList.contains("active")) {
+    closeDispensasiModal();
+    return;
+  }
+
+  const confirmModal = document.getElementById("confirmModal");
+  if (confirmModal && confirmModal.classList.contains("active")) {
+    closeConfirm();
+    return;
+  }
+
+  const notifModal = document.getElementById("notifModal");
+  if (notifModal && notifModal.classList.contains("active")) {
+    closeNotif();
+    return;
+  }
+
+  const errorModal = document.getElementById("errorModal");
+  if (errorModal && errorModal.classList.contains("active")) {
+    closeError();
+    return;
+  }
+
+  // 3. Modal Bulk Action: hanya boleh ditutup jika tidak sedang proses menyimpan
+  const bulkModal = document.getElementById("bulkModal");
+  if (bulkModal && bulkModal.classList.contains("active")) {
+    const progressView = document.getElementById("bulkProgressView");
+    const closeBtn = document.getElementById("btnCloseBulkProgress");
+    const isSaving = progressView && progressView.style.display !== "none" && closeBtn && closeBtn.disabled;
+    if (!isSaving) {
+      closeBulkModal();
+    }
+  }
 });
 
 document.addEventListener('DOMContentLoaded', initFormPiket);
