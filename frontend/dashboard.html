@@ -198,6 +198,63 @@
   </div>
 </div>
 
+<!-- BULK ACTION MODAL -->
+<div id="bulkModal" class="modal-overlay">
+  <div class="modal-box bulk-modal-box">
+    <div class="bulk-modal-header">
+      <div>
+        <h3 class="bulk-modal-title">Ubah Status Massal</h3>
+        <p class="bulk-modal-subtitle">Filter dan centang siswa yang ingin diubah statusnya sekaligus.</p>
+      </div>
+      <button type="button" class="bulk-close-icon" onclick="closeBulkModal()" aria-label="Tutup">✕</button>
+    </div>
+
+    <!-- Filter 4 Kolom Identik dengan Panel Utama -->
+    <div class="bulk-filter-grid">
+      <div class="filter-item">
+        <label for="bulkFilterKelas">Kelas:</label>
+        <div id="bulkFilterKelas" data-value=""></div>
+      </div>
+      <div class="filter-item">
+        <label for="bulkFilterTingkat">Tingkat:</label>
+        <div id="bulkFilterTingkat" data-value=""></div>
+      </div>
+      <div class="filter-item">
+        <label for="bulkFilterStatus">Status Masuk:</label>
+        <div id="bulkFilterStatus" data-value=""></div>
+      </div>
+      <div class="filter-item">
+        <label for="bulkFilterNama">Nama Siswa:</label>
+        <input type="text" id="bulkFilterNama" class="filter-input-text" placeholder="Cari nama..." onkeyup="renderBulkStudentList()">
+      </div>
+    </div>
+
+    <!-- Bar Pilih Semua & Counter -->
+    <div class="bulk-select-bar">
+      <label class="bulk-select-all-label">
+        <input type="checkbox" id="bulkSelectAll" onchange="toggleBulkSelectAll(this.checked)">
+        <span>Pilih semua yang tampil (<span id="bulkVisibleCount">0</span>)</span>
+      </label>
+      <span id="bulkSelectedBadge" class="bulk-selected-pill">0 siswa dipilih</span>
+    </div>
+
+    <!-- Daftar Checklist Siswa -->
+    <div id="bulkStudentList" class="bulk-student-list"></div>
+
+    <!-- Footer Eksekusi -->
+    <div class="bulk-modal-footer">
+      <div class="bulk-target-controls">
+        <div id="bulkTargetStatus" data-value=""></div>
+        <input type="text" id="bulkDispensasiInput" class="filter-input-text" placeholder="Alasan/kegiatan dispensasi..." style="display: none;">
+      </div>
+      <div class="bulk-footer-buttons">
+        <button type="button" class="btn-cancel" onclick="closeBulkModal()">Batal</button>
+        <button type="button" id="btnApplyBulk" class="btn-confirm" onclick="submitBulkStatusChange()" disabled>Terapkan (0)</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- LOADING OVERLAY MODERN MINIMALIS -->
 <div id="loadingOverlay">
   <div>
@@ -301,6 +358,14 @@
             Refresh Data
           </button>
 
+          <button type="button" onclick="openBulkModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 11 12 14 22 4"></polyline>
+              <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+            </svg>
+            Ubah Massal
+          </button>
+          
           <div id="adminFilter" class="admin-date-picker">
             <input type="date" id="selectedDate" onchange="fetchData(this.value)">
           </div>

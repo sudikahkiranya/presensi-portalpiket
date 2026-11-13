@@ -293,16 +293,8 @@ async function fetchData(selectedDate) {
   }
 }
 
-function initFilters(data = null) {
+function buildFilterOptions(data = null) {
   const isDataReady = Array.isArray(data);
-
-  const kelasContainer = document.getElementById("filterKelas");
-  const tingkatContainer = document.getElementById("filterTingkat");
-  const statusContainer = document.getElementById("filterStatus");
-
-  const previousKelas = kelasContainer?.getAttribute("data-value") || "";
-  const previousTingkat = tingkatContainer?.getAttribute("data-value") || "";
-  const previousStatus = statusContainer?.getAttribute("data-value") || "";
 
   const kelasMap = new Map();
   if (isDataReady) {
@@ -340,11 +332,6 @@ function initFilters(data = null) {
     ...sortedKeys.map(idRombel => ({ value: idRombel, label: kelasMap.get(idRombel) }))
   ];
 
-  if (kelasContainer) {
-    const selectedKelas = kelasOptions.some(option => option.value === previousKelas) ? previousKelas : "";
-    createCustomDropdown(kelasContainer, kelasOptions, selectedKelas, () => applyFilter());
-  }
-
   const uniqueTingkat = isDataReady
     ? [...new Set(data.map(s => s.tingkat).filter(Boolean))].sort()
     : [];
@@ -354,17 +341,12 @@ function initFilters(data = null) {
     ...uniqueTingkat.map(t => ({ value: t, label: t }))
   ];
 
-  if (tingkatContainer) {
-    const selectedTingkat = tingkatOptions.some(option => option.value === previousTingkat) ? previousTingkat : "";
-    createCustomDropdown(tingkatContainer, tingkatOptions, selectedTingkat, () => applyFilter());
-  }
-
   const availableStatuses = new Set();
   if (Array.isArray(data) && data.length > 0) {
     data.forEach(s => {
       const status = String(s.statusMasuk ?? "").trim();
       if (status) availableStatuses.add(status);
-      else availableStatuses.add("Belum Presensi"); // 👈 Diubah dari "Kosong"
+      else availableStatuses.add("Belum Presensi");
     });
   }
 
@@ -374,8 +356,32 @@ function initFilters(data = null) {
     ...sortedStatuses.map(status => ({ value: status, label: status }))
   ];
 
+  return { kelasOptions, tingkatOptions, statusOptions };
+}
+
+function initFilters(data = null) {
+  const { kelasOptions, tingkatOptions, statusOptions } = buildFilterOptions(data);
+
+  const kelasContainer = document.getElementById("filterKelas");
+  const tingkatContainer = document.getElementById("filterTingkat");
+  const statusContainer = document.getElementById("filterStatus");
+
+  const previousKelas = kelasContainer?.getAttribute("data-value") || "";
+  const previousTingkat = tingkatContainer?.getAttribute("data-value") || "";
+  const previousStatus = statusContainer?.getAttribute("data-value") || "";
+
+  if (kelasContainer) {
+    const selectedKelas = kelasOptions.some(opt => opt.value === previousKelas) ? previousKelas : "";
+    createCustomDropdown(kelasContainer, kelasOptions, selectedKelas, () => applyFilter());
+  }
+
+  if (tingkatContainer) {
+    const selectedTingkat = tingkatOptions.some(opt => opt.value === previousTingkat) ? previousTingkat : "";
+    createCustomDropdown(tingkatContainer, tingkatOptions, selectedTingkat, () => applyFilter());
+  }
+
   if (statusContainer) {
-    const selectedStatus = statusOptions.some(option => option.value === previousStatus) ? previousStatus : "";
+    const selectedStatus = statusOptions.some(opt => opt.value === previousStatus) ? previousStatus : "";
     createCustomDropdown(statusContainer, statusOptions, selectedStatus, () => applyFilter());
   }
 }
@@ -520,6 +526,254 @@ function submitDispensasi() {
   }
 
   closeDispensasiModal();
+}
+
+/* ==========================================================================
+   BULK ACTION MODAL ENGINE
+   ========================================================================== */
+let bulkSelectedRows = new Set();
+
+function openBulkModal() {
+  if (!Array.isArray(window.dataSiswa) || window.dataSiswa.length === 0) {
+    showToast("Data siswa belum tersedia.", "info");
+    return;
+  }
+
+  bulkSelectedRows.clear();
+
+  const modal = document.getElementById("bulkModal");
+  const namaInput = document.getElementById("bulkFilterNama");
+  const dispInput = document.getElementById("bulkDispensasiInput");
+  if (namaInput) namaInput.value = "";
+  if (dispInput) {
+    dispInput.value = "";
+    dispInput.style.display = "none";
+  }
+
+  // Samakan seluruh opsi filter dengan panel utama
+  const { kelasOptions, tingkatOptions, statusOptions } = buildFilterOptions(window.dataSiswa);
+
+  const mainKelas = document.getElementById("filterKelas")?.getAttribute("data-value") || "";
+  const mainTingkat = document.getElementById("filterTingkat")?.getAttribute("data-value") || "";
+  const mainStatus = document.getElementById("filterStatus")?.getAttribute("data-value") || "";
+
+  const bulkKelasEl = document.getElementById("bulkFilterKelas");
+  const bulkTingkatEl = document.getElementById("bulkFilterTingkat");
+  const bulkStatusEl = document.getElementById("bulkFilterStatus");
+  const bulkTargetEl = document.getElementById("bulkTargetStatus");
+
+  if (bulkKelasEl) {
+    const initK = kelasOptions.some(o => o.value === mainKelas) ? mainKelas : "";
+    createCustomDropdown(bulkKelasEl, kelasOptions, initK, () => renderBulkStudentList());
+  }
+  if (bulkTingkatEl) {
+    const initT = tingkatOptions.some(o => o.value === mainTingkat) ? mainTingkat : "";
+    createCustomDropdown(bulkTingkatEl, tingkatOptions, initT, () => renderBulkStudentList());
+  }
+  if (bulkStatusEl) {
+    const initS = statusOptions.some(o => o.value === mainStatus) ? mainStatus : "";
+    createCustomDropdown(bulkStatusEl, statusOptions, initS, () => renderBulkStudentList());
+  }
+
+  if (bulkTargetEl) {
+    const targetOptions = [
+      { value: "", label: "-- Pilih Status Baru --" },
+      ...manualStatusList
+    ];
+    createCustomDropdown(bulkTargetEl, targetOptions, "", (val) => {
+      if (dispInput) {
+        dispInput.style.display = (val === "Dispensasi") ? "block" : "none";
+        if (val === "Dispensasi") setTimeout(() => dispInput.focus(), 40);
+      }
+      updateBulkSelectionUI();
+    });
+  }
+
+  renderBulkStudentList();
+  if (modal) modal.classList.add("active");
+}
+
+function closeBulkModal() {
+  const modal = document.getElementById("bulkModal");
+  if (modal) modal.classList.remove("active");
+  bulkSelectedRows.clear();
+}
+
+function getFilteredBulkStudents() {
+  const kelas = document.getElementById("bulkFilterKelas")?.getAttribute("data-value") || "";
+  const tingkat = document.getElementById("bulkFilterTingkat")?.getAttribute("data-value") || "";
+  const status = document.getElementById("bulkFilterStatus")?.getAttribute("data-value") || "";
+  const nama = document.getElementById("bulkFilterNama")?.value.toLowerCase().trim() || "";
+
+  return window.dataSiswa
+    .filter(s => (!kelas || s.kelas === kelas))
+    .filter(s => (!tingkat || String(s.tingkat).trim().toLowerCase() === String(tingkat).trim().toLowerCase()))
+    .filter(s => {
+      if (!status) return true;
+      if (status === "Belum Presensi") return !s.statusMasuk;
+      return s.statusMasuk === status;
+    })
+    .filter(s => !nama || (s.nama && s.nama.toLowerCase().includes(nama)));
+}
+
+function renderBulkStudentList() {
+  const listEl = document.getElementById("bulkStudentList");
+  if (!listEl) return;
+
+  const filtered = getFilteredBulkStudents();
+  const visibleCountEl = document.getElementById("bulkVisibleCount");
+  if (visibleCountEl) visibleCountEl.textContent = filtered.length;
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = `<div class="bulk-empty-state">Tidak ada siswa yang sesuai dengan filter.</div>`;
+    updateBulkSelectionUI();
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  filtered.forEach(s => {
+    const rowIdx = Number(s.rowIndex);
+    const isChecked = bulkSelectedRows.has(rowIdx);
+    const statusVal = s.statusMasuk || "";
+    const matchStatus = masterStatusList.find(m => m.value === statusVal);
+    const badgeClass = matchStatus ? matchStatus.class : "status-kosong";
+
+    const row = document.createElement("div");
+    row.className = `bulk-student-row${isChecked ? " is-checked" : ""}`;
+    row.innerHTML = `
+      <div class="bulk-student-left">
+        <input type="checkbox" ${isChecked ? "checked" : ""}>
+        <div class="bulk-student-info">
+          <span class="bulk-student-name">${s.nama || "-"}</span>
+          <span class="bulk-student-meta">${formatNamaKelas(s.kelas, s.tingkat)} • Tingkat ${s.tingkat || "-"}</span>
+        </div>
+      </div>
+      <span class="bulk-status-chip ${badgeClass}">${statusVal || "Belum Presensi"}</span>
+    `;
+
+    const cb = row.querySelector("input[type='checkbox']");
+    row.onclick = function(e) {
+      if (e.target !== cb) cb.checked = !cb.checked;
+      if (cb.checked) {
+        bulkSelectedRows.add(rowIdx);
+        row.classList.add("is-checked");
+      } else {
+        bulkSelectedRows.delete(rowIdx);
+        row.classList.remove("is-checked");
+      }
+      updateBulkSelectionUI();
+    };
+
+    fragment.appendChild(row);
+  });
+
+  listEl.innerHTML = "";
+  listEl.appendChild(fragment);
+  updateBulkSelectionUI();
+}
+
+function toggleBulkSelectAll(checked) {
+  const filtered = getFilteredBulkStudents();
+  filtered.forEach(s => {
+    const rowIdx = Number(s.rowIndex);
+    if (checked) bulkSelectedRows.add(rowIdx);
+    else bulkSelectedRows.delete(rowIdx);
+  });
+  renderBulkStudentList();
+}
+
+function updateBulkSelectionUI() {
+  const filtered = getFilteredBulkStudents();
+  const selectAllCb = document.getElementById("bulkSelectAll");
+  const badgeEl = document.getElementById("bulkSelectedBadge");
+  const applyBtn = document.getElementById("btnApplyBulk");
+  const targetVal = document.getElementById("bulkTargetStatus")?.getAttribute("data-value") || "";
+
+  const totalSelected = bulkSelectedRows.size;
+
+  if (selectAllCb) {
+    const allVisibleSelected = filtered.length > 0 && filtered.every(s => bulkSelectedRows.has(Number(s.rowIndex)));
+    selectAllCb.checked = allVisibleSelected;
+    selectAllCb.indeterminate = !allVisibleSelected && filtered.some(s => bulkSelectedRows.has(Number(s.rowIndex)));
+  }
+
+  if (badgeEl) badgeEl.textContent = `${totalSelected} siswa dipilih`;
+  if (applyBtn) {
+    applyBtn.textContent = `Terapkan (${totalSelected})`;
+    applyBtn.disabled = (totalSelected === 0 || !targetVal);
+  }
+}
+
+function submitBulkStatusChange() {
+  const targetVal = document.getElementById("bulkTargetStatus")?.getAttribute("data-value") || "";
+  const keterangan = document.getElementById("bulkDispensasiInput")?.value.trim() || "";
+
+  if (bulkSelectedRows.size === 0) {
+    showToast("Pilih minimal satu siswa terlebih dahulu.", "error");
+    return;
+  }
+
+  if (!targetVal) {
+    showToast("Pilih status tujuan terlebih dahulu.", "error");
+    return;
+  }
+
+  if (targetVal === "Dispensasi" && !keterangan) {
+    showToast("Keterangan dispensasi wajib diisi!", "error");
+    document.getElementById("bulkDispensasiInput")?.focus();
+    return;
+  }
+
+  const user = JSON.parse(localStorage.getItem("piket_user"));
+  const isReset = (targetVal === "RESET");
+  const piketID = isReset ? "" : (user ? user.nama : "Petugas");
+  const timestamp = new Date().toISOString();
+
+  let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
+  let processedCount = 0;
+
+  bulkSelectedRows.forEach(rowIdx => {
+    const targetSiswa = window.dataSiswa.find(s => Number(s.rowIndex) === Number(rowIdx));
+    if (!targetSiswa) return;
+
+    let finalStatus = targetVal;
+    if (isReset) {
+      finalStatus = popInitialStatusSnapshot(targetSiswa, targetSiswa.tanggal);
+    } else {
+      saveInitialStatusSnapshot(targetSiswa, targetSiswa.tanggal);
+    }
+
+    targetSiswa.statusMasuk = finalStatus;
+    targetSiswa.keterangan = isReset ? "" : (finalStatus === "Dispensasi" ? keterangan : "");
+
+    const existingIdx = queue.findIndex(item => Number(item.rowIndex) === Number(rowIdx));
+    const entry = {
+      rowIndex: parseInt(rowIdx, 10),
+      statusMasuk: finalStatus,
+      keterangan: targetSiswa.keterangan,
+      piketID: piketID,
+      tanggal: targetSiswa.tanggal || getSelectedAttendanceDate(),
+      namaSiswa: targetSiswa.nama || targetSiswa.Nama || targetSiswa.namaSiswa || "Siswa",
+      timestamp: timestamp
+    };
+
+    if (existingIdx > -1) queue[existingIdx] = entry;
+    else queue.push(entry);
+
+    processedCount++;
+  });
+
+  localStorage.setItem("piket_pending_updates", JSON.stringify(queue));
+  closeBulkModal();
+
+  updatePendingBadge();
+  initFilters(window.dataSiswa);
+  applyFilter();
+  updateSyncStatus();
+
+  clearTimeout(syncTimer);
+  syncTimer = null;
+  void triggerAutoSync();
 }
 
 function updateStatistik(data) {
@@ -922,10 +1176,7 @@ async function triggerAutoSync() {
     return;
   }
 
-  const result = await syncPendingUpdates(false);
-  if (result.success && result.synced > 0) {
-    showToast("Data tersimpan otomatis ke server", "success", 2000);
-  }
+  await syncPendingUpdates(false);
 }
 
 async function syncPendingUpdates(showOverlay = false) {
@@ -956,15 +1207,21 @@ async function syncPendingUpdates(showOverlay = false) {
       if (queue.length === 0) break;
       if (!navigator.onLine) { failed = true; break; }
 
-      const item = queue[0];
+      // Kelompokkan batch berdasarkan tanggal yang sama agar kompatibel dengan simpanStatusMasuk GAS
+      const targetDateKey = normalizeDateKey(queue[0].tanggal || getSelectedAttendanceDate());
+      const batch = queue.filter(it => normalizeDateKey(it.tanggal || getSelectedAttendanceDate()) === targetDateKey);
+
       const totalRemaining = queue.length;
-      currentSyncStudent = item.namaSiswa || item.nama || "data siswa";
+      currentSyncStudent = batch.length === 1
+        ? (batch[0].namaSiswa || batch[0].nama || "data siswa")
+        : `${batch.length} data siswa`;
+
       setSyncStatus("syncing", `Menyimpan ${totalRemaining} data...`, `Memproses: ${currentSyncStudent}`, "", false);
 
       const response = await fetch(API_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify({ action: "simpanStatusMasuk", payload: [item] })
+        body: JSON.stringify({ action: "simpanStatusMasuk", payload: batch })
       });
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -973,36 +1230,39 @@ async function syncPendingUpdates(showOverlay = false) {
       if (!result || result.success !== true) { failed = true; break; }
 
       const currentQueue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
-      const index = currentQueue.findIndex(current =>
-        Number(current.rowIndex) === Number(item.rowIndex) &&
-        current.timestamp === item.timestamp &&
-        current.statusMasuk === item.statusMasuk
+      const remainingQueue = currentQueue.filter(current =>
+        !batch.some(sentItem =>
+          Number(sentItem.rowIndex) === Number(current.rowIndex) &&
+          sentItem.timestamp === current.timestamp &&
+          sentItem.statusMasuk === current.statusMasuk
+        )
       );
+      localStorage.setItem("piket_pending_updates", JSON.stringify(remainingQueue));
 
-      if (index !== -1) {
-        currentQueue.splice(index, 1);
-        localStorage.setItem("piket_pending_updates", JSON.stringify(currentQueue));
+      recordSuccessfulSync(batch[0]);
+      synced += batch.length;
+
+      if (batch.length === 1) {
+        const syncedName = batch[0].namaSiswa || batch[0].nama || "Siswa";
+        syncedNames.push(syncedName);
+        showToast(`Update data ${syncedName} berhasil disimpan.`, "success", 3500);
+      } else {
+        showToast(`Berhasil menyimpan perubahan ${batch.length} siswa.`, "success", 3500);
       }
 
-      recordSuccessfulSync(item);
-      synced++;
-      const syncedName = item.namaSiswa || item.nama || "Siswa";
-      syncedNames.push(syncedName);
-      showToast(`Update data ${syncedName} berhasil disimpan.`, "success", 3500);
-
       updatePendingBadge();
-      const remainingNow = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]").length;
-      if (remainingNow > 0) {
-        setSyncStatus("syncing", `Menyimpan ${remainingNow} data...`, "Menyiapkan data berikutnya...", "", false);
+      if (remainingQueue.length > 0) {
+        setSyncStatus("syncing", `Menyimpan ${remainingQueue.length} data...`, "Menyiapkan batch berikutnya...", "", false);
       } else {
         setSyncStatus("syncing", "Menyimpan...", "", "", false);
       }
 
       if (showOverlay) {
-        const remaining = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]").length;
         const label = document.getElementById("loadingText");
         if (label) {
-          label.textContent = remaining > 0 ? `Tersinkron ${synced}. Sisa ${remaining} data...` : "Semua data berhasil disinkronkan!";
+          label.textContent = remainingQueue.length > 0
+            ? `Tersinkron ${synced}. Sisa ${remainingQueue.length} data...`
+            : "Semua data berhasil disinkronkan!";
         }
       }
     }
