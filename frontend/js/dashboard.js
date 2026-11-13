@@ -1011,8 +1011,17 @@ async function syncPendingUpdates(showOverlay = false) {
   if (synced > 0) await refreshServerSyncStatus(getSelectedAttendanceDate());
 
   const remaining = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]").length;
-  if (!failed && remaining > 0 && navigator.onLine) {
-    queueMicrotask(() => triggerAutoSync());
+  if (remaining > 0 && navigator.onLine) {
+    clearTimeout(syncTimer);
+    if (!failed) {
+      queueMicrotask(() => triggerAutoSync());
+    } else {
+      // Jaringan belum stabil (Failed to fetch), coba kirim ulang otomatis 3 detik lagi
+      setSyncStatus("pending", `Menunggu jaringan (${remaining} data)...`, "Mencoba menghubungkan ulang ke server...", "", false);
+      syncTimer = setTimeout(() => {
+        if (navigator.onLine) triggerAutoSync();
+      }, 3000);
+    }
   }
 
   return { success: !failed && remaining === 0, synced, remaining, syncedNames };
@@ -1046,8 +1055,14 @@ async function handleSubmit(e) {
 
 window.addEventListener("online", () => {
   updateConnectionStatus();
-  showToast("Koneksi terhubung kembali. Menyingkronkan data...", "info");
-  triggerAutoSync();
+  showToast("Koneksi terhubung kembali. Menyiapkan sinkronisasi...", "info", 2000);
+
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    if (navigator.onLine) {
+      triggerAutoSync();
+    }
+  }, 1500);
 });
 
 window.addEventListener("offline", () => {
