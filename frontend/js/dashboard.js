@@ -286,6 +286,8 @@ async function fetchData(selectedDate) {
     sessionStorage.setItem("piket_selected_date", dateVal);
   }
 
+  await triggerInitialPoolSync(dateVal);
+
   try {
     let url = `${API_URL}?action=getSiswaHariIni`;
 
