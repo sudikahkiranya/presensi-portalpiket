@@ -60,12 +60,23 @@ let hasInitialPoolSynced = false;
 async function triggerInitialPoolSync(targetDate = getSelectedAttendanceDate()) {
   if (hasInitialPoolSynced) return;
   if (!navigator.onLine) return;
-  if (normalizeDateKey(targetDate) !== normalizeDateKey(getLocalDateString())) return;
+
+  const todayStr = normalizeDateKey(getLocalDateString());
+  if (normalizeDateKey(targetDate) !== todayStr) return;
+
+  const DAILY_SYNC_KEY = "piket_initial_pool_synced_date";
+  if (localStorage.getItem(DAILY_SYNC_KEY) === todayStr) {
+    hasInitialPoolSynced = true;
+    return;
+  }
 
   hasInitialPoolSynced = true;
 
   try {
-    await fetch(`${API_URL}?action=tarikDataEngine`);
+    const res = await fetch(`${API_URL}?action=tarikDataEngine`);
+    if (res.ok) {
+      localStorage.setItem(DAILY_SYNC_KEY, todayStr);
+    }
   } catch (err) {
     console.warn("[Initial-Sync Pool] Skip background sync:", err);
   }
