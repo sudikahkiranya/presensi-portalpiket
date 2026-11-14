@@ -1661,10 +1661,11 @@ async function tarikDataPresensi() {
       const selectedDate = document.getElementById("selectedDate")?.value;
       await fetchData(selectedDate);
       hideLoading();
-      showToast(result.message || "Data presensi berhasil diperbarui!", "success");
+
+      const toastType = result.hasNewData === false ? "info" : "success";
+      showToast(result.message || "Data presensi berhasil diperbarui!", toastType);
     } else {
       hideLoading();
-      // Opsional: ganti ke modal kalau mau error lebih mencolok
       showToast("Gagal Tarik Data: " + result.message, "error");
     }
   } catch (err) {
