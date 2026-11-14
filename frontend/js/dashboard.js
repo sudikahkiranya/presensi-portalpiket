@@ -44,6 +44,11 @@ const manualStatusList = [
   { value: "Libur", label: "Libur" }
 ];
 
+function isStatusBelumPresensi(val) {
+  const clean = String(val ?? "").trim().toLowerCase();
+  return !clean || clean === "belum presensi" || clean === "kosong" || clean === "-";
+}
+
 window.systemConfig = {};
 
 /* ==========================================================================
@@ -344,9 +349,11 @@ function buildFilterOptions(data = null) {
   const availableStatuses = new Set();
   if (Array.isArray(data) && data.length > 0) {
     data.forEach(s => {
-      const status = String(s.statusMasuk ?? "").trim();
-      if (status) availableStatuses.add(status);
-      else availableStatuses.add("Belum Presensi");
+      if (isStatusBelumPresensi(s.statusMasuk)) {
+        availableStatuses.add("Belum Presensi");
+      } else {
+        availableStatuses.add(String(s.statusMasuk).trim());
+      }
     });
   }
 
@@ -387,7 +394,9 @@ function initFilters(data = null) {
 }
 
 function renderStatusBadge(statusTd, s, value) {
-  const matchStatus = masterStatusList.find(m => m.value === value);
+  const isBelum = isStatusBelumPresensi(value);
+  const normalizedVal = isBelum ? "" : value;
+  const matchStatus = masterStatusList.find(m => m.value === normalizedVal);
   const badgeClass = matchStatus ? matchStatus.class : "badge-default";
 
   const wrapper = document.createElement("div");
@@ -397,7 +406,7 @@ function renderStatusBadge(statusTd, s, value) {
   badgeBtn.className = `status-badge-btn ${badgeClass}`;
   badgeBtn.title = "Klik untuk ubah status";
   badgeBtn.innerHTML = `
-    <span>${value || "Belum Presensi"}</span>
+    <span>${isBelum ? "Belum Presensi" : value}</span>
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
@@ -626,7 +635,7 @@ function getFilteredBulkStudents() {
     .filter(s => (!tingkat || String(s.tingkat).trim().toLowerCase() === String(tingkat).trim().toLowerCase()))
     .filter(s => {
       if (!status) return true;
-      if (status === "Belum Presensi") return !s.statusMasuk;
+      if (status === "Belum Presensi") return isStatusBelumPresensi(s.statusMasuk);
       return s.statusMasuk === status;
     })
     .filter(s => !nama || (s.nama && s.nama.toLowerCase().includes(nama)));
@@ -650,7 +659,8 @@ function renderBulkStudentList() {
   filtered.forEach(s => {
     const rowIdx = Number(s.rowIndex);
     const isChecked = bulkSelectedRows.has(rowIdx);
-    const statusVal = s.statusMasuk || "";
+    const isBelum = isStatusBelumPresensi(s.statusMasuk);
+    const statusVal = isBelum ? "" : s.statusMasuk;
     const matchStatus = masterStatusList.find(m => m.value === statusVal);
     const badgeClass = matchStatus ? matchStatus.class : "status-kosong";
 
@@ -993,7 +1003,7 @@ function applyFilter() {
       .filter(s => (!tingkat || String(s.tingkat).trim().toLowerCase() === String(tingkat).trim().toLowerCase()))
       .filter(s => {
         if (!status) return true;
-        if (status === "Belum Presensi") return !s.statusMasuk; // 👈 Diubah dari "Kosong"
+        if (status === "Belum Presensi") return isStatusBelumPresensi(s.statusMasuk);
         return s.statusMasuk === status;
       })
       .filter(s => !nama || (s.nama && s.nama.toLowerCase().includes(nama)));
