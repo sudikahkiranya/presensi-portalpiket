@@ -1660,9 +1660,11 @@ async function tarikDataPresensi() {
     if (result.success) {
       const selectedDate = document.getElementById("selectedDate")?.value;
       await fetchData(selectedDate);
+      hideLoading();
       showToast(result.message || "Data presensi berhasil diperbarui!", "success");
     } else {
       hideLoading();
+      // Opsional: ganti ke modal kalau mau error lebih mencolok
       showToast("Gagal Tarik Data: " + result.message, "error");
     }
   } catch (err) {
@@ -1956,8 +1958,7 @@ function openCustomDropdown(dropdown) {
 
 // ⚡ FUNGSI CLEAR CACHE INSTAN TANPA CONFIRM ALERT
 async function clearSystemCache() {
-  const loadingOverlay = document.getElementById("loadingOverlay");
-  if (loadingOverlay) loadingOverlay.classList.add("active");
+  showLoading("Membersihkan cache...");
 
   // Tutup popover
   const profilePopover = document.getElementById("profilePopover");
