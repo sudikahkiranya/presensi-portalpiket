@@ -54,6 +54,23 @@ window.systemConfig = {};
 /* ==========================================================================
    1. SYSTEM CONFIG & THEME ENGINE
    ========================================================================== */
+
+let hasInitialPoolSynced = false;
+
+async function triggerInitialPoolSync(targetDate = getSelectedAttendanceDate()) {
+  if (hasInitialPoolSynced) return;
+  if (!navigator.onLine) return;
+  if (normalizeDateKey(targetDate) !== normalizeDateKey(getLocalDateString())) return;
+
+  hasInitialPoolSynced = true;
+
+  try {
+    await fetch(`${API_URL}?action=tarikDataEngine`);
+  } catch (err) {
+    console.warn("[Initial-Sync Pool] Skip background sync:", err);
+  }
+}
+
 async function loadSystemConfig() {
   try {
     const response = await fetch(`${API_URL}?action=getSystemConfig`);
@@ -232,13 +249,15 @@ function initFormPiket() {
   startAutoPolling();
 }
 
-function refreshData() {
+async function refreshData() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
-  if (user && user.role === "Admin") {
-    const selectedDate = document.getElementById("selectedDate")?.value;
-    fetchData(selectedDate);
-  } else {
-    fetchData();
+  const selectedDate = (user && user.role === "Admin")
+    ? document.getElementById("selectedDate")?.value
+    : undefined;
+
+  const isSuccess = await fetchData(selectedDate);
+  if (isSuccess) {
+    showToast("Data terbaru berhasil dimuat!", "success");
   }
 }
 
@@ -290,11 +309,13 @@ async function fetchData(selectedDate) {
     updateSyncStatus();
     refreshServerSyncStatus(dateVal);
     hideLoading();
+    return true;
 
   } catch (err) {
     console.error("Fetch Error:", err);
     showToast("Gagal terhubung ke server Backend API: " + (err.message || err), "error");
     hideLoading();
+    return false;
   }
 }
 
@@ -1486,17 +1507,22 @@ window.addEventListener("offline", () => {
 function updatePendingBadge() { updateSyncStatus(); }
 
 let pollingTimer = null;
-const POLLING_INTERVAL = 30000;
+const POLLING_INTERVAL = 600000; // 10 menit
 
 function startAutoPolling() {
   stopAutoPolling();
   pollingTimer = setInterval(() => {
-    let queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
+    const queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
     if (navigator.onLine && queue.length === 0) silentFetchData();
   }, POLLING_INTERVAL);
 }
 
-function stopAutoPolling() { if (pollingTimer) clearInterval(pollingTimer); }
+function stopAutoPolling() {
+  if (pollingTimer) {
+    clearInterval(pollingTimer);
+    pollingTimer = null;
+  }
+}
 
 async function silentFetchData() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
@@ -1529,8 +1555,13 @@ async function silentFetchData() {
 }
 
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) stopAutoPolling();
-  else { silentFetchData(); startAutoPolling(); }
+  if (document.hidden) {
+    stopAutoPolling();
+  } else {
+    const queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
+    if (navigator.onLine && queue.length === 0) silentFetchData();
+    startAutoPolling();
+  }
 });
 
 function setPetugasPiket(nama) {
