@@ -413,9 +413,6 @@
             <input type="date" id="histDateEnd" title="Sampai Tanggal">
             <button type="button" class="history-scan-btn" onclick="applyHistoryCustomDate()">Terapkan</button>
           </div>
-
-          <!-- Badge Catatan Dinamis Sesuai Periode (Hanya 1 ini saja) -->
-          <div id="histLateWarningPill" class="history-alert-pill is-good" style="margin-left:auto;">-</div>
         </div>
 
         <!-- Ringkasan Angka Dinamis Sesuai Filter -->
@@ -432,8 +429,10 @@
         <!-- GRAFIK KURVA KEHADIRAN & JAM MASUK -->
         <div class="history-chart-card">
           <div class="history-chart-header">
+            <div class="history-chart-header">
             <span class="history-chart-title">Kurva Kehadiran &amp; Jam Masuk Harian</span>
-            <span class="history-chart-hint">🖐️ Tarik grafik ke kiri/kanan untuk menggeser</span>
+            <div id="histLateWarningPill" class="history-alert-pill is-good">-</div>
+          </div>
           </div>
 
           <div id="histChartScrollContainer" class="history-chart-scroll">

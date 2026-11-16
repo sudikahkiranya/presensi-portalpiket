@@ -2400,7 +2400,7 @@ body.login-body > .container-login {
 .history-inline-subfilter select,
 .history-inline-subfilter input[type="date"] {
   height: 38px;
-  min-width: 130px;
+  min-width: 155px;
   flex: 1;
 }
 
@@ -2505,7 +2505,9 @@ body.login-body > .container-login {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .history-chart-title {
