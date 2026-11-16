@@ -2178,7 +2178,9 @@ document.addEventListener("keydown", function (e) {
    5. HISTORY & TREN PRESENSI SISWA ENGINE
    ========================================================================== */
 const HistoryStore = {
-  cache: {},
+  recentCache: {},
+  fullCache: {},
+  hasFullArchive: false,
   currentSiswa: null,
   rawPresensi: [],
   filterOptions: { taList: [], semesterMap: {} },
@@ -2397,16 +2399,19 @@ async function loadStudentHistory(idSiswa) {
 
   const placeholderBox = document.getElementById("historyPlaceholderBox");
   const loadingBox = document.getElementById("historyLoadingBox");
+  const loadingText = loadingBox?.querySelector(".history-loading-text");
   const resultContainer = document.getElementById("historyResultContainer");
 
   if (placeholderBox) placeholderBox.style.display = "none";
   if (resultContainer) resultContainer.style.display = "none";
+  if (loadingText) loadingText.textContent = "Memuat riwayat presensi terkini...";
   if (loadingBox) loadingBox.style.display = "flex";
 
   setHistorySearchDisabled(true);
 
   try {
-    let data = HistoryStore.cache[cleanId];
+    let isFull = Boolean(HistoryStore.fullCache[cleanId]);
+    let data = HistoryStore.fullCache[cleanId] || HistoryStore.recentCache[cleanId];
 
     if (!data) {
       const response = await fetch(API_URL, {
@@ -2414,7 +2419,8 @@ async function loadStudentHistory(idSiswa) {
         headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify({
           action: "getHistoryPresensiSiswa",
-          idSiswa: cleanId
+          idSiswa: cleanId,
+          mode: "recent"
         })
       });
 
@@ -2425,9 +2431,10 @@ async function loadStudentHistory(idSiswa) {
         throw new Error(data?.message || "Data siswa tidak ditemukan.");
       }
 
-      HistoryStore.cache[cleanId] = data;
+      HistoryStore.recentCache[cleanId] = data;
     }
 
+    HistoryStore.hasFullArchive = isFull;
     HistoryStore.currentSiswa = data.siswa || { id_siswa: cleanId, nama: "Siswa", kelas: "-" };
     HistoryStore.rawPresensi = Array.isArray(data.rawPresensi) ? data.rawPresensi : [];
     HistoryStore.filterOptions = data.filterOptions || { taList: [], semesterMap: {} };
@@ -2520,6 +2527,94 @@ function updateHistorySemesterOptions() {
   sems.forEach(sem => {
     selSem.innerHTML += `<option value="${sem}">${sem === "Ganjil" ? "Ganjil (Semester 1)" : "Genap (Semester 2)"}</option>`;
   });
+}
+
+async function ensureFullHistoryArchive() {
+  const cleanId = String(HistoryStore.currentSiswa?.id_siswa || "").trim();
+  if (!cleanId) return false;
+  if (HistoryStore.hasFullArchive) return true;
+
+  if (HistoryStore.fullCache[cleanId]) {
+    const cached = HistoryStore.fullCache[cleanId];
+    HistoryStore.rawPresensi = Array.isArray(cached.rawPresensi) ? cached.rawPresensi : [];
+    HistoryStore.filterOptions = cached.filterOptions || HistoryStore.filterOptions;
+    HistoryStore.hasFullArchive = true;
+    return true;
+  }
+
+  const loadingBox = document.getElementById("historyLoadingBox");
+  const loadingText = loadingBox?.querySelector(".history-loading-text");
+  const resultContainer = document.getElementById("historyResultContainer");
+
+  if (resultContainer) resultContainer.style.display = "none";
+  if (loadingText) loadingText.textContent = "Memuat arsip presensi lintas semester...";
+  if (loadingBox) loadingBox.style.display = "flex";
+  setHistorySearchDisabled(true);
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        action: "getHistoryPresensiSiswa",
+        idSiswa: cleanId,
+        mode: "archive"
+      })
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+
+    if (!data || data.success === false) {
+      throw new Error(data?.message || "Gagal memuat arsip presensi.");
+    }
+
+    HistoryStore.fullCache[cleanId] = data;
+    HistoryStore.rawPresensi = Array.isArray(data.rawPresensi) ? data.rawPresensi : [];
+    HistoryStore.filterOptions = data.filterOptions || HistoryStore.filterOptions;
+    HistoryStore.hasFullArchive = true;
+
+    if (loadingBox) loadingBox.style.display = "none";
+    if (resultContainer) resultContainer.style.display = "block";
+    return true;
+  } catch (err) {
+    console.error("Gagal load arsip penuh:", err);
+    if (loadingBox) loadingBox.style.display = "none";
+    if (resultContainer) resultContainer.style.display = "block";
+    showToast(err.message || "Gagal memuat arsip lintas semester.", "error");
+    return false;
+  } finally {
+    setHistorySearchDisabled(false);
+  }
+}
+
+async function applyHistorySemesterFilter() {
+  const ta = document.getElementById("histSelectTaSem")?.value;
+  const sem = document.getElementById("histSelectSemType")?.value;
+  if (!ta || !sem) return;
+  if (await ensureFullHistoryArchive()) {
+    applyHistoryFilterRange("semester", ta, sem);
+  }
+}
+
+async function applyHistoryTaFilter() {
+  const ta = document.getElementById("histSelectTaFull")?.value;
+  if (!ta) return;
+  if (await ensureFullHistoryArchive()) {
+    applyHistoryFilterRange("tahun_ajaran", ta);
+  }
+}
+
+async function applyHistoryCustomDate() {
+  const start = document.getElementById("histDateStart")?.value;
+  const end = document.getElementById("histDateEnd")?.value;
+  if (!start || !end) {
+    showToast("Isi tanggal mulai dan tanggal selesai terlebih dahulu.", "info");
+    return;
+  }
+  if (await ensureFullHistoryArchive()) {
+    applyHistoryFilterRange("custom", start, end);
+  }
 }
 
 function applyHistorySemesterFilter() {
