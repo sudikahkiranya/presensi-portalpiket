@@ -2331,20 +2331,6 @@ body.login-body > .container-login {
   flex: 1;
 }
 
-/* Banner Profil Siswa */
-.history-profile-card {
-  background: #f8fafc;
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-  padding: 12px 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-
 .history-profile-info h4 {
   margin: 0 0 2px 0;
   font-size: 15px;
@@ -2586,14 +2572,18 @@ body.login-body > .container-login {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: 42px 16px;
+  text-align: center;
+  gap: 12px;
+  padding: 46px 16px;
   background: #f8fafc;
   border: 1px dashed var(--border-light);
   border-radius: 12px;
+  box-sizing: border-box;
 }
 
 .history-loading-text {
+  width: 100%;
+  text-align: center;
   font-size: 13px;
   font-weight: 500;
   color: #475569;

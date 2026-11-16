@@ -2381,7 +2381,7 @@ async function loadStudentHistory(idSiswa) {
 
   if (placeholderBox) placeholderBox.style.display = "none";
   if (resultContainer) resultContainer.style.display = "none";
-  if (loadingBox) loadingBox.style.display = "block";
+  if (loadingBox) loadingBox.style.display = "flex";
 
   try {
     let data = HistoryStore.cache[cleanId];
@@ -2412,7 +2412,6 @@ async function loadStudentHistory(idSiswa) {
     HistoryStore.selectedDotIndex = null;
 
     populateHistorySubFilters();
-    renderHistoryProfileHeader();
 
     const rangeDropEl = document.getElementById("historyRangeDropdown");
     if (rangeDropEl) {
@@ -2526,14 +2525,11 @@ function applyHistoryFilterRange(rangeType, param1 = null, param2 = null) {
 
   const all = HistoryStore.rawPresensi;
   let filtered = all;
-  let periodLabel = "Semua Data";
 
   if (rangeType === "1w") {
     filtered = all.slice(-5);
-    periodLabel = "5 Hari KBM Terakhir";
   } else if (rangeType === "1m") {
     filtered = all.slice(-30);
-    periodLabel = "30 Hari KBM Terakhir";
   } else if (rangeType === "semester") {
     const targetDigit = param2 === "Ganjil" ? "1" : (param2 === "Genap" ? "2" : "");
     filtered = all.filter(p => {
@@ -2541,25 +2537,41 @@ function applyHistoryFilterRange(rangeType, param1 = null, param2 = null) {
       if (p.idSemester) return matchTa && p.idSemester.endsWith(targetDigit);
       return matchTa && p.semester === param2;
     });
-    periodLabel = `TA ${param1} - Semester ${param2}`;
   } else if (rangeType === "tahun_ajaran") {
     filtered = all.filter(p => p.tahunAjaran === param1);
-    periodLabel = `Tahun Ajaran ${param1}`;
   } else if (rangeType === "custom") {
     filtered = all.filter(p => {
       const key = normalizeDateKey(p.tanggal);
       return key >= param1 && key <= param2;
     });
-    periodLabel = `${param1} s.d. ${param2}`;
   }
 
   HistoryStore.currentFiltered = filtered;
 
-  const periodEl = document.getElementById("histPeriodInfo");
-  if (periodEl) periodEl.textContent = `${periodLabel} (${filtered.length} hari)`;
-
+  updateHistoryAlertPill(filtered);
   updateHistorySummaryCards(filtered);
   renderHistoryTrendChart(filtered, rangeType);
+}
+
+function updateHistoryAlertPill(filteredData) {
+  const warnEl = document.getElementById("histLateWarningPill");
+  if (!warnEl) return;
+
+  const data = Array.isArray(filteredData) ? filteredData : [];
+  const lateCount = data.filter(p => String(p.statusMasuk || "").toLowerCase().includes("terlambat")).length;
+  const alpaCount = data.filter(p => String(p.statusMasuk || "").trim().toLowerCase() === "alpa").length;
+
+  const notes = [];
+  if (lateCount > 0) notes.push(`Terlambat ${lateCount}x`);
+  if (alpaCount > 0) notes.push(`Alpa ${alpaCount}x`);
+
+  if (notes.length > 0) {
+    warnEl.className = "history-alert-pill is-warning";
+    warnEl.textContent = `⚠️ Catatan Periode Ini: ${notes.join(" • ")}`;
+  } else {
+    warnEl.className = "history-alert-pill is-good";
+    warnEl.textContent = "✓ Kedisiplinan Baik (0 Terlambat & 0 Alpa)";
+  }
 }
 
 function updateHistorySummaryCards(data) {
@@ -2635,8 +2647,8 @@ function renderHistoryTrendChart(data, filterRange = "1w") {
   const parentWidth = scrollContainer.clientWidth || 680;
   let computedWidth = parentWidth;
 
-  if (filterRange !== "1w" && points.length * 76 > parentWidth) {
-    computedWidth = points.length * 76;
+  if (filterRange !== "1w" && points.length * 82 > parentWidth) {
+    computedWidth = points.length * 82 + 24;
   }
 
   wrapper.style.width = computedWidth + "px";
@@ -2768,22 +2780,60 @@ function renderHistoryTrendChart(data, filterRange = "1w") {
     ctx.fillText(item.label, item.x, height - 6);
   });
 
-  if (!canvas.dataset.hasHistClick) {
-    canvas.dataset.hasHistClick = "true";
-    canvas.addEventListener("click", (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const clickX = e.clientX - rect.left;
-      let nearest = null;
-      let minDist = Infinity;
-      (HistoryStore.chartData || []).forEach((pt, idx) => {
-        const d = Math.abs(pt.x - clickX);
-        if (d < minDist && d <= 32) {
-          minDist = d;
-          nearest = idx;
-        }
-      });
-      HistoryStore.selectedDotIndex = (HistoryStore.selectedDotIndex === nearest) ? null : nearest;
-      renderHistoryTrendChart(HistoryStore.currentFiltered, HistoryStore.activeRange);
+  // Drag-to-Scroll (Kursor Tangan) & Klik Titik (Anti-Bentrok)
+  if (!scrollContainer.dataset.hasDragScroll) {
+    scrollContainer.dataset.hasDragScroll = "true";
+    canvas.ondragstart = () => false;
+
+    let isPointerDown = false;
+    let hasDragged = false;
+    let startClientX = 0;
+    let scrollLeftStart = 0;
+
+    scrollContainer.addEventListener("mousedown", (e) => {
+      if (e.button !== 0) return;
+      isPointerDown = true;
+      hasDragged = false;
+      startClientX = e.clientX;
+      scrollLeftStart = scrollContainer.scrollLeft;
+      scrollContainer.classList.add("is-dragging");
+    });
+
+    window.addEventListener("mousemove", (e) => {
+      if (!isPointerDown) return;
+      const dx = e.clientX - startClientX;
+      if (Math.abs(dx) > 4) hasDragged = true;
+      if (hasDragged) {
+        e.preventDefault();
+        scrollContainer.scrollLeft = scrollLeftStart - dx;
+      }
+    });
+
+    window.addEventListener("mouseup", (e) => {
+      if (!isPointerDown) return;
+      isPointerDown = false;
+      scrollContainer.classList.remove("is-dragging");
+
+      // Jika murni klik diam pada titik (bukan geser/drag), tampilkan garis vertikal
+      if (!hasDragged && e.target === canvas) {
+        const rect = canvas.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        let nearest = null;
+        let minDist = Infinity;
+
+        (HistoryStore.chartData || []).forEach((pt, idx) => {
+          const d = Math.abs(pt.x - clickX);
+          if (d < minDist && d <= 32) {
+            minDist = d;
+            nearest = idx;
+          }
+        });
+
+        const prevScroll = scrollContainer.scrollLeft;
+        HistoryStore.selectedDotIndex = (HistoryStore.selectedDotIndex === nearest) ? null : nearest;
+        renderHistoryTrendChart(HistoryStore.currentFiltered, HistoryStore.activeRange);
+        scrollContainer.scrollLeft = prevScroll;
+      }
     });
   }
 }
