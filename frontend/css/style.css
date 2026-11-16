@@ -2610,17 +2610,15 @@ body.login-body > .container-login {
 /* Klik Nama Siswa di Tabel Utama */
 .student-name-link {
   cursor: pointer;
-  font-weight: 600;
-  color: var(--text-dark);
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
+  font-weight: 500;
+  color: inherit;
   transition: color 0.15s ease;
 }
 
 .student-name-link:hover {
-  color: var(--primary);
+  color: var(--primary-color, #824653); /* mengikuti warna tema aktif */
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .student-name-link svg {

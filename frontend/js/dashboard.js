@@ -1060,15 +1060,7 @@ function applyFilter() {
     const namaTd = document.createElement("td");
     const studentId = s.idSiswa || s.id_siswa || s.nis || s.nisn || "";
     if (studentId) {
-      namaTd.innerHTML = `
-        <span class="student-name-link" title="Klik untuk melihat riwayat presensi ${s.nama || ''}">
-          <span>${s.nama || "-"}</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <polyline points="12 6 12 12 16 14"></polyline>
-          </svg>
-        </span>
-      `;
+      namaTd.innerHTML = `<span class="student-name-link" title="Lihat riwayat presensi ${s.nama || ''}">${s.nama || "-"}</span>`;
       namaTd.querySelector(".student-name-link").onclick = () => openHistoryModal(studentId);
     } else {
       namaTd.textContent = s.nama || "-";
