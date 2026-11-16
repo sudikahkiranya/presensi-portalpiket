@@ -339,7 +339,7 @@
   <div class="modal-box history-modal-box">
     <div class="history-modal-header">
       <div>
-        <h3 class="history-modal-title">Riwayat & Tren Presensi Siswa</h3>
+        <h3 class="history-modal-title">Riwayat Presensi Siswa</h3>
       </div>
       <button type="button" class="history-close-x" onclick="closeHistoryModal()" title="Tutup">✕</button>
     </div>
@@ -386,7 +386,7 @@
       </div>
 
       <div id="historyResultContainer" style="display:none;">
-        <!-- Toolbar Filter Rentang Waktu + Opsi Turunan + Badge Catatan Kedisiplinan -->
+        <!-- Toolbar Filter Rentang Waktu + Opsi Turunan -->
         <div class="history-toolbar-row">
           <div class="history-range-wrap">
             <div id="historyRangeDropdown" data-value="1w"></div>
@@ -419,7 +419,7 @@
           <div class="h-stat-pill"><label>Tepat Waktu</label><span id="hStatTepat">0</span></div>
           <div class="h-stat-pill is-late"><label>Terlambat</label><span id="hStatTerlambat">0</span></div>
           <div class="h-stat-pill"><label>Tidak Presensi</label><span id="hStatHtp">0</span></div>
-          <div class="h-stat-pill"><label>Prakerin/Disp.</label><span id="hStatPrakerin">0</span></div>
+          <div class="h-stat-pill"><label>Prakerin/Dispen</label><span id="hStatPrakerin">0</span></div>
           <div class="h-stat-pill"><label>Sakit</label><span id="hStatSakit">0</span></div>
           <div class="h-stat-pill"><label>Izin</label><span id="hStatIzin">0</span></div>
           <div class="h-stat-pill is-alpa"><label>Alpa</label><span id="hStatAlpa">0</span></div>
@@ -428,10 +428,8 @@
         <!-- GRAFIK KURVA KEHADIRAN & JAM MASUK -->
         <div class="history-chart-card">
           <div class="history-chart-header">
-            <div class="history-chart-header">
-            <span class="history-chart-title">Kurva Kehadiran &amp; Jam Masuk Harian</span>
+            <span id="histChartTitle" class="history-chart-title">Riwayat Presensi 1 Minggu (5 Hari KBM)</span>
             <div id="histLateWarningPill" class="history-alert-pill is-good">-</div>
-          </div>
           </div>
 
           <div id="histChartScrollContainer" class="history-chart-scroll">

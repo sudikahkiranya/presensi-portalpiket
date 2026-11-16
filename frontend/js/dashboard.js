@@ -2617,6 +2617,35 @@ async function applyHistoryCustomDate() {
   }
 }
 
+function formatShortIndoDate(dateStr) {
+  if (!dateStr) return "";
+  const [y, m, d] = String(dateStr).split("-");
+  const bulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  return `${d} ${bulan[parseInt(m, 10) - 1] || m} ${y}`;
+}
+
+function updateHistoryChartTitle(rangeType, param1 = null, param2 = null) {
+  const titleEl = document.getElementById("histChartTitle") 
+    || document.querySelector(".history-chart-header > :first-child");
+  if (!titleEl) return;
+
+  let periodLabel = "1 Minggu (5 Hari KBM)";
+
+  if (rangeType === "1w") {
+    periodLabel = "1 Minggu (5 Hari KBM)";
+  } else if (rangeType === "1m") {
+    periodLabel = "1 Bulan Terakhir";
+  } else if (rangeType === "semester" && param1 && param2) {
+    periodLabel = `Semester ${param2} TA ${param1}`;
+  } else if (rangeType === "tahun_ajaran" && param1) {
+    periodLabel = `TA ${param1}`;
+  } else if (rangeType === "custom" && param1 && param2) {
+    periodLabel = `${formatShortIndoDate(param1)} – ${formatShortIndoDate(param2)}`;
+  }
+
+  titleEl.textContent = `Riwayat Presensi ${periodLabel}`;
+}
+
 function applyHistoryFilterRange(rangeType, param1 = null, param2 = null) {
   HistoryStore.activeRange = rangeType;
   HistoryStore.selectedDotIndex = null;
@@ -2646,6 +2675,7 @@ function applyHistoryFilterRange(rangeType, param1 = null, param2 = null) {
 
   HistoryStore.currentFiltered = filtered;
 
+  updateHistoryChartTitle(rangeType, param1, param2);
   updateHistoryAlertPill(filtered);
   updateHistorySummaryCards(filtered);
   renderHistoryTrendChart(filtered, rangeType);
@@ -2665,7 +2695,7 @@ function updateHistoryAlertPill(filteredData) {
 
   if (notes.length > 0) {
     warnEl.className = "history-alert-pill is-warning";
-    warnEl.textContent = `⚠️ Catatan Periode Ini: ${notes.join(" • ")}`;
+    warnEl.textContent = `⚠️ Catatan: ${notes.join(" • ")}`;
   } else {
     warnEl.className = "history-alert-pill is-good";
     warnEl.textContent = "✓ Kedisiplinan Baik (0 Terlambat & 0 Alpa)";
