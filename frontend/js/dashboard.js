@@ -2617,27 +2617,6 @@ async function applyHistoryCustomDate() {
   }
 }
 
-function applyHistorySemesterFilter() {
-  const ta = document.getElementById("histSelectTaSem")?.value;
-  const sem = document.getElementById("histSelectSemType")?.value;
-  if (ta && sem) applyHistoryFilterRange("semester", ta, sem);
-}
-
-function applyHistoryTaFilter() {
-  const ta = document.getElementById("histSelectTaFull")?.value;
-  if (ta) applyHistoryFilterRange("tahun_ajaran", ta);
-}
-
-function applyHistoryCustomDate() {
-  const start = document.getElementById("histDateStart")?.value;
-  const end = document.getElementById("histDateEnd")?.value;
-  if (!start || !end) {
-    showToast("Isi tanggal mulai dan tanggal selesai terlebih dahulu.", "info");
-    return;
-  }
-  applyHistoryFilterRange("custom", start, end);
-}
-
 function applyHistoryFilterRange(rangeType, param1 = null, param2 = null) {
   HistoryStore.activeRange = rangeType;
   HistoryStore.selectedDotIndex = null;
