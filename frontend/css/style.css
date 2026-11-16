@@ -157,8 +157,8 @@ main {
 }
 
 .header-logo-img { 
-  width: 32px; 
-  height: 32px; 
+  width: 40px; 
+  height: 40px; 
   object-fit: contain; 
   opacity: 0;
   transition: opacity 0.3s ease;
