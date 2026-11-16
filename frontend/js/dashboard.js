@@ -2725,6 +2725,24 @@ function updateHistorySummaryCards(data) {
   document.getElementById("hStatAlpa").textContent = alpa;
 }
 
+function formatChartAxisDate(item) {
+    // 1. Prioritaskan isoDate (misal: "2026-10-06" -> "06/10/26")
+    const iso = String(item.isoDate || item.date || "").trim();
+    const ymd = iso.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+    if (ymd) {
+      return `${ymd[3].padStart(2, "0")}/${ymd[2].padStart(2, "0")}/${ymd[1].slice(-2)}`;
+    }
+
+    // 2. Cek jika item.tanggal punya format DD/MM/YYYY atau D/M/YYYY
+    const str = String(item.tanggal || "").trim();
+    const dmy = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+    if (dmy) {
+      return `${dmy[1].padStart(2, "0")}/${dmy[2].padStart(2, "0")}/${dmy[3].slice(-2)}`;
+    }
+
+    return str.slice(0, 8);
+  }
+  
 function renderHistoryTrendChart(data, filterRange = "1w") {
   const canvas = document.getElementById("histTrendCanvas");
   const wrapper = document.getElementById("histChartInnerWrapper");
@@ -2760,7 +2778,7 @@ function renderHistoryTrendChart(data, filterRange = "1w") {
 
   HistoryStore.chartData = (data || []).map(item => {
     const st = getStatusInfo(item.statusMasuk);
-    const shortDate = String(item.tanggal || "").slice(0, 5);
+    const shortDate = formatChartAxisDate(item);
     const jamClean = String(item.jamMasuk || "").trim();
     return {
       label: shortDate,
