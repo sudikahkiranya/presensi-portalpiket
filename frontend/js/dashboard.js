@@ -235,13 +235,15 @@ function initFormPiket() {
   updatePendingBadge();
   loadSystemConfig();
 
-  if (user.role === "Admin") {
-    const adminFilter = document.getElementById("adminFilter");
-    if (adminFilter) adminFilter.style.display = "block";
+  const isAdmin = String(user.role || "").trim().toLowerCase().includes("admin");
+  const adminFilter = document.getElementById("adminFilter");
+  const dateInput = document.getElementById("selectedDate");
 
-    const dateInput = document.getElementById("selectedDate");
+  if (isAdmin) {
+    if (adminFilter) adminFilter.style.display = "inline-block";
 
     if (dateInput) {
+      dateInput.disabled = false;
       const tanggalTersimpan = sessionStorage.getItem("piket_selected_date");
       if (tanggalTersimpan) {
         dateInput.value = tanggalTersimpan;
@@ -254,6 +256,9 @@ function initFormPiket() {
       fetchData();
     }
   } else {
+    if (adminFilter) adminFilter.style.display = "none";
+    if (dateInput) dateInput.disabled = true;
+    sessionStorage.removeItem("piket_selected_date");
     fetchData();
   }
 
