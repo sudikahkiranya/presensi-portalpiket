@@ -49,6 +49,10 @@ function isStatusBelumPresensi(val) {
   return !clean || clean === "belum presensi" || clean === "kosong" || clean === "-";
 }
 
+function isAdminUser(user) {
+  return String(user?.role || "").trim().toLowerCase().includes("admin");
+}
+
 window.systemConfig = {};
 
 /* ==========================================================================
@@ -133,13 +137,6 @@ function initThemeEngine() {
   selectTheme(themeToApply, false);
 }
 
-function toggleThemePopover(event) {
-  if (event) event.stopPropagation();
-  closeProfilePopover();
-  const popover = document.getElementById("themePopover");
-  if (popover) popover.classList.toggle("is-open");
-}
-
 function selectTheme(themeName, isUserAction = true) {
   const cleanTheme = String(themeName).toLowerCase();
   
@@ -158,20 +155,28 @@ function selectTheme(themeName, isUserAction = true) {
     } catch (e) {}
     const popover = document.getElementById("themePopover");
     if (popover) popover.classList.remove("is-open");
-    // Toast notifikasi sengaja dihilangkan agar pergantian tema terasa lebih clean & seamless
   }
 }
 
 /* ==========================================================================
-   2. USER PROFILE POPOVER ENGINE
+   2. USER PROFILE & THEME POPOVER ENGINE
    ========================================================================== */
-function toggleProfilePopover(event) {
-  if (event) event.stopPropagation();
+function toggleThemePopover(e) {
+  if (e) e.stopPropagation();
   const themePopover = document.getElementById("themePopover");
-  if (themePopover) themePopover.classList.remove("is-open");
+  const profilePopover = document.getElementById("profilePopover");
   
-  const popover = document.getElementById("profilePopover");
-  if (popover) popover.classList.toggle("is-open");
+  if (profilePopover) profilePopover.classList.remove("is-open");
+  if (themePopover) themePopover.classList.toggle("is-open");
+}
+
+function toggleProfilePopover(e) {
+  if (e) e.stopPropagation();
+  const themePopover = document.getElementById("themePopover");
+  const profilePopover = document.getElementById("profilePopover");
+
+  if (themePopover) themePopover.classList.remove("is-open");
+  if (profilePopover) profilePopover.classList.toggle("is-open");
 }
 
 function closeProfilePopover() {
@@ -179,19 +184,20 @@ function closeProfilePopover() {
   if (popover) popover.classList.remove("is-open");
 }
 
-document.addEventListener("click", function(e) {
+document.addEventListener("click", function (e) {
   const themePopover = document.getElementById("themePopover");
   const themeBtn = document.getElementById("themePickerBtn");
+  const profilePopover = document.getElementById("profilePopover");
+  const profileBtn = document.getElementById("userProfileBtn") || document.getElementById("profilePickerBtn");
+
   if (themePopover && themePopover.classList.contains("is-open")) {
-    if (!themePopover.contains(e.target) && !themeBtn.contains(e.target)) {
+    if (!themePopover.contains(e.target) && (!themeBtn || !themeBtn.contains(e.target))) {
       themePopover.classList.remove("is-open");
     }
   }
 
-  const profilePopover = document.getElementById("profilePopover");
-  const profileBtn = document.getElementById("userProfileBtn");
   if (profilePopover && profilePopover.classList.contains("is-open")) {
-    if (!profilePopover.contains(e.target) && !profileBtn.contains(e.target)) {
+    if (!profilePopover.contains(e.target) && (!profileBtn || !profileBtn.contains(e.target))) {
       profilePopover.classList.remove("is-open");
     }
   }
@@ -235,7 +241,7 @@ function initFormPiket() {
   updatePendingBadge();
   loadSystemConfig();
 
-  const isAdmin = String(user.role || "").trim().toLowerCase().includes("admin");
+  const isAdmin = isAdminUser(user);
   const adminFilter = document.getElementById("adminFilter");
   const dateInput = document.getElementById("selectedDate");
 
@@ -267,7 +273,7 @@ function initFormPiket() {
 
 async function refreshData() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
-  const selectedDate = (user && user.role === "Admin")
+  const selectedDate = isAdminUser(user)
     ? document.getElementById("selectedDate")?.value
     : undefined;
 
@@ -293,11 +299,12 @@ async function fetchData(selectedDate) {
   showLoading("Memuat data...");
 
   const user = JSON.parse(localStorage.getItem("piket_user"));
+  const isAdmin = isAdminUser(user);
   const dateInput = document.getElementById("selectedDate");
 
   const dateVal = selectedDate || dateInput?.value || sessionStorage.getItem("piket_selected_date") || getLocalDateString();
 
-  if (user && user.role === "Admin" && dateInput && dateVal) {
+  if (isAdmin && dateInput && dateVal) {
     dateInput.value = dateVal;
     sessionStorage.setItem("piket_selected_date", dateVal);
   }
@@ -307,7 +314,7 @@ async function fetchData(selectedDate) {
   try {
     let url = `${API_URL}?action=getSiswaHariIni`;
 
-    if (user && user.role === "Admin" && dateVal) {
+    if (isAdmin && dateVal) {
       url = `${API_URL}?action=getSiswaByTanggal&tanggal=${dateVal}`;
     }
 
@@ -637,7 +644,6 @@ function openBulkModal() {
   }
 
   if (bulkTargetEl) {
-    // Gunakan manualStatusList langsung tanpa memasukkan placeholder ke dalam opsi menu
     createCustomDropdown(bulkTargetEl, manualStatusList, "RESET", (val) => {
       if (dispInput) {
         dispInput.style.display = (val === "Dispensasi") ? "block" : "none";
@@ -646,7 +652,6 @@ function openBulkModal() {
       updateBulkSelectionUI();
     });
 
-    // Setel teks awal sebagai placeholder (data-value kosong sampai petugas memilih)
     const textSpan = bulkTargetEl.querySelector(".dropdown-text");
     if (textSpan) textSpan.innerText = "-- Pilih Status Baru --";
     bulkTargetEl.setAttribute("data-value", "");
@@ -801,7 +806,6 @@ async function submitBulkStatusChange() {
     const targetSiswa = window.dataSiswa.find(s => Number(s.rowIndex) === Number(rowIdx));
     if (!targetSiswa) return;
 
-    // Simpan status sebelum diubah untuk ditampilkan di progress checklist
     const prevStatus = String(targetSiswa.statusMasuk || "").trim() || "Belum Presensi";
 
     let finalStatus = targetVal;
@@ -835,13 +839,11 @@ async function submitBulkStatusChange() {
 
   localStorage.setItem("piket_pending_updates", JSON.stringify(queue));
 
-  // Perbarui tabel utama di belakang layar
   updatePendingBadge();
   initFilters(window.dataSiswa);
   applyFilter();
   updateSyncStatus();
 
-  // Alihkan modal ke tampilan Progress Checklist (tutup manual oleh petugas)
   const selectionView = document.getElementById("bulkSelectionView");
   const progressView = document.getElementById("bulkProgressView");
   const titleEl = document.getElementById("bulkModalTitle");
@@ -909,12 +911,10 @@ async function submitBulkStatusChange() {
     await new Promise(r => setTimeout(r, 150));
   }
 
-  // Kirim batch dengan silentToast = true agar toast tidak mendahului animasi checklist
   await syncPendingUpdates(false, true);
   const remainingQueue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
   let completedCount = 0;
 
-  // Atur jeda per item agar terasa natural satu per satu (lebih cepat jika > 20 siswa)
   const stepDelay = processedItems.length <= 10 ? 140 : (processedItems.length <= 25 ? 85 : 45);
 
   for (let i = 0; i < processedItems.length; i++) {
@@ -987,7 +987,7 @@ function updateStatistik(data) {
 
     if (status.includes("dispensasi")) {
       dispensasi++;
-      hadir++; // Dispensasi tetap dihitung sebagai Hadir (tugas sekolah)
+      hadir++;
       return;
     }
 
@@ -1054,7 +1054,8 @@ function applyFilter() {
 
   if (pageData.length === 0) {
     tbody.innerHTML = `<tr><td colspan="6" class="text-center-cell">Tidak ada data.</td></tr>`;
-    document.getElementById("jumlahData").textContent = "0";
+    const jumlahEmptyEl = document.getElementById("jumlahData");
+    if (jumlahEmptyEl) jumlahEmptyEl.textContent = "0";
     renderPagination(0);
     return;
   }
@@ -1143,7 +1144,7 @@ let syncStatusRequestId = 0;
 
 function getSelectedAttendanceDate() {
   const user = JSON.parse(localStorage.getItem("piket_user") || "null");
-  if (user && user.role === "Admin") {
+  if (isAdminUser(user)) {
     const dateInput = document.getElementById("selectedDate");
     if (dateInput && dateInput.value) return dateInput.value;
     const savedDate = sessionStorage.getItem("piket_selected_date");
@@ -1175,14 +1176,10 @@ function setSyncStatus(state, label, caption, detail, showRetry = false) {
 
   if (icon) {
     const svgIcons = {
-      // Tabler Cloud (Bulat Proporsional)
       saved: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.657 18c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773c1.88 -.572 3.956 -.193 5.444 1c1.488 1.19 2.162 3.007 1.77 4.769h.99c1.913 0 3.464 1.56 3.464 3.486c0 1.927 -1.551 3.487 -3.465 3.487h-11.878"/></svg>`,
-      // Tabler Cloud Upload
       syncing: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1"/><path d="M9 15l3 -3l3 3"/><path d="M12 12l0 9"/></svg>`,
       pending: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1"/><path d="M9 15l3 -3l3 3"/><path d="M12 12l0 9"/></svg>`,
-      // Tabler Cloud Off (Tersimpan lokal, aman 100% saat offline)
       offline: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M18.72 18.727h-12.063c-2.572 0 -4.657 -2.007 -4.657 -4.483c0 -2.475 2.085 -4.482 4.657 -4.482c.393 -1.762 1.794 -3.2 3.675 -3.773"/><path d="M13.5 5.1c1.38 .23 2.62 .95 3.47 2.05c.85 1.1 1.24 2.48 1.07 3.85h.99c1.913 0 3.464 1.56 3.464 3.486c0 .96 -.386 1.83 -1.01 2.46"/></svg>`,
-      // Alert Circle
       error: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`
     };
     icon.innerHTML = svgIcons[state] || svgIcons.saved;
@@ -1207,19 +1204,15 @@ function updateSyncStatus() {
   const lastText = lastSync ? formatSyncDateTime(lastSync) : (serverStatus ? serverStatus.formatted : "Memuat riwayat…");
 
   if (!online) {
-    // Kondisi 3 (Offline Idle) & Kondisi 4 (Offline + Pending)
     const offlineLabel = pendingForDate > 0 ? `Offline • ${pendingForDate} data pending` : "Offline";
     const offlineCaption = pendingForDate > 0 ? "Otomatis terkirim saat online kembali" : `Update terakhir: ${lastText}`;
     setSyncStatus("offline", offlineLabel, offlineCaption, "", false);
   } else if (syncInProgress) {
-    // Kondisi 2 (Online Syncing)
     const activeCount = Math.max(queue.length, 1);
     setSyncStatus("syncing", `Menyimpan ${activeCount} data...`, currentSyncStudent ? `Menyimpan: ${currentSyncStudent}` : "Mengirim ke server...", "", false);
   } else if (pendingForDate > 0) {
-    // Kondisi 2b (Online menunggu giliran kirim)
     setSyncStatus("syncing", `Menyimpan ${pendingForDate} data...`, "Mengirim perubahan ke server...", "", false);
   } else {
-    // Kondisi 1 (Online Idle)
     setSyncStatus("saved", "Online", `Update terakhir: ${lastText}`, "", false);
   }
 }
@@ -1283,7 +1276,6 @@ function saveInitialStatusSnapshot(siswa, tanggalFallback) {
   const key = getSnapshotKey(siswa, tanggalFallback);
   const snapshots = JSON.parse(localStorage.getItem(SNAPSHOT_STORAGE_KEY) || "{}");
 
-  // Hanya simpan jika belum ada snapshot sebelumnya (agar status asli pertama tidak tertimpa)
   if (!Object.prototype.hasOwnProperty.call(snapshots, key)) {
     snapshots[key] = siswa.statusMasuk || "";
     localStorage.setItem(SNAPSHOT_STORAGE_KEY, JSON.stringify(snapshots));
@@ -1396,7 +1388,6 @@ async function syncPendingUpdates(showOverlay = false, silentToast = false) {
       if (queue.length === 0) break;
       if (!navigator.onLine) { failed = true; break; }
 
-      // Kelompokkan batch berdasarkan tanggal yang sama agar kompatibel dengan simpanStatusMasuk GAS
       const targetDateKey = normalizeDateKey(queue[0].tanggal || getSelectedAttendanceDate());
       const batch = queue.filter(it => normalizeDateKey(it.tanggal || getSelectedAttendanceDate()) === targetDateKey);
 
@@ -1475,7 +1466,6 @@ async function syncPendingUpdates(showOverlay = false, silentToast = false) {
     if (!failed) {
       queueMicrotask(() => triggerAutoSync());
     } else {
-      // Jaringan belum stabil (Failed to fetch), coba kirim ulang otomatis 3 detik lagi
       setSyncStatus("pending", `Menunggu jaringan (${remaining} data)...`, "Mencoba menghubungkan ulang ke server...", "", false);
       syncTimer = setTimeout(() => {
         if (navigator.onLine) triggerAutoSync();
@@ -1551,17 +1541,18 @@ function stopAutoPolling() {
 
 async function silentFetchData() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
+  const isAdmin = isAdminUser(user);
   const dateInput = document.getElementById("selectedDate");
   const dateVal = dateInput?.value || sessionStorage.getItem("piket_selected_date") || getLocalDateString();
 
-  if (user && user.role === "Admin" && dateVal) {
+  if (isAdmin && dateVal) {
     if (dateInput) dateInput.value = dateVal;
     sessionStorage.setItem("piket_selected_date", dateVal);
   }
 
   try {
     let url = `${API_URL}?action=getSiswaHariIni`;
-    if (user && user.role === "Admin" && dateVal) {
+    if (isAdmin && dateVal) {
       url = `${API_URL}?action=getSiswaByTanggal&tanggal=${dateVal}`;
     }
 
@@ -1651,7 +1642,7 @@ function logout() {
   localStorage.removeItem("namaPetugas");
   localStorage.removeItem("role");
   localStorage.removeItem("loginDate");
-  localStorage.removeItem("piket_status_snapshots"); // 👈 Tambahkan ini
+  localStorage.removeItem("piket_status_snapshots");
   sessionStorage.removeItem("piket_selected_date");
   window.location.replace("/");
 }
@@ -1760,7 +1751,7 @@ async function cetakRekap() {
 
   const namaPetugas = user.nama || user.username || "Petugas Piket";
   const dateVal = document.getElementById("selectedDate")?.value || getLocalDateString();
-  const tanggalSelected = (user.role === "Admin") ? dateVal : getLocalDateString();
+  const tanggalSelected = isAdminUser(user) ? dateVal : getLocalDateString();
 
   showLoading("Memeriksa kelengkapan data...");
 
@@ -1810,7 +1801,6 @@ async function cetakRekap() {
     if (pdfCardEl) pdfCardEl.hidden = false;
     if (pdfLinkEl) pdfLinkEl.href = pdfUrl;
 
-    // Reset tombol WA ke kondisi aktif semula setiap kali cetak rekap baru
     if (waButtonEl) {
       waButtonEl.hidden = false;
       waButtonEl.disabled = false;
@@ -1847,7 +1837,7 @@ async function kirimRekapGrupWA() {
 
   const namaPetugas = user.nama || user.username || "Petugas Piket";
   const dateVal = document.getElementById("selectedDate")?.value || getLocalDateString();
-  const tanggalSelected = (user.role === "Admin") ? dateVal : getLocalDateString();
+  const tanggalSelected = isAdminUser(user) ? dateVal : getLocalDateString();
   const pdfUrl = latestPdfUrl || "";
 
   const btnWA = document.getElementById("btnKirimWA");
@@ -2023,24 +2013,20 @@ function openCustomDropdown(dropdown) {
     menu.style.setProperty("box-shadow", "0 6px 16px rgba(0,0,0,0.08)", "important");
   }
 
-  // Jangan paksa scroll jika dropdown berada di dalam tabel (#tbodySiswa)
   if (!dropdown.closest("#tbodySiswa") && dropdown.id !== "bulkTargetStatus") {
     menu.style.setProperty("max-height", "250px", "important");
     menu.style.setProperty("overflow-y", "auto", "important");
   }
-
 }
 
 // ⚡ FUNGSI CLEAR CACHE INSTAN TANPA CONFIRM ALERT
 async function clearSystemCache() {
   showLoading("Membersihkan cache...");
 
-  // Tutup popover
   const profilePopover = document.getElementById("profilePopover");
   if (profilePopover) profilePopover.classList.remove("is-open");
 
   try {
-    // Post ke BE GAS (API_URL)
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -2053,49 +2039,9 @@ async function clearSystemCache() {
   } catch (err) {
     console.warn("Soft warning clear cache BE:", err);
   } finally {
-    // Langsung hard reload halaman tanpa mengubah localStorage user/login
     window.location.reload(true);
   }
 }
-
-// 💡 PERBAIKAN POPOVER TOGGLE & SAFE CLICK OUTSIDE LISTENER
-function toggleThemePopover(e) {
-  if (e) e.stopPropagation();
-  const themePopover = document.getElementById("themePopover");
-  const profilePopover = document.getElementById("profilePopover");
-  
-  if (profilePopover) profilePopover.classList.remove("is-open");
-  if (themePopover) themePopover.classList.toggle("is-open");
-}
-
-function toggleProfilePopover(e) {
-  if (e) e.stopPropagation();
-  const themePopover = document.getElementById("themePopover");
-  const profilePopover = document.getElementById("profilePopover");
-
-  if (themePopover) themePopover.classList.remove("is-open");
-  if (profilePopover) profilePopover.classList.toggle("is-open");
-}
-
-// Global click outside handler dengan Null-Checking (Bebas error TypeError)
-document.addEventListener("click", function (e) {
-  const themePopover = document.getElementById("themePopover");
-  const themeBtn = document.getElementById("themePickerBtn");
-  const profilePopover = document.getElementById("profilePopover");
-  const profileBtn = document.getElementById("profilePickerBtn");
-
-  if (themePopover && themeBtn) {
-    if (!themePopover.contains(e.target) && !themeBtn.contains(e.target)) {
-      themePopover.classList.remove("is-open");
-    }
-  }
-
-  if (profilePopover && profileBtn) {
-    if (!profilePopover.contains(e.target) && !profileBtn.contains(e.target)) {
-      profilePopover.classList.remove("is-open");
-    }
-  }
-});
 
 document.addEventListener("click", function(e) {
   if (e.target.closest(".custom-dropdown")) return;
@@ -2129,14 +2075,12 @@ function clearSearchInput(inputId, clearBtnId, callbackFn) {
 document.addEventListener("keydown", function (e) {
   if (e.key !== "Escape") return;
 
-  // 1. Jika ada custom dropdown yang terbuka, tutup dropdown-nya dulu
   const openDropdowns = document.querySelectorAll(".custom-dropdown.open");
   if (openDropdowns.length > 0) {
     openDropdowns.forEach(el => closeCustomDropdown(el));
     return;
   }
 
-  // 2. Cek modal aktif dari prioritas paling atas
   const dispensasiModal = document.getElementById("dispensasiModal");
   if (dispensasiModal && dispensasiModal.classList.contains("active")) {
     closeDispensasiModal();
@@ -2167,7 +2111,6 @@ document.addEventListener("keydown", function (e) {
     return;
   }
 
-  // 3. Modal Bulk Action: hanya boleh ditutup jika tidak sedang proses menyimpan
   const bulkModal = document.getElementById("bulkModal");
   if (bulkModal && bulkModal.classList.contains("active")) {
     const progressView = document.getElementById("bulkProgressView");
@@ -2227,7 +2170,6 @@ function closeHistoryModal() {
 
   setHistorySearchDisabled(false);
 
-  // Reset state & tampilan modal kembali ke kondisi awal
   HistoryStore.currentSiswa = null;
   HistoryStore.rawPresensi = [];
   HistoryStore.currentFiltered = [];
@@ -2265,7 +2207,6 @@ function initHistoryDropdowns(selectedNis = "") {
 
   const initialKelas = matchedStudent?.kelas || "";
 
-  // 1. Dropdown Kelas
   if (classDropEl) {
     const { kelasOptions } = buildFilterOptions(window.dataSiswa);
     const formattedKelasOptions = kelasOptions.map(opt =>
@@ -2280,10 +2221,8 @@ function initHistoryDropdowns(selectedNis = "") {
     });
   }
 
-  // 2. Dropdown Nama Siswa (terfilter berdasarkan kelas)
   populateHistoryStudentDropdown(initialKelas, selectedNis);
 
-  // 3. Dropdown Rentang Waktu
   const rangeDropEl = document.getElementById("historyRangeDropdown");
   if (rangeDropEl && !rangeDropEl.querySelector(".dropdown-selected")) {
     const rangeOptions = [
@@ -2731,23 +2670,34 @@ function updateHistorySummaryCards(data) {
 }
 
 function formatChartAxisDate(item) {
-    // 1. Prioritaskan isoDate (misal: "2026-10-06" -> "06/10/26")
-    const iso = String(item.isoDate || item.date || "").trim();
-    const ymd = iso.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
-    if (ymd) {
-      return `${ymd[3].padStart(2, "0")}/${ymd[2].padStart(2, "0")}/${ymd[1].slice(-2)}`;
-    }
-
-    // 2. Cek jika item.tanggal punya format DD/MM/YYYY atau D/M/YYYY
-    const str = String(item.tanggal || "").trim();
-    const dmy = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
-    if (dmy) {
-      return `${dmy[1].padStart(2, "0")}/${dmy[2].padStart(2, "0")}/${dmy[3].slice(-2)}`;
-    }
-
-    return str.slice(0, 8);
+  // 1. Prioritaskan isoDate / date (misal: "2026-10-06" -> "06/10/26")
+  const iso = String(item.isoDate || item.date || "").trim();
+  const ymd = iso.match(/(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if (ymd) {
+    return `${ymd[3].padStart(2, "0")}/${ymd[2].padStart(2, "0")}/${ymd[1].slice(-2)}`;
   }
-  
+
+  // 2. Cek jika item.tanggal punya format DD/MM/YYYY atau D/M/YY
+  const str = String(item.tanggal || "").trim();
+  const dmy = str.match(/(\d{1,2})\/(\d{1,2})\/(\d{2,4})/);
+  if (dmy) {
+    return `${dmy[1].padStart(2, "0")}/${dmy[2].padStart(2, "0")}/${dmy[3].slice(-2)}`;
+  }
+
+  // 3. Fallback jika item.tanggal hanya "DD/MM" + tersedia item.tahunAjaran ("2026/2027")
+  const dmOnly = str.match(/^(\d{1,2})\/(\d{1,2})$/);
+  if (dmOnly && item.tahunAjaran) {
+    const taParts = String(item.tahunAjaran).match(/(\d{4})\D+(\d{4})/);
+    if (taParts) {
+      const monthNum = parseInt(dmOnly[2], 10);
+      const fullYear = monthNum >= 7 ? taParts[1] : taParts[2];
+      return `${dmOnly[1].padStart(2, "0")}/${dmOnly[2].padStart(2, "0")}/${fullYear.slice(-2)}`;
+    }
+  }
+
+  return str.slice(0, 8);
+}
+
 function renderHistoryTrendChart(data, filterRange = "1w") {
   const canvas = document.getElementById("histTrendCanvas");
   const wrapper = document.getElementById("histChartInnerWrapper");
@@ -2965,7 +2915,6 @@ function renderHistoryTrendChart(data, filterRange = "1w") {
       isPointerDown = false;
       scrollContainer.classList.remove("is-dragging");
 
-      // Jika murni klik diam pada titik (bukan geser/drag), tampilkan garis vertikal
       if (!hasDragged && e.target === canvas) {
         const rect = canvas.getBoundingClientRect();
         const clickX = e.clientX - rect.left;
