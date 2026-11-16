@@ -2303,6 +2303,17 @@ body.login-body > .container-login {
   margin-bottom: 14px;
 }
 
+.history-search-grid.is-loading {
+  opacity: 0.65;
+  pointer-events: none;
+  user-select: none;
+}
+
+.history-search-grid.is-loading input,
+.history-search-grid.is-loading button {
+  cursor: not-allowed;
+}
+
 .history-scan-row {
   display: flex;
   gap: 6px;

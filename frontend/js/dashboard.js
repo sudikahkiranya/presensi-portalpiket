@@ -2218,6 +2218,8 @@ function closeHistoryModal() {
   if (modal) modal.classList.remove("active");
   document.body.classList.remove("modal-open");
 
+  setHistorySearchDisabled(false);
+
   // Reset state & tampilan modal kembali ke kondisi awal
   HistoryStore.currentSiswa = null;
   HistoryStore.rawPresensi = [];
@@ -2278,11 +2280,11 @@ function initHistoryDropdowns(selectedNis = "") {
   const rangeDropEl = document.getElementById("historyRangeDropdown");
   if (rangeDropEl && !rangeDropEl.querySelector(".dropdown-selected")) {
     const rangeOptions = [
-      { value: "1w", label: "📅 1 Minggu (5 Hari KBM)" },
-      { value: "1m", label: "🗓️ 1 Bulan Terakhir" },
-      { value: "semester_select", label: "🎓 Per Semester..." },
-      { value: "ta_select", label: "🏫 Per Tahun Ajaran..." },
-      { value: "custom", label: "⚙️ Kustom Rentang Tanggal..." }
+      { value: "1w", label: "1 Minggu (5 Hari KBM)" },
+      { value: "1m", label: "1 Bulan Terakhir" },
+      { value: "semester_select", label: "Per Semester" },
+      { value: "ta_select", label: "Per Tahun Ajaran" },
+      { value: "custom", label: "Kustom Rentang Tanggal" }
     ];
 
     createCustomDropdown(rangeDropEl, rangeOptions, "1w", (val) => {
@@ -2371,6 +2373,24 @@ function searchHistoryByNis() {
   loadStudentHistory(nis);
 }
 
+function setHistorySearchDisabled(isDisabled) {
+  const searchGrid = document.querySelector(".history-search-grid");
+  const nisInput = document.getElementById("historyInputNis");
+  const clearBtn = document.getElementById("clearHistoryNisBtn");
+  const cekBtn = searchGrid?.querySelector(".history-scan-btn");
+
+  if (searchGrid) {
+    searchGrid.classList.toggle("is-loading", isDisabled);
+    if (isDisabled) {
+      searchGrid.querySelectorAll(".custom-dropdown.open").forEach(dd => dd.classList.remove("open"));
+    }
+  }
+
+  if (nisInput) nisInput.disabled = isDisabled;
+  if (clearBtn) clearBtn.disabled = isDisabled;
+  if (cekBtn) cekBtn.disabled = isDisabled;
+}
+
 async function loadStudentHistory(idSiswa) {
   const cleanId = String(idSiswa || "").trim();
   if (!cleanId) return;
@@ -2382,6 +2402,8 @@ async function loadStudentHistory(idSiswa) {
   if (placeholderBox) placeholderBox.style.display = "none";
   if (resultContainer) resultContainer.style.display = "none";
   if (loadingBox) loadingBox.style.display = "flex";
+
+  setHistorySearchDisabled(true);
 
   try {
     let data = HistoryStore.cache[cleanId];
@@ -2416,7 +2438,7 @@ async function loadStudentHistory(idSiswa) {
     const rangeDropEl = document.getElementById("historyRangeDropdown");
     if (rangeDropEl) {
       const txt = rangeDropEl.querySelector(".dropdown-text");
-      if (txt) txt.innerText = "📅 1 Minggu (5 Hari KBM)";
+      if (txt) txt.innerText = "1 Minggu (5 Hari KBM)";
       rangeDropEl.setAttribute("data-value", "1w");
     }
     document.getElementById("histSemesterBox").style.display = "none";
@@ -2434,6 +2456,8 @@ async function loadStudentHistory(idSiswa) {
       placeholderBox.innerHTML = `<span style="color:#b91c1c; font-weight:600;">⚠️ ${err.message}</span>`;
       placeholderBox.style.display = "block";
     }
+  } finally {
+    setHistorySearchDisabled(false);
   }
 }
 
