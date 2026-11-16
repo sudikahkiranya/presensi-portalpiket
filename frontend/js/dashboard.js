@@ -1585,14 +1585,22 @@ document.addEventListener("visibilitychange", () => {
 });
 
 function setPetugasPiket(nama) {
-  const el = document.getElementById('petugasPiket');
-  if (el) el.textContent = nama || "-";
+  const displayName = nama || "-";
+  const userNameEl = document.getElementById("userName");
+  const legacyEl = document.getElementById("petugasPiket");
+
+  if (userNameEl) userNameEl.textContent = displayName;
+  if (legacyEl) legacyEl.textContent = displayName;
 }
 
 function setRoleUser(role) {
   const roleLabel = { "Admin": "Admin Presensi", "Piket": "Petugas Piket" };
-  const el = document.getElementById("roleUser");
-  if (el) el.textContent = roleLabel[role] || "Petugas";
+  const displayRole = roleLabel[role] || role || "Petugas";
+  const userRoleEl = document.getElementById("userRole");
+  const legacyEl = document.getElementById("roleUser");
+
+  if (userRoleEl) userRoleEl.textContent = displayRole;
+  if (legacyEl) legacyEl.textContent = displayRole;
 }
 
 let toastTimeout = null;
