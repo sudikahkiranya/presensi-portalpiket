@@ -2507,7 +2507,12 @@ body.login-body > .container-login {
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
+  width: 100%;
   margin-bottom: 10px;
+}
+
+#histLateWarningPill {
+  margin-left: auto;
 }
 
 .history-chart-title {
