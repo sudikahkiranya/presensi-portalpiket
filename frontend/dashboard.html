@@ -334,6 +334,151 @@
   </div>
 </div>
 
+<!-- HISTORY PRESENSI SISWA MODAL -->
+<div id="historyModal" class="modal-overlay" onclick="if(event.target.id==='historyModal') closeHistoryModal()">
+  <div class="modal-box history-modal-box">
+    <div class="history-modal-header">
+      <div>
+        <h3 class="history-modal-title">Riwayat & Tren Presensi Siswa</h3>
+        <p class="history-modal-subtitle">Scan barcode kartu siswa / input NIS, atau pilih kelas lalu nama siswa.</p>
+      </div>
+      <button type="button" class="history-close-x" onclick="closeHistoryModal()" title="Tutup">✕</button>
+    </div>
+
+    <!-- Bar Pencarian: Scan Barcode / NIS + Dropdown Kelas + Dropdown Nama Siswa -->
+    <div class="history-search-grid">
+      <div class="filter-item">
+        <label for="historyInputNis">Scan Barcode / NIS:</label>
+        <div class="history-scan-row">
+          <div class="search-input-wrapper">
+            <input type="text" id="historyInputNis" class="filter-input-text" placeholder="Scan QR / ketik NIS..."
+              oninput="handleSearchInput(this, 'clearHistoryNisBtn')"
+              onkeydown="if(event.key==='Enter'){ event.preventDefault(); searchHistoryByNis(); }">
+            <button type="button" id="clearHistoryNisBtn" class="search-clear-btn" onclick="clearSearchInput('historyInputNis', 'clearHistoryNisBtn')" hidden>✕</button>
+          </div>
+          <button type="button" class="history-scan-btn" onclick="searchHistoryByNis()">Cek</button>
+        </div>
+      </div>
+
+      <div class="filter-item">
+        <label for="historyClassDropdown">Pilih Kelas:</label>
+        <div id="historyClassDropdown" data-value=""></div>
+      </div>
+
+      <div class="filter-item">
+        <label for="historyStudentDropdown">Pilih Nama Siswa:</label>
+        <div id="historyStudentDropdown" data-value=""></div>
+      </div>
+    </div>
+
+    <div class="history-body-scroll">
+      <div id="historyPlaceholderBox" class="history-empty-box">
+        Silakan <strong>scan kartu QR siswa</strong>, masukkan <strong>NIS</strong>, atau pilih <strong>Kelas &amp; Nama Siswa</strong> di atas untuk melihat grafik riwayat kehadiran.
+      </div>
+
+      <div id="historyLoadingBox" class="history-empty-box" style="display:none;">
+        Memuat arsip presensi lintas semester...
+      </div>
+
+      <div id="historyResultContainer" style="display:none;">
+        <!-- Profil & Indikator Kecenderungan Terlambat -->
+        <div class="history-profile-card">
+          <div class="history-profile-info">
+            <h4 id="histProfilNama">-</h4>
+            <span id="histProfilMeta">-</span>
+          </div>
+          <div id="histLateWarningPill" class="history-alert-pill is-good">-</div>
+        </div>
+
+        <!-- Filter Rentang Waktu -->
+        <div class="history-toolbar-row">
+          <div class="history-range-wrap">
+            <div id="historyRangeDropdown" data-value="1w"></div>
+          </div>
+          <span id="histPeriodInfo" class="history-chart-period">5 Hari KBM Terakhir</span>
+        </div>
+
+        <!-- Sub-Panel Filter Semester -->
+        <div id="histSemesterBox" class="history-subpanel-box">
+          <div class="history-subpanel-row">
+            <div class="history-subpanel-field">
+              <label>Tahun Ajaran</label>
+              <select id="histSelectTaSem" onchange="updateHistorySemesterOptions()"></select>
+            </div>
+            <div class="history-subpanel-field">
+              <label>Semester</label>
+              <select id="histSelectSemType"></select>
+            </div>
+            <button type="button" class="history-scan-btn" onclick="applyHistorySemesterFilter()">Terapkan</button>
+          </div>
+        </div>
+
+        <!-- Sub-Panel Filter Tahun Ajaran -->
+        <div id="histTaBox" class="history-subpanel-box">
+          <div class="history-subpanel-row">
+            <div class="history-subpanel-field">
+              <label>Tahun Ajaran Full</label>
+              <select id="histSelectTaFull"></select>
+            </div>
+            <button type="button" class="history-scan-btn" onclick="applyHistoryTaFilter()">Terapkan</button>
+          </div>
+        </div>
+
+        <!-- Sub-Panel Filter Custom Tanggal -->
+        <div id="histCustomDateBox" class="history-subpanel-box">
+          <div class="history-subpanel-row">
+            <div class="history-subpanel-field">
+              <label>Dari Tanggal</label>
+              <input type="date" id="histDateStart">
+            </div>
+            <div class="history-subpanel-field">
+              <label>Sampai Tanggal</label>
+              <input type="date" id="histDateEnd">
+            </div>
+            <button type="button" class="history-scan-btn" onclick="applyHistoryCustomDate()">Terapkan</button>
+          </div>
+        </div>
+
+        <!-- Ringkasan Angka Dinamis Sesuai Filter -->
+        <div class="history-stats-row">
+          <div class="h-stat-pill"><label>Tepat Waktu</label><span id="hStatTepat">0</span></div>
+          <div class="h-stat-pill is-late"><label>Terlambat</label><span id="hStatTerlambat">0</span></div>
+          <div class="h-stat-pill"><label>Tidak Presensi</label><span id="hStatHtp">0</span></div>
+          <div class="h-stat-pill"><label>Prakerin/Disp.</label><span id="hStatPrakerin">0</span></div>
+          <div class="h-stat-pill"><label>Sakit</label><span id="hStatSakit">0</span></div>
+          <div class="h-stat-pill"><label>Izin</label><span id="hStatIzin">0</span></div>
+          <div class="h-stat-pill is-alpa"><label>Alpa</label><span id="hStatAlpa">0</span></div>
+        </div>
+
+        <!-- GRAFIK KURVA KEHADIRAN & JAM MASUK -->
+        <div class="history-chart-card">
+          <div class="history-chart-header">
+            <span class="history-chart-title">Kurva Kehadiran &amp; Jam Masuk Harian</span>
+            <span class="history-chart-hint">↔️ Geser ke samping jika rentang panjang</span>
+          </div>
+
+          <div id="histChartScrollContainer" class="history-chart-scroll">
+            <div id="histChartInnerWrapper" class="history-chart-inner">
+              <canvas id="histTrendCanvas"></canvas>
+            </div>
+          </div>
+
+          <div class="history-legend-grid">
+            <div class="history-legend-item"><span class="history-dot-legend" style="background:#15803d;"></span><span>Tepat Waktu / Prakerin</span></div>
+            <div class="history-legend-item"><span class="history-dot-legend" style="background:#d97706;"></span><span>Terlambat</span></div>
+            <div class="history-legend-item"><span class="history-dot-legend" style="background:#c2410c;"></span><span>Sangat Terlambat</span></div>
+            <div class="history-legend-item"><span class="history-dot-legend" style="background:#b91c1c;"></span><span>Sangat Terlambat Sekali</span></div>
+            <div class="history-legend-item"><span class="history-dot-legend" style="background:#7c3aed;"></span><span>Hadir Tidak Presensi</span></div>
+            <div class="history-legend-item"><span class="history-dot-legend" style="background:#0284c7;"></span><span>Izin</span></div>
+            <div class="history-legend-item"><span class="history-dot-legend" style="background:#0891b2;"></span><span>Sakit</span></div>
+            <div class="history-legend-item"><span class="history-dot-legend" style="background:#111827;"></span><span>Alpa</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- LOADING OVERLAY MODERN MINIMALIS -->
 <div id="loadingOverlay">
   <div>
@@ -448,6 +593,14 @@
             Ubah Massal
           </button>
           
+          <button type="button" onclick="openHistoryModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Riwayat Siswa
+          </button>
+
           <div id="adminFilter" class="admin-date-picker">
             <input type="date" id="selectedDate" onchange="fetchData(this.value)">
           </div>

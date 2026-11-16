@@ -1057,7 +1057,22 @@ function applyFilter() {
   const fragment = document.createDocumentFragment();
   pageData.forEach((s) => {
     const tr = document.createElement("tr");
-    const namaTd = document.createElement("td"); namaTd.textContent = s.nama || "-";
+    const namaTd = document.createElement("td");
+    const studentId = s.idSiswa || s.id_siswa || s.nis || s.nisn || "";
+    if (studentId) {
+      namaTd.innerHTML = `
+        <span class="student-name-link" title="Klik untuk melihat riwayat presensi ${s.nama || ''}">
+          <span>${s.nama || "-"}</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </span>
+      `;
+      namaTd.querySelector(".student-name-link").onclick = () => openHistoryModal(studentId);
+    } else {
+      namaTd.textContent = s.nama || "-";
+    }
     const kelasTd = document.createElement("td"); kelasTd.textContent = formatNamaKelas(s.kelas, s.tingkat);
     const tingkatTd = document.createElement("td"); tingkatTd.textContent = s.tingkat || "-";
     const jamMasukTd = document.createElement("td"); jamMasukTd.textContent = s.jamMasuk || "-";
@@ -2141,6 +2156,12 @@ document.addEventListener("keydown", function (e) {
     return;
   }
 
+  const historyModal = document.getElementById("historyModal");
+  if (historyModal && historyModal.classList.contains("active")) {
+    closeHistoryModal();
+    return;
+  }
+
   // 3. Modal Bulk Action: hanya boleh ditutup jika tidak sedang proses menyimpan
   const bulkModal = document.getElementById("bulkModal");
   if (bulkModal && bulkModal.classList.contains("active")) {
@@ -2152,5 +2173,596 @@ document.addEventListener("keydown", function (e) {
     }
   }
 });
+
+/* ==========================================================================
+   5. HISTORY & TREN PRESENSI SISWA ENGINE
+   ========================================================================== */
+const HistoryStore = {
+  cache: {},
+  currentSiswa: null,
+  rawPresensi: [],
+  filterOptions: { taList: [], semesterMap: {} },
+  currentFiltered: [],
+  chartData: [],
+  selectedDotIndex: null,
+  activeRange: "1w"
+};
+
+function openHistoryModal(presetNis = "") {
+  const modal = document.getElementById("historyModal");
+  if (!modal) return;
+
+  document.body.classList.add("modal-open");
+  modal.classList.add("active");
+
+  initHistoryDropdowns(presetNis);
+
+  const nisInput = document.getElementById("historyInputNis");
+  const clearBtn = document.getElementById("clearHistoryNisBtn");
+
+  if (presetNis) {
+    if (nisInput) nisInput.value = presetNis;
+    if (clearBtn) clearBtn.hidden = false;
+    loadStudentHistory(presetNis);
+  } else {
+    if (nisInput) {
+      nisInput.value = "";
+      setTimeout(() => nisInput.focus(), 60);
+    }
+    if (clearBtn) clearBtn.hidden = true;
+  }
+}
+
+function closeHistoryModal() {
+  const modal = document.getElementById("historyModal");
+  if (modal) modal.classList.remove("active");
+  document.body.classList.remove("modal-open");
+}
+
+function initHistoryDropdowns(selectedNis = "") {
+  const classDropEl = document.getElementById("historyClassDropdown");
+  const studentDropEl = document.getElementById("historyStudentDropdown");
+
+  let matchedStudent = null;
+  if (selectedNis && Array.isArray(window.dataSiswa)) {
+    matchedStudent = window.dataSiswa.find(s => {
+      const sid = String(s.idSiswa || s.id_siswa || s.nis || s.nisn || "").trim();
+      return sid === String(selectedNis).trim();
+    });
+  }
+
+  const initialKelas = matchedStudent?.kelas || "";
+
+  // 1. Dropdown Kelas
+  if (classDropEl) {
+    const { kelasOptions } = buildFilterOptions(window.dataSiswa);
+    const formattedKelasOptions = kelasOptions.map(opt =>
+      opt.value === "" ? { value: "", label: "-- Semua Kelas --" } : opt
+    );
+
+    createCustomDropdown(classDropEl, formattedKelasOptions, initialKelas, (selectedKelas) => {
+      populateHistoryStudentDropdown(selectedKelas, "");
+      if (studentDropEl) {
+        setTimeout(() => openCustomDropdown(studentDropEl), 20);
+      }
+    });
+  }
+
+  // 2. Dropdown Nama Siswa (terfilter berdasarkan kelas)
+  populateHistoryStudentDropdown(initialKelas, selectedNis);
+
+  // 3. Dropdown Rentang Waktu
+  const rangeDropEl = document.getElementById("historyRangeDropdown");
+  if (rangeDropEl && !rangeDropEl.querySelector(".dropdown-selected")) {
+    const rangeOptions = [
+      { value: "1w", label: "📅 1 Minggu (5 Hari KBM)" },
+      { value: "1m", label: "🗓️ 1 Bulan Terakhir" },
+      { value: "semester_select", label: "🎓 Per Semester..." },
+      { value: "ta_select", label: "🏫 Per Tahun Ajaran..." },
+      { value: "custom", label: "⚙️ Kustom Rentang Tanggal..." }
+    ];
+
+    createCustomDropdown(rangeDropEl, rangeOptions, "1w", (val) => {
+      document.getElementById("histSemesterBox").style.display = "none";
+      document.getElementById("histTaBox").style.display = "none";
+      document.getElementById("histCustomDateBox").style.display = "none";
+
+      if (val === "semester_select") {
+        document.getElementById("histSemesterBox").style.display = "block";
+      } else if (val === "ta_select") {
+        document.getElementById("histTaBox").style.display = "block";
+      } else if (val === "custom") {
+        document.getElementById("histCustomDateBox").style.display = "block";
+      } else {
+        applyHistoryFilterRange(val);
+      }
+    });
+  }
+}
+
+function populateHistoryStudentDropdown(filterKelas = "", selectedNis = "") {
+  const studentDropEl = document.getElementById("historyStudentDropdown");
+  if (!studentDropEl) return;
+
+  const siswaOptions = [
+    { value: "", label: filterKelas ? "-- Pilih Siswa di Kelas Ini --" : "-- Pilih Nama Siswa --" }
+  ];
+
+  if (Array.isArray(window.dataSiswa) && window.dataSiswa.length > 0) {
+    const filteredList = window.dataSiswa
+      .filter(s => !filterKelas || s.kelas === filterKelas)
+      .sort((a, b) => (a.nama || "").localeCompare(b.nama || "", "id"));
+
+    filteredList.forEach(s => {
+      const sid = String(s.idSiswa || s.id_siswa || s.nis || s.nisn || "").trim();
+      if (!sid) return;
+      const labelText = filterKelas
+        ? (s.nama || "-")
+        : `${s.nama || "-"} (${formatNamaKelas(s.kelas, s.tingkat)})`;
+
+      siswaOptions.push({ value: sid, label: labelText });
+    });
+  }
+
+  const validSelected = siswaOptions.some(o => o.value === String(selectedNis)) ? String(selectedNis) : "";
+
+  createCustomDropdown(studentDropEl, siswaOptions, validSelected, (val) => {
+    if (!val) return;
+    const nisInput = document.getElementById("historyInputNis");
+    const clearBtn = document.getElementById("clearHistoryNisBtn");
+    if (nisInput) nisInput.value = val;
+    if (clearBtn) clearBtn.hidden = false;
+    loadStudentHistory(val);
+  });
+}
+
+function searchHistoryByNis() {
+  const inputEl = document.getElementById("historyInputNis");
+  const nis = inputEl ? inputEl.value.trim() : "";
+  if (!nis) {
+    showToast("Masukkan NIS atau scan barcode kartu siswa terlebih dahulu.", "info");
+    if (inputEl) inputEl.focus();
+    return;
+  }
+
+  if (Array.isArray(window.dataSiswa)) {
+    const found = window.dataSiswa.find(s => {
+      const sid = String(s.idSiswa || s.id_siswa || s.nis || s.nisn || "").trim();
+      return sid === nis;
+    });
+
+    if (found) {
+      const classDropEl = document.getElementById("historyClassDropdown");
+      if (classDropEl && found.kelas) {
+        const matchedClassItem = classDropEl.querySelector(`.dropdown-item[data-value="${CSS.escape(found.kelas)}"]`);
+        const textSpan = classDropEl.querySelector(".dropdown-text");
+        if (matchedClassItem && textSpan) {
+          textSpan.innerText = matchedClassItem.innerText;
+          classDropEl.setAttribute("data-value", found.kelas);
+        }
+      }
+      populateHistoryStudentDropdown(found.kelas || "", nis);
+    }
+  }
+
+  loadStudentHistory(nis);
+}
+
+async function loadStudentHistory(idSiswa) {
+  const cleanId = String(idSiswa || "").trim();
+  if (!cleanId) return;
+
+  const placeholderBox = document.getElementById("historyPlaceholderBox");
+  const loadingBox = document.getElementById("historyLoadingBox");
+  const resultContainer = document.getElementById("historyResultContainer");
+
+  if (placeholderBox) placeholderBox.style.display = "none";
+  if (resultContainer) resultContainer.style.display = "none";
+  if (loadingBox) loadingBox.style.display = "block";
+
+  try {
+    let data = HistoryStore.cache[cleanId];
+
+    if (!data) {
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "getHistoryPresensiSiswa",
+          idSiswa: cleanId
+        })
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      data = await response.json();
+
+      if (!data || data.success === false) {
+        throw new Error(data?.message || "Data siswa tidak ditemukan.");
+      }
+
+      HistoryStore.cache[cleanId] = data;
+    }
+
+    HistoryStore.currentSiswa = data.siswa || { id_siswa: cleanId, nama: "Siswa", kelas: "-" };
+    HistoryStore.rawPresensi = Array.isArray(data.rawPresensi) ? data.rawPresensi : [];
+    HistoryStore.filterOptions = data.filterOptions || { taList: [], semesterMap: {} };
+    HistoryStore.selectedDotIndex = null;
+
+    populateHistorySubFilters();
+    renderHistoryProfileHeader();
+
+    const rangeDropEl = document.getElementById("historyRangeDropdown");
+    if (rangeDropEl) {
+      const txt = rangeDropEl.querySelector(".dropdown-text");
+      if (txt) txt.innerText = "📅 1 Minggu (5 Hari KBM)";
+      rangeDropEl.setAttribute("data-value", "1w");
+    }
+    document.getElementById("histSemesterBox").style.display = "none";
+    document.getElementById("histTaBox").style.display = "none";
+    document.getElementById("histCustomDateBox").style.display = "none";
+
+    if (loadingBox) loadingBox.style.display = "none";
+    if (resultContainer) resultContainer.style.display = "block";
+
+    applyHistoryFilterRange("1w");
+  } catch (err) {
+    console.error("Gagal load history siswa:", err);
+    if (loadingBox) loadingBox.style.display = "none";
+    if (placeholderBox) {
+      placeholderBox.innerHTML = `<span style="color:#b91c1c; font-weight:600;">⚠️ ${err.message}</span>`;
+      placeholderBox.style.display = "block";
+    }
+  }
+}
+
+function renderHistoryProfileHeader() {
+  const s = HistoryStore.currentSiswa || {};
+  const namaEl = document.getElementById("histProfilNama");
+  const metaEl = document.getElementById("histProfilMeta");
+  const warnEl = document.getElementById("histLateWarningPill");
+
+  if (namaEl) namaEl.textContent = s.nama || "-";
+  if (metaEl) metaEl.textContent = `NIS: ${s.id_siswa || "-"} • Kelas: ${s.kelas || "-"}`;
+
+  const recent30 = HistoryStore.rawPresensi.slice(-30);
+  const lateCount = recent30.filter(p => String(p.statusMasuk || "").toLowerCase().includes("terlambat")).length;
+
+  if (warnEl) {
+    if (lateCount >= 3) {
+      warnEl.className = "history-alert-pill is-warning";
+      warnEl.textContent = `⚠️ Sering Terlambat (${lateCount}x dlm 30 hari)`;
+    } else if (lateCount > 0) {
+      warnEl.className = "history-alert-pill is-warning";
+      warnEl.textContent = `Terlambat ${lateCount}x dlm 30 hari`;
+    } else {
+      warnEl.className = "history-alert-pill is-good";
+      warnEl.textContent = "✓ Tidak Ada Catatan Terlambat";
+    }
+  }
+}
+
+function populateHistorySubFilters() {
+  const taList = HistoryStore.filterOptions.taList || [];
+  const selTaSem = document.getElementById("histSelectTaSem");
+  const selTaFull = document.getElementById("histSelectTaFull");
+  if (!selTaSem || !selTaFull) return;
+
+  selTaSem.innerHTML = "";
+  selTaFull.innerHTML = "";
+
+  if (taList.length === 0) {
+    selTaSem.innerHTML = `<option value="">Tidak ada data TA</option>`;
+    selTaFull.innerHTML = `<option value="">Tidak ada data TA</option>`;
+    return;
+  }
+
+  taList.forEach(ta => {
+    selTaSem.innerHTML += `<option value="${ta}">TA ${ta}</option>`;
+    selTaFull.innerHTML += `<option value="${ta}">TA ${ta}</option>`;
+  });
+
+  updateHistorySemesterOptions();
+}
+
+function updateHistorySemesterOptions() {
+  const selectedTa = document.getElementById("histSelectTaSem")?.value;
+  const selSem = document.getElementById("histSelectSemType");
+  if (!selSem || !selectedTa) return;
+
+  const sems = HistoryStore.filterOptions.semesterMap[selectedTa] || [];
+  selSem.innerHTML = "";
+  sems.forEach(sem => {
+    selSem.innerHTML += `<option value="${sem}">${sem === "Ganjil" ? "Ganjil (Semester 1)" : "Genap (Semester 2)"}</option>`;
+  });
+}
+
+function applyHistorySemesterFilter() {
+  const ta = document.getElementById("histSelectTaSem")?.value;
+  const sem = document.getElementById("histSelectSemType")?.value;
+  if (ta && sem) applyHistoryFilterRange("semester", ta, sem);
+}
+
+function applyHistoryTaFilter() {
+  const ta = document.getElementById("histSelectTaFull")?.value;
+  if (ta) applyHistoryFilterRange("tahun_ajaran", ta);
+}
+
+function applyHistoryCustomDate() {
+  const start = document.getElementById("histDateStart")?.value;
+  const end = document.getElementById("histDateEnd")?.value;
+  if (!start || !end) {
+    showToast("Isi tanggal mulai dan tanggal selesai terlebih dahulu.", "info");
+    return;
+  }
+  applyHistoryFilterRange("custom", start, end);
+}
+
+function applyHistoryFilterRange(rangeType, param1 = null, param2 = null) {
+  HistoryStore.activeRange = rangeType;
+  HistoryStore.selectedDotIndex = null;
+
+  const all = HistoryStore.rawPresensi;
+  let filtered = all;
+  let periodLabel = "Semua Data";
+
+  if (rangeType === "1w") {
+    filtered = all.slice(-5);
+    periodLabel = "5 Hari KBM Terakhir";
+  } else if (rangeType === "1m") {
+    filtered = all.slice(-30);
+    periodLabel = "30 Hari KBM Terakhir";
+  } else if (rangeType === "semester") {
+    const targetDigit = param2 === "Ganjil" ? "1" : (param2 === "Genap" ? "2" : "");
+    filtered = all.filter(p => {
+      const matchTa = p.tahunAjaran === param1;
+      if (p.idSemester) return matchTa && p.idSemester.endsWith(targetDigit);
+      return matchTa && p.semester === param2;
+    });
+    periodLabel = `TA ${param1} - Semester ${param2}`;
+  } else if (rangeType === "tahun_ajaran") {
+    filtered = all.filter(p => p.tahunAjaran === param1);
+    periodLabel = `Tahun Ajaran ${param1}`;
+  } else if (rangeType === "custom") {
+    filtered = all.filter(p => {
+      const key = normalizeDateKey(p.tanggal);
+      return key >= param1 && key <= param2;
+    });
+    periodLabel = `${param1} s.d. ${param2}`;
+  }
+
+  HistoryStore.currentFiltered = filtered;
+
+  const periodEl = document.getElementById("histPeriodInfo");
+  if (periodEl) periodEl.textContent = `${periodLabel} (${filtered.length} hari)`;
+
+  updateHistorySummaryCards(filtered);
+  renderHistoryTrendChart(filtered, rangeType);
+}
+
+function updateHistorySummaryCards(data) {
+  let tepat = 0, terlambat = 0, htp = 0, prakerin = 0, sakit = 0, izin = 0, alpa = 0;
+
+  data.forEach(item => {
+    const st = String(item.statusMasuk || "").trim().toLowerCase();
+    if (st.includes("tepat")) tepat++;
+    else if (st.includes("terlambat")) terlambat++;
+    else if (st.includes("tidak presensi") || st === "htp") htp++;
+    else if (st.includes("prakerin") || st.includes("pkl") || st.includes("dispensasi")) prakerin++;
+    else if (st.includes("sakit")) sakit++;
+    else if (st.includes("izin")) izin++;
+    else if (st.includes("alpa")) alpa++;
+  });
+
+  document.getElementById("hStatTepat").textContent = tepat;
+  document.getElementById("hStatTerlambat").textContent = terlambat;
+  document.getElementById("hStatHtp").textContent = htp;
+  document.getElementById("hStatPrakerin").textContent = prakerin;
+  document.getElementById("hStatSakit").textContent = sakit;
+  document.getElementById("hStatIzin").textContent = izin;
+  document.getElementById("hStatAlpa").textContent = alpa;
+}
+
+function renderHistoryTrendChart(data, filterRange = "1w") {
+  const canvas = document.getElementById("histTrendCanvas");
+  const wrapper = document.getElementById("histChartInnerWrapper");
+  const scrollContainer = document.getElementById("histChartScrollContainer");
+  if (!canvas || !wrapper || !scrollContainer) return;
+
+  const ctx = canvas.getContext("2d");
+  const dpr = window.devicePixelRatio || 1;
+
+  const levelColors = {
+    8: "#15803d",
+    7: "#d97706",
+    6: "#c2410c",
+    5: "#b91c1c",
+    4: "#7c3aed",
+    3: "#0284c7",
+    2: "#0891b2",
+    1: "#111827"
+  };
+
+  function getStatusInfo(statusStr) {
+    const s = String(statusStr || "").toLowerCase();
+    if (s.includes("prakerin") || s.includes("dispensasi") || s.includes("tepat")) return { level: 8, color: levelColors[8], fullName: statusStr || "Tepat Waktu" };
+    if (s.includes("sangat terlambat sekali")) return { level: 5, color: levelColors[5], fullName: "Sangat Terlambat Sekali" };
+    if (s.includes("sangat terlambat")) return { level: 6, color: levelColors[6], fullName: "Sangat Terlambat" };
+    if (s.includes("terlambat")) return { level: 7, color: levelColors[7], fullName: "Terlambat" };
+    if (s.includes("tidak presensi")) return { level: 4, color: levelColors[4], fullName: "Hadir Tidak Presensi" };
+    if (s.includes("izin")) return { level: 3, color: levelColors[3], fullName: "Izin" };
+    if (s.includes("sakit")) return { level: 2, color: levelColors[2], fullName: "Sakit" };
+    if (s.includes("alpa")) return { level: 1, color: levelColors[1], fullName: "Alpa" };
+    return { level: 8, color: levelColors[8], fullName: statusStr || "Tepat Waktu" };
+  }
+
+  HistoryStore.chartData = (data || []).map(item => {
+    const st = getStatusInfo(item.statusMasuk);
+    const shortDate = String(item.tanggal || "").slice(0, 5);
+    const jamClean = String(item.jamMasuk || "").trim();
+    return {
+      label: shortDate,
+      jamMasuk: (jamClean && jamClean !== "-") ? jamClean : "",
+      val: st.level,
+      color: st.color,
+      fullName: st.fullName
+    };
+  });
+
+  const points = HistoryStore.chartData;
+  const parentWidth = scrollContainer.clientWidth || 680;
+  let computedWidth = parentWidth;
+
+  if (filterRange !== "1w" && points.length * 76 > parentWidth) {
+    computedWidth = points.length * 76;
+  }
+
+  wrapper.style.width = computedWidth + "px";
+  canvas.width = computedWidth * dpr;
+  canvas.height = wrapper.clientHeight * dpr;
+  ctx.scale(dpr, dpr);
+
+  const width = computedWidth;
+  const height = wrapper.clientHeight;
+  ctx.clearRect(0, 0, width, height);
+
+  if (points.length === 0) {
+    ctx.font = "500 12px Roboto";
+    ctx.fillStyle = "#64748b";
+    ctx.textAlign = "center";
+    ctx.fillText("Belum ada data presensi pada periode ini", width / 2, height / 2);
+    return;
+  }
+
+  const axisXPos = 6;
+  const paddingLeft = 52;
+  const paddingRight = 46;
+  const paddingTop = 24;
+  const paddingBottom = 56;
+  const graphWidth = width - paddingLeft - paddingRight;
+  const graphHeight = height - paddingTop - paddingBottom;
+  const bottomAxisY = height - 20;
+
+  points.forEach((item, i) => {
+    item.x = points.length === 1 ? paddingLeft + graphWidth / 2 : paddingLeft + (i / (points.length - 1)) * graphWidth;
+    item.y = paddingTop + graphHeight - ((item.val - 1) / 7) * graphHeight;
+  });
+
+  // Sumbu Y & X
+  ctx.beginPath();
+  ctx.strokeStyle = "#cbd5e1";
+  ctx.lineWidth = 1;
+  ctx.moveTo(axisXPos, paddingTop);
+  ctx.lineTo(axisXPos, bottomAxisY);
+  ctx.lineTo(width - 20, bottomAxisY);
+  ctx.stroke();
+
+  for (let level = 1; level <= 8; level++) {
+    const yPos = paddingTop + graphHeight - ((level - 1) / 7) * graphHeight;
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(axisXPos + 5, yPos);
+    ctx.lineTo(width - 20, yPos);
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.arc(axisXPos, yPos, 2.8, 0, Math.PI * 2);
+    ctx.fillStyle = levelColors[level];
+    ctx.fill();
+  }
+
+  // Smooth Bezier Curve
+  if (points.length > 1) {
+    ctx.beginPath();
+    ctx.strokeStyle = "#824653";
+    ctx.lineWidth = 2.5;
+    for (let i = 0; i < points.length; i++) {
+      const { x, y } = points[i];
+      if (i === 0) ctx.moveTo(x, y);
+      else {
+        const prev = points[i - 1];
+        const cpX = prev.x + (x - prev.x) / 2;
+        ctx.bezierCurveTo(cpX, prev.y, cpX, y, x, y);
+      }
+    }
+    ctx.stroke();
+  }
+
+  // Crosshair jika dot diklik
+  if (HistoryStore.selectedDotIndex !== null && points[HistoryStore.selectedDotIndex]) {
+    const sel = points[HistoryStore.selectedDotIndex];
+    ctx.strokeStyle = "#824653";
+    ctx.lineWidth = 1.4;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(sel.x, paddingTop);
+    ctx.lineTo(sel.x, bottomAxisY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Dots, Status & Jam Masuk Langsung di Setiap Titik
+  points.forEach((item, idx) => {
+    const isSelected = HistoryStore.selectedDotIndex === idx;
+    if (isSelected) {
+      ctx.beginPath();
+      ctx.arc(item.x, item.y, 10, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(130, 70, 83, 0.22)";
+      ctx.fill();
+    }
+
+    ctx.beginPath();
+    ctx.arc(item.x, item.y, isSelected ? 6.5 : 5, 0, Math.PI * 2);
+    ctx.fillStyle = item.color;
+    ctx.fill();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Baris 1: Nama Status
+    ctx.font = isSelected ? "700 9.5px Roboto" : "500 9px Roboto";
+    ctx.textAlign = "center";
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 3;
+    ctx.strokeText(item.fullName, item.x, item.y + 14);
+    ctx.fillStyle = item.color;
+    ctx.fillText(item.fullName, item.x, item.y + 14);
+
+    // Baris 2: Jam Masuk (menempel langsung di bawah status)
+    if (item.jamMasuk) {
+      ctx.font = "700 9px Roboto";
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 3;
+      ctx.strokeText(item.jamMasuk, item.x, item.y + 24);
+      ctx.fillStyle = "#334155";
+      ctx.fillText(item.jamMasuk, item.x, item.y + 24);
+    }
+
+    // Label Tanggal Sumbu X
+    ctx.fillStyle = isSelected ? "#0f172a" : "#64748b";
+    ctx.font = isSelected ? "700 10.5px Roboto" : "500 10px Roboto";
+    ctx.fillText(item.label, item.x, height - 6);
+  });
+
+  if (!canvas.dataset.hasHistClick) {
+    canvas.dataset.hasHistClick = "true";
+    canvas.addEventListener("click", (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      let nearest = null;
+      let minDist = Infinity;
+      (HistoryStore.chartData || []).forEach((pt, idx) => {
+        const d = Math.abs(pt.x - clickX);
+        if (d < minDist && d <= 32) {
+          minDist = d;
+          nearest = idx;
+        }
+      });
+      HistoryStore.selectedDotIndex = (HistoryStore.selectedDotIndex === nearest) ? null : nearest;
+      renderHistoryTrendChart(HistoryStore.currentFiltered, HistoryStore.activeRange);
+    });
+  }
+}
 
 document.addEventListener('DOMContentLoaded', initFormPiket);
