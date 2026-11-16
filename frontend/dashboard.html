@@ -335,7 +335,7 @@
 </div>
 
 <!-- HISTORY PRESENSI SISWA MODAL -->
-<div id="historyModal" class="modal-overlay" onclick="if(event.target.id==='historyModal') closeHistoryModal()">
+<div id="historyModal" class="modal-overlay">
   <div class="modal-box history-modal-box">
     <div class="history-modal-header">
       <div>
@@ -376,12 +376,18 @@
         Silakan <strong>scan kartu QR siswa</strong>, masukkan <strong>NIS</strong>, atau pilih <strong>Kelas &amp; Nama Siswa</strong> di atas untuk melihat grafik riwayat kehadiran.
       </div>
 
-      <div id="historyLoadingBox" class="history-empty-box" style="display:none;">
-        Memuat arsip presensi lintas semester...
+      <!-- Loading Dots Identik dengan Panel Utama -->
+      <div id="historyLoadingBox" class="history-loading-box" style="display:none;">
+        <div class="dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <div class="history-loading-text">Memuat arsip presensi lintas semester...</div>
       </div>
 
       <div id="historyResultContainer" style="display:none;">
-        <!-- Profil & Indikator Kecenderungan Terlambat -->
+        <!-- Profil & Catatan Kedisiplinan Dinamis -->
         <div class="history-profile-card">
           <div class="history-profile-info">
             <h4 id="histProfilNama">-</h4>
@@ -390,51 +396,30 @@
           <div id="histLateWarningPill" class="history-alert-pill is-good">-</div>
         </div>
 
-        <!-- Filter Rentang Waktu -->
+        <!-- Toolbar Filter Rentang Waktu + Opsi Turunan Sejajar di Samping Kanan -->
         <div class="history-toolbar-row">
           <div class="history-range-wrap">
             <div id="historyRangeDropdown" data-value="1w"></div>
           </div>
-          <span id="histPeriodInfo" class="history-chart-period">5 Hari KBM Terakhir</span>
-        </div>
 
-        <!-- Sub-Panel Filter Semester -->
-        <div id="histSemesterBox" class="history-subpanel-box">
-          <div class="history-subpanel-row">
-            <div class="history-subpanel-field">
-              <label>Tahun Ajaran</label>
-              <select id="histSelectTaSem" onchange="updateHistorySemesterOptions()"></select>
-            </div>
-            <div class="history-subpanel-field">
-              <label>Semester</label>
-              <select id="histSelectSemType"></select>
-            </div>
+          <!-- Sub-Panel Filter Semester (Inline di Kanan) -->
+          <div id="histSemesterBox" class="history-inline-subfilter" style="display:none;">
+            <select id="histSelectTaSem" onchange="updateHistorySemesterOptions()" title="Tahun Ajaran"></select>
+            <select id="histSelectSemType" title="Semester"></select>
             <button type="button" class="history-scan-btn" onclick="applyHistorySemesterFilter()">Terapkan</button>
           </div>
-        </div>
 
-        <!-- Sub-Panel Filter Tahun Ajaran -->
-        <div id="histTaBox" class="history-subpanel-box">
-          <div class="history-subpanel-row">
-            <div class="history-subpanel-field">
-              <label>Tahun Ajaran Full</label>
-              <select id="histSelectTaFull"></select>
-            </div>
+          <!-- Sub-Panel Filter Tahun Ajaran (Inline di Kanan) -->
+          <div id="histTaBox" class="history-inline-subfilter" style="display:none;">
+            <select id="histSelectTaFull" title="Tahun Ajaran Full"></select>
             <button type="button" class="history-scan-btn" onclick="applyHistoryTaFilter()">Terapkan</button>
           </div>
-        </div>
 
-        <!-- Sub-Panel Filter Custom Tanggal -->
-        <div id="histCustomDateBox" class="history-subpanel-box">
-          <div class="history-subpanel-row">
-            <div class="history-subpanel-field">
-              <label>Dari Tanggal</label>
-              <input type="date" id="histDateStart">
-            </div>
-            <div class="history-subpanel-field">
-              <label>Sampai Tanggal</label>
-              <input type="date" id="histDateEnd">
-            </div>
+          <!-- Sub-Panel Filter Custom Tanggal (Inline di Kanan) -->
+          <div id="histCustomDateBox" class="history-inline-subfilter" style="display:none;">
+            <input type="date" id="histDateStart" title="Dari Tanggal">
+            <span class="history-date-sep">s.d.</span>
+            <input type="date" id="histDateEnd" title="Sampai Tanggal">
             <button type="button" class="history-scan-btn" onclick="applyHistoryCustomDate()">Terapkan</button>
           </div>
         </div>
@@ -454,7 +439,7 @@
         <div class="history-chart-card">
           <div class="history-chart-header">
             <span class="history-chart-title">Kurva Kehadiran &amp; Jam Masuk Harian</span>
-            <span class="history-chart-hint">↔️ Geser ke samping jika rentang panjang</span>
+            <span class="history-chart-hint">🖐️ Tarik grafik ke kiri/kanan untuk menggeser</span>
           </div>
 
           <div id="histChartScrollContainer" class="history-chart-scroll">
@@ -464,7 +449,7 @@
           </div>
 
           <div class="history-legend-grid">
-            <div class="history-legend-item"><span class="history-dot-legend" style="background:#15803d;"></span><span>Tepat Waktu / Prakerin</span></div>
+            <div class="history-legend-item"><span class="history-dot-legend" style="background:#15803d;"></span><span>Tepat Waktu / Prakerin / Dispensasi</span></div>
             <div class="history-legend-item"><span class="history-dot-legend" style="background:#d97706;"></span><span>Terlambat</span></div>
             <div class="history-legend-item"><span class="history-dot-legend" style="background:#c2410c;"></span><span>Sangat Terlambat</span></div>
             <div class="history-legend-item"><span class="history-dot-legend" style="background:#b91c1c;"></span><span>Sangat Terlambat Sekali</span></div>

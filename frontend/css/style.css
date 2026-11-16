@@ -2380,15 +2380,37 @@ body.login-body > .container-login {
 /* Toolbar Rentang Waktu */
 .history-toolbar-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   margin-bottom: 12px;
 }
 
 .history-range-wrap {
-  min-width: 230px;
+  width: 225px;
+  flex-shrink: 0;
+}
+
+.history-inline-subfilter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.history-inline-subfilter select,
+.history-inline-subfilter input[type="date"] {
+  height: 38px;
+  min-width: 130px;
+  flex: 1;
+}
+
+.history-date-sep {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
 }
 
 .history-subpanel-box {
@@ -2505,6 +2527,13 @@ body.login-body > .container-login {
   width: 100%;
   overflow-x: auto;
   padding-bottom: 4px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.history-chart-scroll.is-dragging {
+  cursor: grabbing;
 }
 
 .history-chart-inner {
@@ -2550,6 +2579,24 @@ body.login-body > .container-login {
   background: #f8fafc;
   border: 1px dashed var(--border-light);
   border-radius: 12px;
+}
+
+.history-loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 42px 16px;
+  background: #f8fafc;
+  border: 1px dashed var(--border-light);
+  border-radius: 12px;
+}
+
+.history-loading-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
 }
 
 /* Klik Nama Siswa di Tabel Utama */

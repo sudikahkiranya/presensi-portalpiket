@@ -2217,6 +2217,29 @@ function closeHistoryModal() {
   const modal = document.getElementById("historyModal");
   if (modal) modal.classList.remove("active");
   document.body.classList.remove("modal-open");
+
+  // Reset state & tampilan modal kembali ke kondisi awal
+  HistoryStore.currentSiswa = null;
+  HistoryStore.rawPresensi = [];
+  HistoryStore.currentFiltered = [];
+  HistoryStore.chartData = [];
+  HistoryStore.selectedDotIndex = null;
+
+  const nisInput = document.getElementById("historyInputNis");
+  const clearBtn = document.getElementById("clearHistoryNisBtn");
+  if (nisInput) nisInput.value = "";
+  if (clearBtn) clearBtn.hidden = true;
+
+  const placeholderBox = document.getElementById("historyPlaceholderBox");
+  const loadingBox = document.getElementById("historyLoadingBox");
+  const resultContainer = document.getElementById("historyResultContainer");
+
+  if (resultContainer) resultContainer.style.display = "none";
+  if (loadingBox) loadingBox.style.display = "none";
+  if (placeholderBox) {
+    placeholderBox.innerHTML = `Silakan <strong>scan kartu QR siswa</strong>, masukkan <strong>NIS</strong>, atau pilih <strong>Kelas &amp; Nama Siswa</strong> di atas untuk melihat grafik riwayat kehadiran.`;
+    placeholderBox.style.display = "block";
+  }
 }
 
 function initHistoryDropdowns(selectedNis = "") {
@@ -2268,11 +2291,11 @@ function initHistoryDropdowns(selectedNis = "") {
       document.getElementById("histCustomDateBox").style.display = "none";
 
       if (val === "semester_select") {
-        document.getElementById("histSemesterBox").style.display = "block";
+        document.getElementById("histSemesterBox").style.display = "flex";
       } else if (val === "ta_select") {
-        document.getElementById("histTaBox").style.display = "block";
+        document.getElementById("histTaBox").style.display = "flex";
       } else if (val === "custom") {
-        document.getElementById("histCustomDateBox").style.display = "block";
+        document.getElementById("histCustomDateBox").style.display = "flex";
       } else {
         applyHistoryFilterRange(val);
       }
