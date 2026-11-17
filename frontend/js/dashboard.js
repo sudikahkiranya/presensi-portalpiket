@@ -961,14 +961,30 @@ async function submitBulkStatusChange() {
 function updateStatistik(data) {
   let hadir = 0;
   let tidakHadir = 0;
+  let belumPresensi = 0;
   let prakerin = 0;
   let dispensasi = 0;
   let libur = 0;
 
+  // Rincian Hadir
+  let tepatWaktu = 0;
+  let terlambat = 0;
+  let sangatTerlambat = 0;
+  let sangatTerlambatSekali = 0;
+  let hadirTidakPresensi = 0;
+
+  // Rincian Tidak Hadir
+  let sakit = 0;
+  let izin = 0;
+  let alpa = 0;
+
   data.forEach(s => {
     const status = String(s.statusMasuk ?? "").trim().toLowerCase();
 
-    if (!status || status === "belum presensi" || status === "kosong") return;
+    if (!status || status === "belum presensi" || status === "kosong" || status === "-") {
+      belumPresensi++;
+      return;
+    }
 
     if (status === "libur") {
       libur++;
@@ -980,7 +996,20 @@ function updateStatistik(data) {
       return;
     }
 
-    if (["sakit", "izin", "alpa"].includes(status)) {
+    if (status === "sakit") {
+      sakit++;
+      tidakHadir++;
+      return;
+    }
+
+    if (status === "izin") {
+      izin++;
+      tidakHadir++;
+      return;
+    }
+
+    if (status === "alpa") {
+      alpa++;
       tidakHadir++;
       return;
     }
@@ -991,29 +1020,50 @@ function updateStatistik(data) {
       return;
     }
 
-    if (
-      status.includes("tepat waktu") ||
-      status.includes("terlambat") ||
-      status.includes("hadir tidak presensi") ||
-      status === "htp"
-    ) {
+    // Urutan pengecekan terlambat harus dari yang paling spesifik dulu
+    if (status.includes("sangat terlambat sekali")) {
+      sangatTerlambatSekali++;
+      hadir++;
+    } else if (status.includes("sangat terlambat")) {
+      sangatTerlambat++;
+      hadir++;
+    } else if (status.includes("terlambat")) {
+      terlambat++;
+      hadir++;
+    } else if (status.includes("tepat waktu")) {
+      tepatWaktu++;
+      hadir++;
+    } else if (status.includes("hadir tidak presensi") || status === "htp") {
+      hadirTidakPresensi++;
       hadir++;
     }
   });
 
-  const jumlahDataEl = document.getElementById("jumlahData");
-  const jumlahHadirEl = document.getElementById("jumlahHadir");
-  const jumlahTidakHadirEl = document.getElementById("jumlahTidakHadir");
-  const jumlahPrakerinEl = document.getElementById("jumlahPrakerin");
-  const jumlahDispensasiEl = document.getElementById("jumlahDispensasi");
-  const jumlahLiburEl = document.getElementById("jumlahLibur");
+  const setText = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
 
-  if (jumlahDataEl) jumlahDataEl.textContent = data.length;
-  if (jumlahHadirEl) jumlahHadirEl.textContent = hadir;
-  if (jumlahTidakHadirEl) jumlahTidakHadirEl.textContent = tidakHadir;
-  if (jumlahPrakerinEl) jumlahPrakerinEl.textContent = prakerin;
-  if (jumlahDispensasiEl) jumlahDispensasiEl.textContent = dispensasi;
-  if (jumlahLiburEl) jumlahLiburEl.textContent = libur;
+  // Box Utama
+  setText("jumlahData", data.length);
+  setText("jumlahHadir", hadir);
+  setText("jumlahTidakHadir", tidakHadir);
+  setText("jumlahBelumPresensi", belumPresensi);
+  setText("jumlahPrakerin", prakerin);
+  setText("jumlahDispensasi", dispensasi);
+  setText("jumlahLibur", libur);
+
+  // Sub-Card Floating Hadir
+  setText("subTepatWaktu", tepatWaktu);
+  setText("subTerlambat", terlambat);
+  setText("subSangatTerlambat", sangatTerlambat);
+  setText("subSangatTerlambatSekali", sangatTerlambatSekali);
+  setText("subHadirTidakPresensi", hadirTidakPresensi);
+
+  // Sub-Card Floating Tidak Hadir
+  setText("subSakit", sakit);
+  setText("subIzin", izin);
+  setText("subAlpa", alpa);
 
   const boxPrakerin = document.getElementById("boxJumlahPrakerin");
   if (boxPrakerin) boxPrakerin.style.display = prakerin > 0 ? "" : "none";
@@ -1024,6 +1074,31 @@ function updateStatistik(data) {
   const boxLibur = document.getElementById("boxJumlahLibur");
   if (boxLibur) boxLibur.style.display = libur > 0 ? "" : "none";
 }
+
+function toggleStatPopover(event, popoverId, boxEl) {
+  event.stopPropagation();
+  const target = document.getElementById(popoverId);
+  if (!target) return;
+
+  const isAlreadyOpen = target.classList.contains("is-open");
+  closeAllStatPopovers();
+
+  if (!isAlreadyOpen) {
+    target.classList.add("is-open");
+    boxEl.classList.add("is-open");
+  }
+}
+
+function closeAllStatPopovers() {
+  document.querySelectorAll(".stat-floating-card.is-open").forEach(el => el.classList.remove("is-open"));
+  document.querySelectorAll(".jumlah-data-box.is-open").forEach(el => el.classList.remove("is-open"));
+}
+
+document.addEventListener("click", function (e) {
+  if (!e.target.closest(".stat-box-wrapper")) {
+    closeAllStatPopovers();
+  }
+});
 
 function applyFilter() {
   const kelas = document.getElementById("filterKelas")?.getAttribute("data-value") || "";
@@ -2081,6 +2156,12 @@ document.addEventListener("keydown", function (e) {
     return;
   }
 
+  const openStatPopovers = document.querySelectorAll(".stat-floating-card.is-open");
+  if (openStatPopovers.length > 0) {
+    closeAllStatPopovers();
+    return;
+  }
+  
   const dispensasiModal = document.getElementById("dispensasiModal");
   if (dispensasiModal && dispensasiModal.classList.contains("active")) {
     closeDispensasiModal();
