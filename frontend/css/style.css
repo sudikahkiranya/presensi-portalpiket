@@ -732,16 +732,7 @@ button:disabled {
 .jumlah-data-box.is-clickable:hover,
 .jumlah-data-box.is-clickable.is-open {
   border-color: var(--primary);
-  box-shadow: 0 6px 14px var(--theme-glow);
-  transform: translateY(-2px);
-}
-
-.stat-caret {
-  display: inline-block !important;
-  font-size: 10px !important;
-  line-height: 1 !important;
-  color: var(--primary) !important;
-  transition: transform 0.2s ease;
+  box-shadow: 0 0 0 3px var(--theme-glow), 0 6px 14px var(--theme-glow);
 }
 
 .jumlah-data-box.is-clickable.is-open .stat-caret {
@@ -814,8 +805,8 @@ button:disabled {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-/* Item ke-5 (Hadir Tidak Presensi) melebar 2 kolom agar rapi */
-.stat-mini-grid.cols-hadir .stat-mini-card:last-child {
+/* Item pertama (Tepat Waktu) melebar 2 kolom di paling atas */
+.stat-mini-grid.cols-hadir .stat-mini-card:first-child {
   grid-column: span 2;
 }
 
