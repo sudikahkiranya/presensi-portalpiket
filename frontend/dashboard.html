@@ -497,34 +497,104 @@
         </div>
 
         <div class="statistik-wrapper">
-          <div class="jumlah-data-box">
-            <label>Jumlah<br>Siswa</label>
-            <span id="jumlahData">0</span>
+          <!-- 1. JUMLAH SISWA -->
+          <div class="stat-box-wrapper">
+            <div class="jumlah-data-box">
+              <label>Jumlah<br>Siswa</label>
+              <span id="jumlahData">0</span>
+            </div>
           </div>
 
-          <div class="jumlah-data-box">
-            <label>Jumlah<br>Hadir</label>
-            <span id="jumlahHadir">0</span>
+          <!-- 2. JUMLAH HADIR (CLICKABLE) -->
+          <div class="stat-box-wrapper">
+            <div class="jumlah-data-box is-clickable" onclick="toggleStatPopover(event, 'popoverHadir', this)" title="Klik untuk rincian kehadiran">
+              <label>Jumlah<br>Hadir <span class="stat-caret">▾</span></label>
+              <span id="jumlahHadir">0</span>
+            </div>
+
+            <div id="popoverHadir" class="stat-floating-card stat-popover-hadir">
+              <div class="stat-popover-title">Rincian Status Hadir</div>
+              <div class="stat-mini-grid cols-hadir">
+                <div class="stat-mini-card tone-hadir">
+                  <div class="stat-mini-label">Tepat Waktu</div>
+                  <div class="stat-mini-val" id="subTepatWaktu">0</div>
+                </div>
+                <div class="stat-mini-card tone-terlambat">
+                  <div class="stat-mini-label">Terlambat</div>
+                  <div class="stat-mini-val" id="subTerlambat">0</div>
+                </div>
+                <div class="stat-mini-card tone-terlambat-berat">
+                  <div class="stat-mini-label">Sangat Terlambat</div>
+                  <div class="stat-mini-val" id="subSangatTerlambat">0</div>
+                </div>
+                <div class="stat-mini-card tone-terlambat-ekstrem">
+                  <div class="stat-mini-label">Sangat Terlambat Sekali</div>
+                  <div class="stat-mini-val" id="subSangatTerlambatSekali">0</div>
+                </div>
+                <div class="stat-mini-card tone-htp">
+                  <div class="stat-mini-label">Hadir Tidak Presensi</div>
+                  <div class="stat-mini-val" id="subHadirTidakPresensi">0</div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="jumlah-data-box">
-            <label>Jumlah<br>Tidak Hadir</label>
-            <span id="jumlahTidakHadir">0</span>
+          <!-- 3. JUMLAH TIDAK HADIR (CLICKABLE: SAKIT, IZIN, ALPA) -->
+          <div class="stat-box-wrapper">
+            <div class="jumlah-data-box is-clickable" onclick="toggleStatPopover(event, 'popoverTidakHadir', this)" title="Klik untuk rincian tidak hadir">
+              <label>Jumlah<br>Tidak Hadir <span class="stat-caret">▾</span></label>
+              <span id="jumlahTidakHadir">0</span>
+            </div>
+
+            <div id="popoverTidakHadir" class="stat-floating-card stat-popover-absen">
+              <div class="stat-popover-title">Rincian Tidak Hadir</div>
+              <div class="stat-mini-grid cols-absen">
+                <div class="stat-mini-card tone-sakit">
+                  <div class="stat-mini-label">Sakit</div>
+                  <div class="stat-mini-val" id="subSakit">0</div>
+                </div>
+                <div class="stat-mini-card tone-izin">
+                  <div class="stat-mini-label">Izin</div>
+                  <div class="stat-mini-val" id="subIzin">0</div>
+                </div>
+                <div class="stat-mini-card tone-alpa">
+                  <div class="stat-mini-label">Alpa</div>
+                  <div class="stat-mini-val" id="subAlpa">0</div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div class="jumlah-data-box" id="boxJumlahPrakerin">
-            <label>Jumlah<br>Prakerin</label>
-            <span id="jumlahPrakerin">0</span>
+          <!-- 4. BELUM PRESENSI (CARD TERSENDIRI) -->
+          <div class="stat-box-wrapper" id="boxBelumPresensi">
+            <div class="jumlah-data-box">
+              <label>Belum<br>Presensi</label>
+              <span id="jumlahBelumPresensi">0</span>
+            </div>
           </div>
 
-          <div class="jumlah-data-box" id="boxJumlahDispensasi" style="display: none;">
-            <label>Jumlah<br>Dispensasi</label>
-            <span id="jumlahDispensasi">0</span>
+          <!-- 5. JUMLAH PRAKERIN -->
+          <div class="stat-box-wrapper" id="boxJumlahPrakerin">
+            <div class="jumlah-data-box">
+              <label>Jumlah<br>Prakerin</label>
+              <span id="jumlahPrakerin">0</span>
+            </div>
           </div>
 
-          <div class="jumlah-data-box" id="boxJumlahLibur" style="display: none;">
-            <label>Jumlah<br>Libur</label>
-            <span id="jumlahLibur">0</span>
+          <!-- 6. JUMLAH DISPENSASI -->
+          <div class="stat-box-wrapper" id="boxJumlahDispensasi" style="display: none;">
+            <div class="jumlah-data-box">
+              <label>Jumlah<br>Dispensasi</label>
+              <span id="jumlahDispensasi">0</span>
+            </div>
+          </div>
+
+          <!-- 7. JUMLAH LIBUR -->
+          <div class="stat-box-wrapper" id="boxJumlahLibur" style="display: none;">
+            <div class="jumlah-data-box">
+              <label>Jumlah<br>Libur</label>
+              <span id="jumlahLibur">0</span>
+            </div>
           </div>
         </div>
       </div>

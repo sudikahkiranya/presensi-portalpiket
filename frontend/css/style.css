@@ -670,28 +670,37 @@ button:disabled {
   margin: 0;
 }
 
+.stat-box-wrapper {
+  position: relative;
+  display: flex;
+  flex: 0 0 80px;
+  width: 80px;
+  min-width: 0;
+}
+
 .jumlah-data-box {
   display: flex;
-  flex: 0 0 82px;           /* Diperkecil dari 104px jadi 82px agar muat 6 box dengan lega */
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 82px;
+  width: 100%;
   min-width: 0;
   min-height: 76px;
   box-sizing: border-box;
   padding: 6px 4px;
   margin: 0;
-  background: #fff;
+  background: #ffffff;
   border: 1px solid var(--border-light);
   border-radius: 10px;
   text-align: center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .jumlah-data-box label {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 2px;
   width: 100%;
   min-height: 22px;
   margin-bottom: 3px;
@@ -710,19 +719,208 @@ button:disabled {
   color: var(--primary-soft);
 }
 
-/* Breakpoint Tablet / Layar Menengah: Statistik otomatis turun ke bawah filter dengan rapi */
+/* Efek Interaktif untuk Box Clickable (Hadir & Tidak Hadir) */
+.jumlah-data-box.is-clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.jumlah-data-box.is-clickable label {
+  cursor: pointer;
+}
+
+.jumlah-data-box.is-clickable:hover,
+.jumlah-data-box.is-clickable.is-open {
+  border-color: var(--primary);
+  box-shadow: 0 6px 14px var(--theme-glow);
+  transform: translateY(-2px);
+}
+
+.stat-caret {
+  display: inline-block !important;
+  font-size: 10px !important;
+  line-height: 1 !important;
+  color: var(--primary) !important;
+  transition: transform 0.2s ease;
+}
+
+.jumlah-data-box.is-clickable.is-open .stat-caret {
+  transform: rotate(180deg);
+}
+
+/* ==========================================================================
+   FLOATING POPOVER CARD RINCIAN STATISTIK
+   ========================================================================== */
+.stat-floating-card {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  padding: 12px;
+  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.16);
+  display: none;
+  box-sizing: border-box;
+  animation: statPopoverIn 0.18s ease-out;
+}
+
+.stat-floating-card.is-open {
+  display: block;
+}
+
+/* Panah kecil penunjuk ke box induk */
+.stat-floating-card::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 11px;
+  height: 11px;
+  background: #ffffff;
+  border-left: 1px solid var(--border-light);
+  border-top: 1px solid var(--border-light);
+}
+
+.stat-popover-hadir {
+  width: 310px;
+}
+
+.stat-popover-absen {
+  width: 270px;
+}
+
+.stat-popover-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+.stat-mini-grid {
+  display: grid;
+  gap: 7px;
+}
+
+.stat-mini-grid.cols-hadir {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Item ke-5 (Hadir Tidak Presensi) melebar 2 kolom agar rapi */
+.stat-mini-grid.cols-hadir .stat-mini-card:last-child {
+  grid-column: span 2;
+}
+
+.stat-mini-grid.cols-absen {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.stat-mini-card {
+  border-radius: 10px;
+  padding: 8px 6px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+}
+
+.stat-mini-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: 3px;
+}
+
+.stat-mini-val {
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+/* Warna Mini-Card Selaras dengan Status Badges Bagian 7 */
+.stat-mini-card.tone-hadir {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #15803d;
+}
+
+.stat-mini-card.tone-terlambat {
+  background: #fefce8;
+  border-color: #fef08a;
+  color: #854d0e;
+}
+
+.stat-mini-card.tone-terlambat-berat {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #9a3412;
+}
+
+.stat-mini-card.tone-terlambat-ekstrem,
+.stat-mini-card.tone-alpa {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #991b1b;
+}
+
+.stat-mini-card.tone-htp {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #92400e;
+}
+
+.stat-mini-card.tone-sakit {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+  color: #0369a1;
+}
+
+.stat-mini-card.tone-izin {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #475569;
+}
+
+@keyframes statPopoverIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -6px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* Breakpoint Tablet / Layar Menengah */
 @media (max-width: 1280px) {
   .filter-wrapper { grid-template-columns: minmax(0, 1fr); }
   .filter-group { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .statistik-wrapper { display: flex; flex-wrap: wrap; justify-content: flex-start; width: 100%; }
-  .jumlah-data-box { flex: 1 1 90px; width: auto; }
+  .stat-box-wrapper { flex: 1 1 90px; width: auto; }
 }
 
 @media (max-width: 600px) {
   .filter-wrapper { padding: 12px; }
   .filter-group { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .statistik-wrapper { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .jumlah-data-box { width: 100%; }
+  .stat-box-wrapper { width: 100%; }
+  .stat-floating-card {
+    position: fixed;
+    top: auto;
+    bottom: 20px;
+    left: 50%;
+    width: calc(100vw - 32px);
+    max-width: 340px;
+  }
+  .stat-floating-card::before { display: none; }
 }
 
 /* ==========================================================================
