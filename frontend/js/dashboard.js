@@ -1065,6 +1065,9 @@ function updateStatistik(data) {
   setText("subIzin", izin);
   setText("subAlpa", alpa);
 
+  const boxBelumPresensi = document.getElementById("boxBelumPresensi");
+  if (boxBelumPresensi) boxBelumPresensi.style.display = belumPresensi > 0 ? "" : "none";
+
   const boxPrakerin = document.getElementById("boxJumlahPrakerin");
   if (boxPrakerin) boxPrakerin.style.display = prakerin > 0 ? "" : "none";
 
