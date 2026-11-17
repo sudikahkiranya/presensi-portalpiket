@@ -123,7 +123,7 @@ function applySystemConfigToUI() {
   }
 
   if (config.nama_sekolah) {
-    document.title = `Portal Piket | ${config.nama_sekolah}`;
+    document.title = `Presensi Piket | ${config.nama_sekolah}`;
   }
 }
 
