@@ -1604,24 +1604,6 @@ window.addEventListener("offline", () => {
 
 function updatePendingBadge() { updateSyncStatus(); }
 
-let pollingTimer = null;
-const POLLING_INTERVAL = 30000; // 10 menit
-
-function startAutoPolling() {
-  stopAutoPolling();
-  pollingTimer = setInterval(() => {
-    const queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
-    if (navigator.onLine && queue.length === 0) silentFetchData();
-  }, POLLING_INTERVAL);
-}
-
-function stopAutoPolling() {
-  if (pollingTimer) {
-    clearInterval(pollingTimer);
-    pollingTimer = null;
-  }
-}
-
 async function silentFetchData() {
   const user = JSON.parse(localStorage.getItem("piket_user"));
   const isAdmin = isAdminUser(user);
