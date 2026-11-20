@@ -1604,7 +1604,7 @@ window.addEventListener("offline", () => {
 function updatePendingBadge() { updateSyncStatus(); }
 
 let pollingTimer = null;
-const POLLING_INTERVAL = 600000; // 10 menit
+const POLLING_INTERVAL = 30000; // 10 menit
 
 function startAutoPolling() {
   stopAutoPolling();
