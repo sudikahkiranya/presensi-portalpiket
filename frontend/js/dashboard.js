@@ -297,6 +297,9 @@ async function fetchData(selectedDate) {
   }
 
   showLoading("Memuat data...");
+  if (navigator.onLine) {
+    setSyncStatus("syncing", "Memperbarui data...", "Mengambil data presensi terbaru...", "", false);
+  }
 
   const user = JSON.parse(localStorage.getItem("piket_user"));
   const isAdmin = isAdminUser(user);
@@ -339,6 +342,7 @@ async function fetchData(selectedDate) {
   } catch (err) {
     console.error("Fetch Error:", err);
     showToast("Gagal terhubung ke server Backend API: " + (err.message || err), "error");
+    updateSyncStatus();
     hideLoading();
     return false;
   }
@@ -1628,6 +1632,10 @@ async function silentFetchData() {
     sessionStorage.setItem("piket_selected_date", dateVal);
   }
 
+  if (navigator.onLine && !syncInProgress) {
+    setSyncStatus("syncing", "Memperbarui data...", "Mengambil data presensi terbaru...", "", false);
+  }
+
   try {
     let url = `${API_URL}?action=getSiswaHariIni`;
     if (isAdmin && dateVal) {
@@ -1640,11 +1648,15 @@ async function silentFetchData() {
 
     if (Array.isArray(newData)) {
       window.dataSiswa = newData;
+      initFilters(window.dataSiswa);
       applyFilter.keepPage = true;
       applyFilter();
+      refreshServerSyncStatus(dateVal);
     }
   } catch (err) {
     console.warn("[Auto-Polling] Gagal menarik data background.", err);
+  } finally {
+    updateSyncStatus();
   }
 }
 

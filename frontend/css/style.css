@@ -2821,3 +2821,34 @@ body.login-body > .container-login {
   .history-stats-row { grid-template-columns: repeat(4, 1fr); }
   .history-legend-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+
+/* Registrasi variabel sudut rotasi agar animasi border mulus */
+@property --sync-border-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes spinSyncBorderGlow {
+  to {
+    --sync-border-angle: 360deg;
+  }
+}
+
+/* Efek glow berputar khusus saat pill status kuning (syncing) aktif */
+#syncStatusPanel[data-state="syncing"] {
+  border: 1.5px solid transparent !important;
+  background:
+    linear-gradient(#fefce8, #fefce8) padding-box,
+    conic-gradient(
+      from var(--sync-border-angle),
+      rgba(250, 204, 21, 0.22) 0deg,
+      rgba(250, 204, 21, 0.22) 250deg,
+      #f59e0b 315deg,
+      #fde047 345deg,
+      rgba(250, 204, 21, 0.22) 360deg
+    ) border-box !important;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.22);
+  animation: spinSyncBorderGlow 2.2s linear infinite;
+}
