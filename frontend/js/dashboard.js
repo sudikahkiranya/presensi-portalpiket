@@ -1862,14 +1862,27 @@ function handleConfirmYes() {
 }
 
 async function tarikDataPresensi() {
-  showLoading("Menarik & memproses data presensi dari Pool...");
+  const user = JSON.parse(localStorage.getItem("piket_user"));
+  const selectedDate = isAdminUser(user)
+    ? (document.getElementById("selectedDate")?.value || "")
+    : "";
+
+  showLoading(selectedDate
+    ? `Menarik & memproses data presensi tanggal ${selectedDate}...`
+    : "Menarik & memproses data presensi dari Pool..."
+  );
+
   try {
-    const response = await fetch(`${API_URL}?action=tarikDataEngine`);
+    let url = `${API_URL}?action=tarikDataEngine`;
+    if (selectedDate) {
+      url += `&tanggal=${encodeURIComponent(selectedDate)}`;
+    }
+
+    const response = await fetch(url);
     const result = await response.json();
 
     if (result.success) {
-      const selectedDate = document.getElementById("selectedDate")?.value;
-      await fetchData(selectedDate);
+      await fetchData(selectedDate || undefined);
       hideLoading();
 
       const toastType = result.hasNewData === false ? "info" : "success";
