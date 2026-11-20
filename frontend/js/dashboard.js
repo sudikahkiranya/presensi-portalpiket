@@ -336,6 +336,7 @@ async function fetchData(selectedDate) {
     applyFilter();
     updateSyncStatus();
     refreshServerSyncStatus(dateVal);
+    markDataFreshAndResetPoll(); // <-- Tambahkan ini
     hideLoading();
     return true;
 
@@ -1652,6 +1653,7 @@ async function silentFetchData() {
       applyFilter.keepPage = true;
       applyFilter();
       refreshServerSyncStatus(dateVal);
+      markDataFreshAndResetPoll(); // <-- Tambahkan ini
     }
   } catch (err) {
     console.warn("[Auto-Polling] Gagal menarik data background.", err);
@@ -1660,15 +1662,86 @@ async function silentFetchData() {
   }
 }
 
+/* ==========================================================================
+   SMART AUTO-POLLING (PAUSE IN BACKGROUND + FOCUS COOLDOWN + RESETTABLE)
+   ========================================================================== */
+const AUTO_POLL_INTERVAL_MS = 5 * 60 * 1000;      // Interval rutin: 5 menit
+const FOCUS_REFETCH_COOLDOWN_MS = 2 * 60 * 1000;  // Cooldown pindah tab: 2 menit
+
+let autoPollTimer = null;
+let lastDataFetchedAt = Date.now();
+
+function hasPendingLocalUpdates() {
+  try {
+    const pending = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
+    return Array.isArray(pending) && pending.length > 0;
+  } catch (e) {
+    return false;
+  }
+}
+
+function canRunSilentFetch() {
+  return !document.hidden && navigator.onLine && !syncInProgress && !hasPendingLocalUpdates();
+}
+
+function scheduleNextAutoPoll(delayMs = AUTO_POLL_INTERVAL_MS) {
+  stopAutoPolling();
+
+  // Jangan jadwalkan timer jika tab sedang tersembunyi / di-minimize
+  if (document.hidden) return;
+
+  autoPollTimer = setTimeout(async () => {
+    if (canRunSilentFetch()) {
+      await silentFetchData();
+    } else {
+      // Jika sedang offline / ada antrean lokal, coba cek lagi 30 detik kemudian
+      scheduleNextAutoPoll(30000);
+    }
+  }, delayMs);
+}
+
+function stopAutoPolling() {
+  if (autoPollTimer) {
+    clearTimeout(autoPollTimer);
+    autoPollTimer = null;
+  }
+}
+
+// Alias kompatibilitas jika masih dipanggil di DOMContentLoaded / init
+function startAutoPolling() {
+  scheduleNextAutoPoll(AUTO_POLL_INTERVAL_MS);
+}
+
+function markDataFreshAndResetPoll() {
+  lastDataFetchedAt = Date.now();
+  scheduleNextAutoPoll(AUTO_POLL_INTERVAL_MS);
+}
+
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     stopAutoPolling();
+    return;
+  }
+
+  // Saat tab kembali dibuka/aktif, cek umur data terakhir
+  const elapsedMs = Date.now() - lastDataFetchedAt;
+
+  if (elapsedMs >= FOCUS_REFETCH_COOLDOWN_MS) {
+    // Data sudah lewat 2 menit (stale) -> langsung tarik pembaruan sekarang
+    if (canRunSilentFetch()) {
+      silentFetchData();
+    } else {
+      scheduleNextAutoPoll(30000);
+    }
   } else {
-    const queue = JSON.parse(localStorage.getItem("piket_pending_updates") || "[]");
-    if (navigator.onLine && queue.length === 0) silentFetchData();
-    startAutoPolling();
+    // Data masih segar (< 2 menit) -> lanjutkan sisa hitung mundur menuju 5 menit
+    const remainingMs = Math.max(5000, AUTO_POLL_INTERVAL_MS - elapsedMs);
+    scheduleNextAutoPoll(remainingMs);
   }
 });
+
+// Mulai hitung mundur awal saat halaman pertama kali dibuka
+startAutoPolling();
 
 function setPetugasPiket(nama) {
   const displayName = nama || "-";
