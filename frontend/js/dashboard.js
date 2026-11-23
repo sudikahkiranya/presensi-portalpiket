@@ -2046,6 +2046,66 @@ async function kirimRekapGrupWA() {
   }
 }
 
+async function kirimDaftarBelumPresensiWA() {
+  const user = JSON.parse(localStorage.getItem("piket_user"));
+  if (!user) {
+    openErrorModal("Silakan login terlebih dahulu.", "Sesi Tidak Valid");
+    return;
+  }
+
+  const namaPetugas = user.nama || user.username || "Petugas Piket";
+  const dateVal = document.getElementById("selectedDate")?.value || getLocalDateString();
+  const tanggalSelected = isAdminUser(user) ? dateVal : getLocalDateString();
+  const btnWA = document.getElementById("btnKirimBelumPresensiWA");
+
+  // Pastikan perubahan lokal yang masih antre tersinkron dulu ke sheet sebelum backend membaca data
+  if (typeof hasPendingLocalUpdates === "function" && hasPendingLocalUpdates() && navigator.onLine) {
+    showLoading("Menyinkronkan perubahan terakhir...");
+    await syncPendingUpdates(false, true);
+  }
+
+  showLoading("Mengirim daftar siswa belum presensi ke Grup WA...");
+
+  try {
+    const targetUrl = `${API_URL}?action=kirimBelumPresensiGrupWA&namaPetugas=${encodeURIComponent(namaPetugas)}&tanggal=${encodeURIComponent(tanggalSelected)}`;
+    const response = await fetch(targetUrl);
+    const result = await response.json();
+
+    hideLoading();
+
+    if (result.success) {
+      closeAllStatPopovers();
+      showToast(result.message || "Daftar belum presensi berhasil dikirim ke Grup WA!", "success", 3500);
+
+      if (btnWA) {
+        btnWA.disabled = true;
+        btnWA.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>Terkirim ke Grup WA</span>
+        `;
+        setTimeout(() => {
+          btnWA.disabled = false;
+          btnWA.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            <span>Kirim Daftar ke Grup WA</span>
+          `;
+        }, 5000);
+      }
+    } else {
+      openErrorModal(result.message || "Gagal mengirim daftar ke Grup WhatsApp.", "Gagal Mengirim WhatsApp");
+    }
+  } catch (err) {
+    hideLoading();
+    console.error("❌ Error kirimDaftarBelumPresensiWA:", err);
+    openErrorModal("Terjadi kesalahan koneksi saat mengirim daftar ke Grup WhatsApp.", "Gagal Mengirim WhatsApp");
+  }
+}
+  
 function formatNamaKelas(idRombel, tingkat) {
   if (!idRombel || typeof idRombel !== "string") return "-";
   const parts = idRombel.trim().split("-");
