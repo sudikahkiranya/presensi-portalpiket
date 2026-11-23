@@ -2309,7 +2309,7 @@ function openHistoryModal(presetNis = "") {
   document.body.classList.add("modal-open");
   modal.classList.add("active");
 
-  initHistoryDropdowns(presetNis);
+  initHistoryDropdowns();
 
   const nisInput = document.getElementById("historyInputNis");
   const clearBtn = document.getElementById("clearHistoryNisBtn");
@@ -2345,6 +2345,11 @@ function closeHistoryModal() {
   if (nisInput) nisInput.value = "";
   if (clearBtn) clearBtn.hidden = true;
 
+  const namaResultEl = document.getElementById("historyResultNama");
+  const kelasResultEl = document.getElementById("historyResultKelas");
+  if (namaResultEl) namaResultEl.textContent = "-";
+  if (kelasResultEl) kelasResultEl.textContent = "-";
+
   const placeholderBox = document.getElementById("historyPlaceholderBox");
   const loadingBox = document.getElementById("historyLoadingBox");
   const resultContainer = document.getElementById("historyResultContainer");
@@ -2352,41 +2357,12 @@ function closeHistoryModal() {
   if (resultContainer) resultContainer.style.display = "none";
   if (loadingBox) loadingBox.style.display = "none";
   if (placeholderBox) {
-    placeholderBox.innerHTML = `Silakan <strong>scan kartu QR siswa</strong>, masukkan <strong>NIS</strong>, atau pilih <strong>Kelas &amp; Nama Siswa</strong> di atas untuk melihat grafik riwayat kehadiran.`;
+    placeholderBox.innerHTML = `Silakan <strong>scan kartu QR siswa</strong> atau masukkan <strong>NIS</strong> di atas untuk melihat grafik riwayat kehadiran.`;
     placeholderBox.style.display = "block";
   }
 }
 
-function initHistoryDropdowns(selectedNis = "") {
-  const classDropEl = document.getElementById("historyClassDropdown");
-  const studentDropEl = document.getElementById("historyStudentDropdown");
-
-  let matchedStudent = null;
-  if (selectedNis && Array.isArray(window.dataSiswa)) {
-    matchedStudent = window.dataSiswa.find(s => {
-      const sid = String(s.idSiswa || s.id_siswa || s.nis || s.nisn || "").trim();
-      return sid === String(selectedNis).trim();
-    });
-  }
-
-  const initialKelas = matchedStudent?.kelas || "";
-
-  if (classDropEl) {
-    const { kelasOptions } = buildFilterOptions(window.dataSiswa);
-    const formattedKelasOptions = kelasOptions.map(opt =>
-      opt.value === "" ? { value: "", label: "-- Semua Kelas --" } : opt
-    );
-
-    createCustomDropdown(classDropEl, formattedKelasOptions, initialKelas, (selectedKelas) => {
-      populateHistoryStudentDropdown(selectedKelas, "");
-      if (studentDropEl) {
-        setTimeout(() => openCustomDropdown(studentDropEl), 20);
-      }
-    });
-  }
-
-  populateHistoryStudentDropdown(initialKelas, selectedNis);
-
+function initHistoryDropdowns() {
   const rangeDropEl = document.getElementById("historyRangeDropdown");
   if (rangeDropEl && !rangeDropEl.querySelector(".dropdown-selected")) {
     const rangeOptions = [
@@ -2419,42 +2395,6 @@ function initHistoryDropdowns(selectedNis = "") {
   }
 }
 
-function populateHistoryStudentDropdown(filterKelas = "", selectedNis = "") {
-  const studentDropEl = document.getElementById("historyStudentDropdown");
-  if (!studentDropEl) return;
-
-  const siswaOptions = [
-    { value: "", label: filterKelas ? "-- Pilih Siswa di Kelas Ini --" : "-- Pilih Nama Siswa --" }
-  ];
-
-  if (Array.isArray(window.dataSiswa) && window.dataSiswa.length > 0) {
-    const filteredList = window.dataSiswa
-      .filter(s => !filterKelas || s.kelas === filterKelas)
-      .sort((a, b) => (a.nama || "").localeCompare(b.nama || "", "id"));
-
-    filteredList.forEach(s => {
-      const sid = String(s.idSiswa || s.id_siswa || s.nis || s.nisn || "").trim();
-      if (!sid) return;
-      const labelText = filterKelas
-        ? (s.nama || "-")
-        : `${s.nama || "-"} (${formatNamaKelas(s.kelas, s.tingkat)})`;
-
-      siswaOptions.push({ value: sid, label: labelText });
-    });
-  }
-
-  const validSelected = siswaOptions.some(o => o.value === String(selectedNis)) ? String(selectedNis) : "";
-
-  createCustomDropdown(studentDropEl, siswaOptions, validSelected, (val) => {
-    if (!val) return;
-    const nisInput = document.getElementById("historyInputNis");
-    const clearBtn = document.getElementById("clearHistoryNisBtn");
-    if (nisInput) nisInput.value = val;
-    if (clearBtn) clearBtn.hidden = false;
-    loadStudentHistory(val);
-  });
-}
-
 function searchHistoryByNis() {
   const inputEl = document.getElementById("historyInputNis");
   const nis = inputEl ? inputEl.value.trim() : "";
@@ -2462,26 +2402,6 @@ function searchHistoryByNis() {
     showToast("Masukkan NIS atau scan barcode kartu siswa terlebih dahulu.", "info");
     if (inputEl) inputEl.focus();
     return;
-  }
-
-  if (Array.isArray(window.dataSiswa)) {
-    const found = window.dataSiswa.find(s => {
-      const sid = String(s.idSiswa || s.id_siswa || s.nis || s.nisn || "").trim();
-      return sid === nis;
-    });
-
-    if (found) {
-      const classDropEl = document.getElementById("historyClassDropdown");
-      if (classDropEl && found.kelas) {
-        const matchedClassItem = classDropEl.querySelector(`.dropdown-item[data-value="${CSS.escape(found.kelas)}"]`);
-        const textSpan = classDropEl.querySelector(".dropdown-text");
-        if (matchedClassItem && textSpan) {
-          textSpan.innerText = matchedClassItem.innerText;
-          classDropEl.setAttribute("data-value", found.kelas);
-        }
-      }
-      populateHistoryStudentDropdown(found.kelas || "", nis);
-    }
   }
 
   loadStudentHistory(nis);
@@ -2513,11 +2433,17 @@ async function loadStudentHistory(idSiswa) {
   const loadingBox = document.getElementById("historyLoadingBox");
   const loadingText = loadingBox?.querySelector(".history-loading-text");
   const resultContainer = document.getElementById("historyResultContainer");
+  const namaResultEl = document.getElementById("historyResultNama");
+  const kelasResultEl = document.getElementById("historyResultKelas");
 
   if (placeholderBox) placeholderBox.style.display = "none";
   if (resultContainer) resultContainer.style.display = "none";
   if (loadingText) loadingText.textContent = "Memuat riwayat presensi terkini...";
   if (loadingBox) loadingBox.style.display = "flex";
+
+  // 1. Reset teks identitas saat mulai memuat
+  if (namaResultEl) namaResultEl.textContent = "Memuat...";
+  if (kelasResultEl) kelasResultEl.textContent = "-";
 
   setHistorySearchDisabled(true);
 
@@ -2552,6 +2478,10 @@ async function loadStudentHistory(idSiswa) {
     HistoryStore.filterOptions = data.filterOptions || { taList: [], semesterMap: {} };
     HistoryStore.selectedDotIndex = null;
 
+    // 2. Tampilkan Nama Siswa & Kelas ke area hasil
+    if (namaResultEl) namaResultEl.textContent = HistoryStore.currentSiswa.nama || "-";
+    if (kelasResultEl) kelasResultEl.textContent = HistoryStore.currentSiswa.kelas || "-";
+
     populateHistorySubFilters();
 
     const rangeDropEl = document.getElementById("historyRangeDropdown");
@@ -2570,6 +2500,10 @@ async function loadStudentHistory(idSiswa) {
     applyHistoryFilterRange("1w");
   } catch (err) {
     console.error("Gagal load history siswa:", err);
+    // 3. Kembalikan ke "-" jika NIS tidak ditemukan / gagal
+    if (namaResultEl) namaResultEl.textContent = "-";
+    if (kelasResultEl) kelasResultEl.textContent = "-";
+
     if (loadingBox) loadingBox.style.display = "none";
     if (placeholderBox) {
       placeholderBox.innerHTML = `<span style="color:#b91c1c; font-weight:600;">⚠️ ${err.message}</span>`;

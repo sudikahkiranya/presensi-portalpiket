@@ -345,8 +345,8 @@
     </div>
 
     <!-- Bar Pencarian: Scan Barcode / NIS + Dropdown Kelas + Dropdown Nama Siswa -->
-    <div class="history-search-grid">
-      <div class="filter-item">
+    <div class="history-search-grid" style="display: flex; align-items: center; gap: 20px;">
+      <div class="filter-item" style="flex: 0 0 auto;">
         <label for="historyInputNis">Scan Barcode / NIS:</label>
         <div class="history-scan-row">
           <div class="search-input-wrapper">
@@ -359,14 +359,21 @@
         </div>
       </div>
 
-      <div class="filter-item">
-        <label for="historyClassDropdown">Pilih Kelas:</label>
-        <div id="historyClassDropdown" data-value=""></div>
-      </div>
+      <!-- Garis Pemisah Vertikal -->
+      <div style="width: 1px; align-self: stretch; background: #e2e8f0;"></div>
 
-      <div class="filter-item">
-        <label for="historyStudentDropdown">Pilih Nama Siswa:</label>
-        <div id="historyStudentDropdown" data-value=""></div>
+      <!-- Area Hasil Identitas Siswa -->
+      <div class="history-student-result" style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 6px; font-size: 14px;">
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 105px; font-weight: 600; color: #64748b;">Nama Siswa</span>
+          <span style="margin-right: 8px; color: #64748b;">:</span>
+          <span id="historyResultNama" style="font-weight: 700; color: #0f172a;">-</span>
+        </div>
+        <div style="display: flex; align-items: baseline;">
+          <span style="width: 105px; font-weight: 600; color: #64748b;">Kelas</span>
+          <span style="margin-right: 8px; color: #64748b;">:</span>
+          <span id="historyResultKelas" style="font-weight: 700; color: #0f172a;">-</span>
+        </div>
       </div>
     </div>
 
