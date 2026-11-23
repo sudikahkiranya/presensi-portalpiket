@@ -2433,6 +2433,8 @@ async function loadStudentHistory(idSiswa) {
   const loadingBox = document.getElementById("historyLoadingBox");
   const loadingText = loadingBox?.querySelector(".history-loading-text");
   const resultContainer = document.getElementById("historyResultContainer");
+  const dividerEl = document.getElementById("historyResultDivider");
+  const studentBoxEl = document.getElementById("historyStudentResultBox");
   const namaResultEl = document.getElementById("historyResultNama");
   const kelasResultEl = document.getElementById("historyResultKelas");
 
@@ -2441,9 +2443,9 @@ async function loadStudentHistory(idSiswa) {
   if (loadingText) loadingText.textContent = "Memuat riwayat presensi terkini...";
   if (loadingBox) loadingBox.style.display = "flex";
 
-  // 1. Reset teks identitas saat mulai memuat
-  if (namaResultEl) namaResultEl.textContent = "Memuat...";
-  if (kelasResultEl) kelasResultEl.textContent = "-";
+  // 1. Sembunyikan area identitas saat mulai memuat
+  if (dividerEl) dividerEl.style.display = "none";
+  if (studentBoxEl) studentBoxEl.style.display = "none";
 
   setHistorySearchDisabled(true);
 
@@ -2478,9 +2480,11 @@ async function loadStudentHistory(idSiswa) {
     HistoryStore.filterOptions = data.filterOptions || { taList: [], semesterMap: {} };
     HistoryStore.selectedDotIndex = null;
 
-    // 2. Tampilkan Nama Siswa & Kelas ke area hasil
+    // 2. Isi & tampilkan Nama Siswa + Kelas setelah berhasil dimuat
     if (namaResultEl) namaResultEl.textContent = HistoryStore.currentSiswa.nama || "-";
     if (kelasResultEl) kelasResultEl.textContent = HistoryStore.currentSiswa.kelas || "-";
+    if (dividerEl) dividerEl.style.display = "block";
+    if (studentBoxEl) studentBoxEl.style.display = "flex";
 
     populateHistorySubFilters();
 
@@ -2500,7 +2504,9 @@ async function loadStudentHistory(idSiswa) {
     applyHistoryFilterRange("1w");
   } catch (err) {
     console.error("Gagal load history siswa:", err);
-    // 3. Kembalikan ke "-" jika NIS tidak ditemukan / gagal
+    // 3. Pastikan tetap tersembunyi jika NIS tidak ditemukan / gagal
+    if (dividerEl) dividerEl.style.display = "none";
+    if (studentBoxEl) studentBoxEl.style.display = "none";
     if (namaResultEl) namaResultEl.textContent = "-";
     if (kelasResultEl) kelasResultEl.textContent = "-";
 
