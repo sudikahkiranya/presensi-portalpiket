@@ -572,11 +572,26 @@
             </div>
           </div>
 
-          <!-- 4. BELUM PRESENSI (HIDDEN DEFAULT JIKA 0) -->
+          <!-- 4. BELUM PRESENSI (CLICKABLE & HIDDEN DEFAULT JIKA 0) -->
           <div class="stat-box-wrapper" id="boxBelumPresensi" style="display: none;">
-            <div class="jumlah-data-box">
+            <div class="jumlah-data-box is-clickable" onclick="toggleStatPopover(event, 'popoverBelumPresensi', this)" title="Klik untuk kirim daftar siswa belum presensi">
               <label>Belum<br>Presensi</label>
               <span id="jumlahBelumPresensi">0</span>
+            </div>
+
+            <div id="popoverBelumPresensi" class="stat-floating-card" style="min-width: 240px;">
+              <div class="stat-popover-title">Konfirmasi Belum Presensi</div>
+              <div id="subBelumPresensiInfo" style="font-size: 12px; color: #64748b; margin-bottom: 10px; line-height: 1.4;">
+                0 siswa di 0 kelas belum terdata.
+              </div>
+              <button type="button" id="btnKirimBelumPresensiWA" class="btn-confirm" onclick="kirimDaftarBelumPresensiWA()"
+                style="width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; font-size: 12.5px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"></line>
+                  <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+                <span>Kirim Daftar ke Grup WA</span>
+              </button>
             </div>
           </div>
 

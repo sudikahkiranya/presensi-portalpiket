@@ -1073,6 +1073,15 @@ function updateStatistik(data) {
   const boxBelumPresensi = document.getElementById("boxBelumPresensi");
   if (boxBelumPresensi) boxBelumPresensi.style.display = belumPresensi > 0 ? "" : "none";
 
+  const subBelumInfo = document.getElementById("subBelumPresensiInfo");
+  if (subBelumInfo) {
+    const kelasBelumSet = new Set(
+      data.filter(s => isStatusBelumPresensi(s.statusMasuk)).map(s => s.kelas).filter(Boolean)
+    );
+    subBelumInfo.textContent = `${belumPresensi} siswa di ${kelasBelumSet.size} kelas belum terdata.`;
+  }
+  
+
   const boxPrakerin = document.getElementById("boxJumlahPrakerin");
   if (boxPrakerin) boxPrakerin.style.display = prakerin > 0 ? "" : "none";
 
