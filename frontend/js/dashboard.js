@@ -2390,14 +2390,14 @@ function initHistoryDropdowns(selectedNis = "") {
   const rangeDropEl = document.getElementById("historyRangeDropdown");
   if (rangeDropEl && !rangeDropEl.querySelector(".dropdown-selected")) {
     const rangeOptions = [
-      { value: "1w", label: "1 Minggu (5 Hari KBM)" },
+      { value: "1w", label: "1 Minggu Terakhir" },
       { value: "1m", label: "1 Bulan Terakhir" },
       { value: "semester_select", label: "Per Semester" },
       { value: "ta_select", label: "Per Tahun Ajaran" },
       { value: "custom", label: "Kustom Rentang Tanggal" }
     ];
 
-    createCustomDropdown(rangeDropEl, rangeOptions, "1w", (val) => {
+    createCustomDropdown(rangeDropEl, rangeOptions, "1w", async (val) => {
       document.getElementById("histSemesterBox").style.display = "none";
       document.getElementById("histTaBox").style.display = "none";
       document.getElementById("histCustomDateBox").style.display = "none";
@@ -2408,6 +2408,10 @@ function initHistoryDropdowns(selectedNis = "") {
         document.getElementById("histTaBox").style.display = "flex";
       } else if (val === "custom") {
         document.getElementById("histCustomDateBox").style.display = "flex";
+      } else if (val === "1m") {
+        if (await ensureFullHistoryArchive()) {
+          applyHistoryFilterRange("1m");
+        }
       } else {
         applyHistoryFilterRange(val);
       }
@@ -2553,7 +2557,7 @@ async function loadStudentHistory(idSiswa) {
     const rangeDropEl = document.getElementById("historyRangeDropdown");
     if (rangeDropEl) {
       const txt = rangeDropEl.querySelector(".dropdown-text");
-      if (txt) txt.innerText = "1 Minggu (5 Hari KBM)";
+      if (txt) txt.innerText = "1 Minggu Terakhir";
       rangeDropEl.setAttribute("data-value", "1w");
     }
     document.getElementById("histSemesterBox").style.display = "none";
@@ -2737,10 +2741,10 @@ function updateHistoryChartTitle(rangeType, param1 = null, param2 = null) {
     || document.querySelector(".history-chart-header > :first-child");
   if (!titleEl) return;
 
-  let periodLabel = "1 Minggu (5 Hari KBM)";
+  let periodLabel = "1 Minggu Terakhir";
 
   if (rangeType === "1w") {
-    periodLabel = "1 Minggu (5 Hari KBM)";
+    periodLabel = "1 Minggu Terakhir";
   } else if (rangeType === "1m") {
     periodLabel = "1 Bulan Terakhir";
   } else if (rangeType === "semester" && param1 && param2) {
@@ -2762,7 +2766,7 @@ function applyHistoryFilterRange(rangeType, param1 = null, param2 = null) {
   let filtered = all;
 
   if (rangeType === "1w") {
-    filtered = all.slice(-5);
+    filtered = all.slice(-7);
   } else if (rangeType === "1m") {
     filtered = all.slice(-30);
   } else if (rangeType === "semester") {
