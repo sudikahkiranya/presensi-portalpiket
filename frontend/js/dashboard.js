@@ -2836,26 +2836,46 @@ function updateHistoryAlertPill(filteredData) {
 }
 
 function updateHistorySummaryCards(data) {
-  let tepat = 0, terlambat = 0, htp = 0, prakerin = 0, sakit = 0, izin = 0, alpa = 0;
+  let tepat = 0, terlambat = 0, htp = 0, prakerin = 0, dispensasi = 0, daring = 0, sakit = 0, izin = 0, alpa = 0;
 
   data.forEach(item => {
     const st = String(item.statusMasuk || "").trim().toLowerCase();
     if (st.includes("tepat")) tepat++;
     else if (st.includes("terlambat")) terlambat++;
     else if (st.includes("tidak presensi") || st === "htp") htp++;
-    else if (st.includes("prakerin") || st.includes("pkl") || st.includes("dispensasi")) prakerin++;
+    else if (st.includes("prakerin") || st.includes("pkl")) prakerin++;
+    else if (st.includes("dispensasi")) dispensasi++;
+    else if (st.includes("daring")) daring++;
     else if (st.includes("sakit")) sakit++;
     else if (st.includes("izin")) izin++;
     else if (st.includes("alpa")) alpa++;
   });
 
-  document.getElementById("hStatTepat").textContent = tepat;
-  document.getElementById("hStatTerlambat").textContent = terlambat;
-  document.getElementById("hStatHtp").textContent = htp;
-  document.getElementById("hStatPrakerin").textContent = prakerin;
-  document.getElementById("hStatSakit").textContent = sakit;
-  document.getElementById("hStatIzin").textContent = izin;
-  document.getElementById("hStatAlpa").textContent = alpa;
+  const statsMap = [
+    { boxId: "hStatTepatBox", valId: "hStatTepat", count: tepat },
+    { boxId: "hStatTerlambatBox", valId: "hStatTerlambat", count: terlambat },
+    { boxId: "hStatHtpBox", valId: "hStatHtp", count: htp },
+    { boxId: "hStatPrakerinBox", valId: "hStatPrakerin", count: prakerin },
+    { boxId: "hStatDispensasiBox", valId: "hStatDispensasi", count: dispensasi },
+    { boxId: "hStatDaringBox", valId: "hStatDaring", count: daring },
+    { boxId: "hStatSakitBox", valId: "hStatSakit", count: sakit },
+    { boxId: "hStatIzinBox", valId: "hStatIzin", count: izin },
+    { boxId: "hStatAlpaBox", valId: "hStatAlpa", count: alpa }
+  ];
+
+  let visibleCards = 0;
+  statsMap.forEach(({ boxId, valId, count }) => {
+    const valEl = document.getElementById(valId);
+    const boxEl = document.getElementById(boxId);
+    if (valEl) valEl.textContent = count;
+    if (boxEl) boxEl.style.display = count > 0 ? "" : "none";
+    if (count > 0) visibleCards++;
+  });
+
+  const rowEl = document.getElementById("historyStatsRow");
+  if (rowEl) {
+    rowEl.style.display = visibleCards > 0 ? "flex" : "none";
+  }
 }
 
 function formatChartAxisDate(item) {
@@ -2909,7 +2929,9 @@ function renderHistoryTrendChart(data, filterRange = "1w") {
 
   function getStatusInfo(statusStr) {
     const s = String(statusStr || "").toLowerCase();
-    if (s.includes("prakerin") || s.includes("dispensasi") || s.includes("tepat")) return { level: 8, color: levelColors[8], fullName: statusStr || "Tepat Waktu" };
+    if (s.includes("prakerin") || s.includes("dispensasi") || s.includes("daring") || s.includes("tepat")) {
+      return { level: 8, color: levelColors[8], fullName: statusStr || "Tepat Waktu" };
+    }
     if (s.includes("sangat terlambat sekali")) return { level: 5, color: levelColors[5], fullName: "Sangat Terlambat Sekali" };
     if (s.includes("sangat terlambat")) return { level: 6, color: levelColors[6], fullName: "Sangat Terlambat" };
     if (s.includes("terlambat")) return { level: 7, color: levelColors[7], fullName: "Terlambat" };
