@@ -2619,35 +2619,44 @@ function populateHistorySubFilters() {
   const taList = HistoryStore.filterOptions.taList || [];
   const selTaSem = document.getElementById("histSelectTaSem");
   const selTaFull = document.getElementById("histSelectTaFull");
+  const selSem = document.getElementById("histSelectSemType");
   if (!selTaSem || !selTaFull) return;
 
-  selTaSem.innerHTML = "";
-  selTaFull.innerHTML = "";
-
   if (taList.length === 0) {
-    selTaSem.innerHTML = `<option value="">Tidak ada data TA</option>`;
-    selTaFull.innerHTML = `<option value="">Tidak ada data TA</option>`;
+    const emptyTaOpt = [{ value: "", label: "Tidak ada data TA" }];
+    createCustomDropdown(selTaSem, emptyTaOpt, "", null);
+    createCustomDropdown(selTaFull, emptyTaOpt, "", null);
+    if (selSem) {
+      createCustomDropdown(selSem, [{ value: "", label: "-" }], "", null);
+    }
     return;
   }
 
-  taList.forEach(ta => {
-    selTaSem.innerHTML += `<option value="${ta}">TA ${ta}</option>`;
-    selTaFull.innerHTML += `<option value="${ta}">TA ${ta}</option>`;
+  const taOptions = taList.map(ta => ({ value: ta, label: `TA ${ta}` }));
+
+  createCustomDropdown(selTaSem, taOptions, taList[0], () => {
+    updateHistorySemesterOptions();
   });
+
+  createCustomDropdown(selTaFull, taOptions, taList[0], null);
 
   updateHistorySemesterOptions();
 }
 
 function updateHistorySemesterOptions() {
-  const selectedTa = document.getElementById("histSelectTaSem")?.value;
+  const selectedTa = document.getElementById("histSelectTaSem")?.getAttribute("data-value") || "";
   const selSem = document.getElementById("histSelectSemType");
-  if (!selSem || !selectedTa) return;
+  if (!selSem) return;
 
   const sems = HistoryStore.filterOptions.semesterMap[selectedTa] || [];
-  selSem.innerHTML = "";
-  sems.forEach(sem => {
-    selSem.innerHTML += `<option value="${sem}">${sem === "Ganjil" ? "Ganjil (Semester 1)" : "Genap (Semester 2)"}</option>`;
-  });
+  const semOptions = sems.length > 0
+    ? sems.map(sem => ({
+        value: sem,
+        label: sem === "Ganjil" ? "Ganjil (Semester 1)" : (sem === "Genap" ? "Genap (Semester 2)" : sem)
+      }))
+    : [{ value: "", label: "Tidak ada semester" }];
+
+  createCustomDropdown(selSem, semOptions, semOptions[0].value, null);
 }
 
 async function ensureFullHistoryArchive() {
@@ -2718,23 +2727,20 @@ async function applyHistorySemesterFilter() {
   }
 }
 
-async function applyHistoryTaFilter() {
-  const ta = document.getElementById("histSelectTaFull")?.value;
-  if (!ta) return;
+async function applyHistorySemesterFilter() {
+  const ta = document.getElementById("histSelectTaSem")?.getAttribute("data-value") || "";
+  const sem = document.getElementById("histSelectSemType")?.getAttribute("data-value") || "";
+  if (!ta || !sem) return;
   if (await ensureFullHistoryArchive()) {
-    applyHistoryFilterRange("tahun_ajaran", ta);
+    applyHistoryFilterRange("semester", ta, sem);
   }
 }
 
-async function applyHistoryCustomDate() {
-  const start = document.getElementById("histDateStart")?.value;
-  const end = document.getElementById("histDateEnd")?.value;
-  if (!start || !end) {
-    showToast("Isi tanggal mulai dan tanggal selesai terlebih dahulu.", "info");
-    return;
-  }
+async function applyHistoryTaFilter() {
+  const ta = document.getElementById("histSelectTaFull")?.getAttribute("data-value") || "";
+  if (!ta) return;
   if (await ensureFullHistoryArchive()) {
-    applyHistoryFilterRange("custom", start, end);
+    applyHistoryFilterRange("tahun_ajaran", ta);
   }
 }
 

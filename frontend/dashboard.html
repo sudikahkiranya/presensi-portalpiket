@@ -401,14 +401,14 @@
 
           <!-- Sub-Panel Filter Semester (Inline di Kanan) -->
           <div id="histSemesterBox" class="history-inline-subfilter" style="display:none;">
-            <select id="histSelectTaSem" onchange="updateHistorySemesterOptions()" title="Tahun Ajaran"></select>
-            <select id="histSelectSemType" title="Semester"></select>
+            <div id="histSelectTaSem" data-value="" style="min-width: 155px;"></div>
+            <div id="histSelectSemType" data-value="" style="min-width: 185px;"></div>
             <button type="button" class="history-scan-btn" onclick="applyHistorySemesterFilter()">Terapkan</button>
           </div>
 
           <!-- Sub-Panel Filter Tahun Ajaran (Inline di Kanan) -->
           <div id="histTaBox" class="history-inline-subfilter" style="display:none;">
-            <select id="histSelectTaFull" title="Tahun Ajaran Full"></select>
+            <div id="histSelectTaFull" data-value="" style="min-width: 155px;"></div>
             <button type="button" class="history-scan-btn" onclick="applyHistoryTaFilter()">Terapkan</button>
           </div>
 
