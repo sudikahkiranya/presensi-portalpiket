@@ -421,17 +421,26 @@
           </div>
         </div>
 
-        <!-- Ringkasan Angka Dinamis Sesuai Filter (Auto-Hide jika 0) -->
+        <!-- Ringkasan Angka Dinamis Sesuai Filter (Auto-Hide jika 0 & Color-Coded Senada Kurva) -->
         <div id="historyStatsRow" class="history-stats-row" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          <div id="hStatTepatBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Tepat Waktu</label><span id="hStatTepat">0</span></div>
-          <div id="hStatTerlambatBox" class="h-stat-pill is-late" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Terlambat</label><span id="hStatTerlambat">0</span></div>
-          <div id="hStatHtpBox" class="h-stat-pill is-late" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Tidak Presensi</label><span id="hStatHtp">0</span></div>
-          <div id="hStatPrakerinBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Prakerin</label><span id="hStatPrakerin">0</span></div>
-          <div id="hStatDispensasiBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Dispensasi</label><span id="hStatDispensasi">0</span></div>
-          <div id="hStatDaringBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Daring</label><span id="hStatDaring">0</span></div>
-          <div id="hStatSakitBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Sakit</label><span id="hStatSakit">0</span></div>
-          <div id="hStatIzinBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Izin</label><span id="hStatIzin">0</span></div>
-          <div id="hStatAlpaBox" class="h-stat-pill is-alpa" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Alpa</label><span id="hStatAlpa">0</span></div>
+          <!-- Hijau (#15803d) -->
+          <div id="hStatTepatBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#f0fdf4; border-color:#bbf7d0;"><label>Tepat Waktu</label><span id="hStatTepat" style="color:#15803d;">0</span></div>
+          <!-- Kuning/Amber (#d97706) -->
+          <div id="hStatTerlambatBox" class="h-stat-pill is-late" style="display:none; flex: 1 1 86px; min-width: 82px; background:#fffbeb; border-color:#fde68a;"><label>Terlambat</label><span id="hStatTerlambat" style="color:#b45309;">0</span></div>
+          <!-- Ungu (#7c3aed) -->
+          <div id="hStatHtpBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#f5f3ff; border-color:#ddd6fe;"><label>Tidak Presensi</label><span id="hStatHtp" style="color:#6d28d9;">0</span></div>
+          <!-- Hijau (#15803d) -->
+          <div id="hStatPrakerinBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#f0fdf4; border-color:#bbf7d0;"><label>Prakerin</label><span id="hStatPrakerin" style="color:#15803d;">0</span></div>
+          <!-- Hijau (#15803d) -->
+          <div id="hStatDispensasiBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#f0fdf4; border-color:#bbf7d0;"><label>Dispensasi</label><span id="hStatDispensasi" style="color:#15803d;">0</span></div>
+          <!-- Hijau (#15803d) -->
+          <div id="hStatDaringBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#f0fdf4; border-color:#bbf7d0;"><label>Daring</label><span id="hStatDaring" style="color:#15803d;">0</span></div>
+          <!-- Cyan (#0891b2) -->
+          <div id="hStatSakitBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#ecfeff; border-color:#a5f3fc;"><label>Sakit</label><span id="hStatSakit" style="color:#0e7490;">0</span></div>
+          <!-- Biru (#0284c7) -->
+          <div id="hStatIzinBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#f0f9ff; border-color:#bae6fd;"><label>Izin</label><span id="hStatIzin" style="color:#0369a1;">0</span></div>
+          <!-- Merah Soft -->
+          <div id="hStatAlpaBox" class="h-stat-pill is-alpa" style="display:none; flex: 1 1 86px; min-width: 82px; background:#fef2f2; border-color:#fecaca;"><label>Alpa</label><span id="hStatAlpa" style="color:#b91c1c;">0</span></div>
         </div>
 
         <!-- GRAFIK KURVA KEHADIRAN & JAM MASUK -->
