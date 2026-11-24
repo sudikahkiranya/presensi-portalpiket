@@ -2809,31 +2809,9 @@ function applyHistoryFilterRange(rangeType, param1 = null, param2 = null) {
   HistoryStore.currentFiltered = filtered;
 
   updateHistoryChartTitle(rangeType, param1, param2);
-  updateHistoryAlertPill(filtered);
   updateHistorySummaryCards(filtered);
   renderHistoryTrendChart(filtered, rangeType);
-}
-
-function updateHistoryAlertPill(filteredData) {
-  const warnEl = document.getElementById("histLateWarningPill");
-  if (!warnEl) return;
-
-  const data = Array.isArray(filteredData) ? filteredData : [];
-  const lateCount = data.filter(p => String(p.statusMasuk || "").toLowerCase().includes("terlambat")).length;
-  const alpaCount = data.filter(p => String(p.statusMasuk || "").trim().toLowerCase() === "alpa").length;
-
-  const notes = [];
-  if (lateCount > 0) notes.push(`Terlambat ${lateCount}x`);
-  if (alpaCount > 0) notes.push(`Alpa ${alpaCount}x`);
-
-  if (notes.length > 0) {
-    warnEl.className = "history-alert-pill is-warning";
-    warnEl.textContent = `⚠️ Catatan: ${notes.join(" • ")}`;
-  } else {
-    warnEl.className = "history-alert-pill is-good";
-    warnEl.textContent = "✓ Kedisiplinan Baik (0 Terlambat & 0 Alpa)";
-  }
-}
+} 
 
 function updateHistorySummaryCards(data) {
   let tepat = 0, terlambat = 0, htp = 0, prakerin = 0, dispensasi = 0, daring = 0, sakit = 0, izin = 0, alpa = 0;
