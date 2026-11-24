@@ -421,16 +421,17 @@
           </div>
         </div>
 
-        <!-- Ringkasan Angka Dinamis Sesuai Filter -->
-        <div class="history-stats-row">
-          <div class="h-stat-pill"><label>Tepat Waktu</label><span id="hStatTepat">0</span></div>
-          <div class="h-stat-pill is-late"><label>Terlambat</label><span id="hStatTerlambat">0</span></div>
-          <div class="h-stat-pill"><label>Tidak Presensi</label><span id="hStatHtp">0</span></div>
-          <div class="h-stat-pill"><label>Prakerin/Dispen</label><span id="hStatPrakerin">0</span></div>
-          <div class="h-stat-pill" id="hStatDaringBox" style="display:none;"><label>Daring</label><span id="hStatDaring">0</span></div>
-          <div class="h-stat-pill"><label>Sakit</label><span id="hStatSakit">0</span></div>
-          <div class="h-stat-pill"><label>Izin</label><span id="hStatIzin">0</span></div>
-          <div class="h-stat-pill is-alpa"><label>Alpa</label><span id="hStatAlpa">0</span></div>
+        <!-- Ringkasan Angka Dinamis Sesuai Filter (Auto-Hide jika 0) -->
+        <div id="historyStatsRow" class="history-stats-row" style="display: flex; flex-wrap: wrap; gap: 8px;">
+          <div id="hStatTepatBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Tepat Waktu</label><span id="hStatTepat">0</span></div>
+          <div id="hStatTerlambatBox" class="h-stat-pill is-late" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Terlambat</label><span id="hStatTerlambat">0</span></div>
+          <div id="hStatHtpBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Tidak Presensi</label><span id="hStatHtp">0</span></div>
+          <div id="hStatPrakerinBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Prakerin</label><span id="hStatPrakerin">0</span></div>
+          <div id="hStatDispensasiBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Dispensasi</label><span id="hStatDispensasi">0</span></div>
+          <div id="hStatDaringBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Daring</label><span id="hStatDaring">0</span></div>
+          <div id="hStatSakitBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Sakit</label><span id="hStatSakit">0</span></div>
+          <div id="hStatIzinBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Izin</label><span id="hStatIzin">0</span></div>
+          <div id="hStatAlpaBox" class="h-stat-pill is-alpa" style="display:none; flex: 1 1 86px; min-width: 82px;"><label>Alpa</label><span id="hStatAlpa">0</span></div>
         </div>
 
         <!-- GRAFIK KURVA KEHADIRAN & JAM MASUK -->
