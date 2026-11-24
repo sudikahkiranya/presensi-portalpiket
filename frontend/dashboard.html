@@ -400,16 +400,16 @@
           </div>
 
           <!-- Sub-Panel Filter Semester (Inline di Kanan) -->
-          <div id="histSemesterBox" class="history-inline-subfilter" style="display:none;">
-            <div id="histSelectTaSem" data-value="" style="min-width: 155px;"></div>
-            <div id="histSelectSemType" data-value="" style="min-width: 185px;"></div>
-            <button type="button" class="history-scan-btn" onclick="applyHistorySemesterFilter()">Terapkan</button>
+          <div id="histSemesterBox" class="history-inline-subfilter" style="display:none; flex: 1; align-items: center; gap: 8px; flex-wrap: nowrap;">
+            <div id="histSelectTaSem" data-value="" style="flex: 1; width: auto; min-width: 145px;"></div>
+            <div id="histSelectSemType" data-value="" style="flex: 1.2; width: auto; min-width: 175px;"></div>
+            <button type="button" class="history-scan-btn" style="flex: 0 0 auto;" onclick="applyHistorySemesterFilter()">Terapkan</button>
           </div>
 
           <!-- Sub-Panel Filter Tahun Ajaran (Inline di Kanan) -->
-          <div id="histTaBox" class="history-inline-subfilter" style="display:none;">
-            <div id="histSelectTaFull" data-value="" style="min-width: 155px;"></div>
-            <button type="button" class="history-scan-btn" onclick="applyHistoryTaFilter()">Terapkan</button>
+          <div id="histTaBox" class="history-inline-subfilter" style="display:none; flex: 1; align-items: center; gap: 8px; flex-wrap: nowrap;">
+            <div id="histSelectTaFull" data-value="" style="flex: 1; width: auto; min-width: 160px;"></div>
+            <button type="button" class="history-scan-btn" style="flex: 0 0 auto;" onclick="applyHistoryTaFilter()">Terapkan</button>
           </div>
 
           <!-- Sub-Panel Filter Custom Tanggal (Inline di Kanan) -->

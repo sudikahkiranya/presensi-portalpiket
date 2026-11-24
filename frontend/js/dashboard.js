@@ -2628,7 +2628,10 @@ function populateHistorySubFilters() {
     createCustomDropdown(selTaFull, emptyTaOpt, "", null);
     if (selSem) {
       createCustomDropdown(selSem, [{ value: "", label: "-" }], "", null);
+      selSem.style.width = "auto";
     }
+    selTaSem.style.width = "auto";
+    selTaFull.style.width = "auto";
     return;
   }
 
@@ -2637,8 +2640,10 @@ function populateHistorySubFilters() {
   createCustomDropdown(selTaSem, taOptions, taList[0], () => {
     updateHistorySemesterOptions();
   });
+  selTaSem.style.width = "auto";
 
   createCustomDropdown(selTaFull, taOptions, taList[0], null);
+  selTaFull.style.width = "auto";
 
   updateHistorySemesterOptions();
 }
@@ -2657,6 +2662,7 @@ function updateHistorySemesterOptions() {
     : [{ value: "", label: "Tidak ada semester" }];
 
   createCustomDropdown(selSem, semOptions, semOptions[0].value, null);
+  selSem.style.width = "auto";
 }
 
 async function ensureFullHistoryArchive() {
