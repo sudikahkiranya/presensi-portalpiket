@@ -51,6 +51,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link id="appFavicon" rel="icon" type="image/png" href="./assets/logo_sekolah.png">
   <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/riwayat-widget.css">
 </head>
 <body class="dashboard-body">
 
@@ -344,125 +345,8 @@
       <button type="button" class="history-close-x" onclick="closeHistoryModal()" title="Tutup">✕</button>
     </div>
 
-    <!-- Bar Pencarian: Scan Barcode / NIS + Dropdown Kelas + Dropdown Nama Siswa -->
-    <div class="history-search-grid" style="display: flex; align-items: center; gap: 20px;">
-      <div class="filter-item" style="flex: 0 0 auto;">
-        <label for="historyInputNis">Input ID / NIS Siswa:</label>
-        <div class="history-scan-row">
-          <div class="search-input-wrapper">
-            <input type="text" id="historyInputNis" class="filter-input-text" placeholder="Scan QR / ketik NIS..."
-              oninput="handleSearchInput(this, 'clearHistoryNisBtn')"
-              onkeydown="if(event.key==='Enter'){ event.preventDefault(); searchHistoryByNis(); }">
-            <button type="button" id="clearHistoryNisBtn" class="search-clear-btn" onclick="clearSearchInput('historyInputNis', 'clearHistoryNisBtn')" hidden>✕</button>
-          </div>
-          <button type="button" class="history-scan-btn" onclick="searchHistoryByNis()">Cek</button>
-        </div>
-      </div>
-
-      <!-- Garis Pemisah Vertikal (Tersembunyi saat awal/loading) -->
-      <div id="historyResultDivider" style="display: none; width: 1px; align-self: stretch; background: #e2e8f0;"></div>
-
-      <!-- Area Hasil Identitas Siswa (Tersembunyi saat awal/loading) -->
-      <div id="historyStudentResultBox" class="history-student-result" style="display: none; flex: 1; flex-direction: column; justify-content: center; gap: 6px; font-size: 14px;">
-        <div style="display: flex; align-items: baseline;">
-          <span style="width: 105px; font-weight: 600; color: #64748b;">Nama Siswa</span>
-          <span style="margin-right: 8px; color: #64748b;">:</span>
-          <span id="historyResultNama" style="font-weight: 700; color: #0f172a;">-</span>
-        </div>
-        <div style="display: flex; align-items: baseline;">
-          <span style="width: 105px; font-weight: 600; color: #64748b;">Kelas</span>
-          <span style="margin-right: 8px; color: #64748b;">:</span>
-          <span id="historyResultKelas" style="font-weight: 700; color: #0f172a;">-</span>
-        </div>
-      </div>
-    </div>
-
     <div class="history-body-scroll">
-      <div id="historyPlaceholderBox" class="history-empty-box">
-        Silakan <strong>scan kartu QR siswa</strong>, masukkan <strong>NIS</strong>, atau pilih <strong>Kelas &amp; Nama Siswa</strong> di atas untuk melihat grafik riwayat kehadiran.
-      </div>
-
-      <!-- Loading Dots Identik dengan Panel Utama -->
-      <div id="historyLoadingBox" class="history-loading-box" style="display:none;">
-        <div class="dots">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <div class="history-loading-text">Memuat arsip presensi lintas semester...</div>
-      </div>
-
-      <div id="historyResultContainer" style="display:none;">
-        <!-- Toolbar Filter Rentang Waktu + Opsi Turunan -->
-        <div class="history-toolbar-row">
-          <div class="history-range-wrap">
-            <div id="historyRangeDropdown" data-value="1w"></div>
-          </div>
-
-          <!-- Sub-Panel Filter Semester (Inline di Kanan) -->
-          <div id="histSemesterBox" class="history-inline-subfilter" style="display:none; flex: 1; align-items: center; gap: 8px; flex-wrap: nowrap;">
-            <div id="histSelectTaSem" data-value="" style="flex: 1; width: auto; min-width: 145px;"></div>
-            <div id="histSelectSemType" data-value="" style="flex: 1.2; width: auto; min-width: 175px;"></div>
-            <button type="button" class="history-scan-btn" style="flex: 0 0 auto;" onclick="applyHistorySemesterFilter()">Terapkan</button>
-          </div>
-
-          <!-- Sub-Panel Filter Tahun Ajaran (Inline di Kanan) -->
-          <div id="histTaBox" class="history-inline-subfilter" style="display:none; flex: 1; align-items: center; gap: 8px; flex-wrap: nowrap;">
-            <div id="histSelectTaFull" data-value="" style="flex: 1; width: auto; min-width: 160px;"></div>
-            <button type="button" class="history-scan-btn" style="flex: 0 0 auto;" onclick="applyHistoryTaFilter()">Terapkan</button>
-          </div>
-
-          <!-- Sub-Panel Filter Custom Tanggal (Inline di Kanan) -->
-          <div id="histCustomDateBox" class="history-inline-subfilter" style="display:none;">
-            <input type="date" id="histDateStart" title="Dari Tanggal">
-            <span class="history-date-sep">s.d.</span>
-            <input type="date" id="histDateEnd" title="Sampai Tanggal">
-            <button type="button" class="history-scan-btn" onclick="applyHistoryCustomDate()">Terapkan</button>
-          </div>
-        </div>
-
-        <!-- Ringkasan Angka Dinamis Sesuai Filter (Auto-Hide jika 0 & Color-Coded Senada Kurva) -->
-        <div id="historyStatsRow" class="history-stats-row" style="display: flex; flex-wrap: wrap; gap: 8px;">
-          <!-- Hijau (#15803d) -->
-          <div id="hStatTepatBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#f0fdf4; border-color:#bbf7d0;"><label>Tepat Waktu</label><span id="hStatTepat" style="color:#15803d;">0</span></div>
-          <!-- Kuning/Amber (#d97706) -->
-          <div id="hStatTerlambatBox" class="h-stat-pill is-late" style="display:none; flex: 1 1 86px; min-width: 82px; background:#fffbeb; border-color:#fde68a;"><label>Terlambat</label><span id="hStatTerlambat" style="color:#b45309;">0</span></div>
-          <!-- Ungu (#7c3aed) -->
-          <div id="hStatHtpBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#f5f3ff; border-color:#ddd6fe;"><label>Tidak Presensi</label><span id="hStatHtp" style="color:#6d28d9;">0</span></div>
-          <!-- Hijau (#15803d) -->
-          <div id="hStatPrakerinBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#f0fdf4; border-color:#bbf7d0;"><label>Prakerin</label><span id="hStatPrakerin" style="color:#15803d;">0</span></div>
-          <!-- Hijau (#15803d) -->
-          <div id="hStatDispensasiBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#f0fdf4; border-color:#bbf7d0;"><label>Dispensasi</label><span id="hStatDispensasi" style="color:#15803d;">0</span></div>
-          <!-- Hijau (#15803d) -->
-          <div id="hStatDaringBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#f0fdf4; border-color:#bbf7d0;"><label>Daring</label><span id="hStatDaring" style="color:#15803d;">0</span></div>
-          <!-- Cyan (#0891b2) -->
-          <div id="hStatSakitBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#ecfeff; border-color:#a5f3fc;"><label>Sakit</label><span id="hStatSakit" style="color:#0e7490;">0</span></div>
-          <!-- Biru (#0284c7) -->
-          <div id="hStatIzinBox" class="h-stat-pill" style="display:none; flex: 1 1 86px; min-width: 82px; background:#f0f9ff; border-color:#bae6fd;"><label>Izin</label><span id="hStatIzin" style="color:#0369a1;">0</span></div>
-          <!-- Merah Soft -->
-          <div id="hStatAlpaBox" class="h-stat-pill is-alpa" style="display:none; flex: 1 1 86px; min-width: 82px; background:#fef2f2; border-color:#fecaca;"><label>Alpa</label><span id="hStatAlpa" style="color:#b91c1c;">0</span></div>
-        </div>
-
-        <!-- GRAFIK KURVA KEHADIRAN & JAM MASUK -->
-        <div class="history-chart-card">
-          <div id="histChartScrollContainer" class="history-chart-scroll">
-            <div id="histChartInnerWrapper" class="history-chart-inner">
-              <canvas id="histTrendCanvas"></canvas>
-            </div>
-          </div>
-
-          <div class="history-legend-grid" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px;">
-            <div class="history-legend-item" style="white-space: nowrap;"><span class="history-dot-legend" style="background:#15803d;"></span><span>Tepat Waktu / Dispensasi / Prakerin / Daring</span></div>
-            <div class="history-legend-item" style="white-space: nowrap;"><span class="history-dot-legend" style="background:#d97706;"></span><span>Terlambat</span></div>
-            <div class="history-legend-item" style="white-space: nowrap;"><span class="history-dot-legend" style="background:#c2410c;"></span><span>Sangat Terlambat</span></div>
-            <div class="history-legend-item" style="white-space: nowrap;"><span class="history-dot-legend" style="background:#b91c1c;"></span><span>Sangat Terlambat Sekali</span></div>
-            <div class="history-legend-item" style="white-space: nowrap;"><span class="history-dot-legend" style="background:#7c3aed;"></span><span>Hadir Tidak Presensi</span></div>
-            <div class="history-legend-item" style="white-space: nowrap;"><span class="history-dot-legend" style="background:#0284c7;"></span><span>Izin</span></div>
-            <div class="history-legend-item" style="white-space: nowrap;"><span class="history-dot-legend" style="background:#0891b2;"></span><span>Sakit</span></div>
-            <div class="history-legend-item" style="white-space: nowrap;"><span class="history-dot-legend" style="background:#111827;"></span><span>Alpa</span></div>
-          </div>
-        </div>
-      </div>
+      <div id="wadahRiwayatPiket"></div>
     </div>
   </div>
 </div>
@@ -725,6 +609,7 @@
   </form>
 </main>
 
+<script src="./js/riwayat-widget.js"></script>
 <script src="./js/dashboard.js"></script>
 </body>
 </html>
