@@ -1,0 +1,417 @@
+/* ==========================================================================
+   RIWAYAT PRESENSI WIDGET (REUSABLE: PORTAL SISWA & PORTAL PIKET)
+   ========================================================================== */
+.rw-container {
+  font-family: 'Roboto', sans-serif;
+  color: var(--text-dark, #1e293b);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.rw-container *,
+.rw-container *::before,
+.rw-container *::after {
+  box-sizing: border-box;
+}
+
+/* Bar Pencarian (Khusus Mode Piket) */
+.rw-search-grid {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid var(--border-light, #cbd5e1);
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.rw-search-grid.is-loading {
+  opacity: 0.65;
+  pointer-events: none;
+  user-select: none;
+}
+
+.rw-filter-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--primary, #824653);
+}
+
+.rw-scan-row {
+  display: flex;
+  gap: 6px;
+}
+
+.rw-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.rw-input-text,
+.rw-container input[type="date"] {
+  width: 100%;
+  min-width: 175px;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border-light, #cbd5e1);
+  background: #ffffff;
+  font-size: 13px;
+  font-family: 'Roboto', sans-serif;
+  color: var(--text-dark, #1e293b);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.rw-input-wrap .rw-input-text {
+  padding-right: 32px;
+}
+
+.rw-input-text:focus,
+.rw-container input[type="date"]:focus {
+  border-color: var(--primary, #824653);
+  box-shadow: 0 0 0 3px var(--theme-glow, rgba(130, 70, 83, 0.16));
+}
+
+.rw-clear-btn {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.rw-clear-btn[hidden] {
+  display: none !important;
+}
+
+.rw-clear-btn:hover {
+  background: var(--primary, #824653);
+  color: #ffffff;
+}
+
+.rw-btn-primary {
+  padding: 0 14px;
+  height: 38px;
+  border: none;
+  border-radius: 10px;
+  background: var(--primary, #824653);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  font-family: 'Roboto', sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.2s ease;
+}
+
+.rw-btn-primary:hover:not(:disabled) {
+  background: var(--primary-hover, #6f3945);
+}
+
+.rw-btn-primary:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* Custom Dropdown Mandiri */
+.rw-dropdown {
+  position: relative;
+  width: 100%;
+  min-width: 160px;
+  height: 38px;
+  border-radius: 12px;
+  user-select: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid var(--border-light, #cbd5e1);
+}
+
+.rw-dropdown-selected {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dark, #1e293b);
+}
+
+.rw-dropdown-selected svg {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.rw-dropdown.open .rw-dropdown-selected svg {
+  transform: rotate(180deg);
+}
+
+.rw-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  min-width: 100%;
+  max-height: 220px;
+  background: #ffffff;
+  border: 1px solid var(--border-light, #cbd5e1);
+  border-radius: 12px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14);
+  display: none;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.rw-dropdown.open .rw-dropdown-menu {
+  display: block;
+}
+
+.rw-dropdown-menu-inner {
+  max-height: 218px;
+  overflow-y: auto;
+  padding: 5px 0;
+}
+
+.rw-dropdown-item {
+  padding: 9px 14px;
+  text-align: left;
+  font-size: 12.5px;
+  color: var(--text-dark, #1e293b);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.rw-dropdown-item:hover {
+  background: #f1f5f9;
+  color: var(--primary, #824653);
+}
+
+/* Toolbar Filter Rentang Waktu */
+.rw-toolbar-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.rw-range-wrap {
+  width: 225px;
+  flex-shrink: 0;
+}
+
+.rw-inline-subfilter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.rw-date-sep {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+/* Kartu Ringkasan Angka (Color-Coded Senada Kurva) */
+.rw-stats-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.rw-stat-pill {
+  flex: 1 1 86px;
+  min-width: 82px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 7px 6px;
+  text-align: center;
+}
+
+.rw-stat-pill label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+.rw-stat-pill span {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.rw-tone-green { background: #f0fdf4; border-color: #bbf7d0; }
+.rw-tone-green span { color: #15803d; }
+
+.rw-tone-amber { background: #fffbeb; border-color: #fde68a; }
+.rw-tone-amber span { color: #b45309; }
+
+.rw-tone-purple { background: #f5f3ff; border-color: #ddd6fe; }
+.rw-tone-purple span { color: #6d28d9; }
+
+.rw-tone-cyan { background: #ecfeff; border-color: #a5f3fc; }
+.rw-tone-cyan span { color: #0e7490; }
+
+.rw-tone-blue { background: #f0f9ff; border-color: #bae6fd; }
+.rw-tone-blue span { color: #0369a1; }
+
+.rw-tone-red { background: #fef2f2; border-color: #fecaca; }
+.rw-tone-red span { color: #b91c1c; }
+
+/* Grafik Kurva & Legenda */
+.rw-chart-card {
+  background: #f8fafc;
+  border: 1px solid var(--border-light, #cbd5e1);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.rw-chart-scroll {
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rw-chart-scroll.is-dragging {
+  cursor: grabbing;
+}
+
+.rw-chart-inner {
+  position: relative;
+  min-width: 100%;
+  height: 210px;
+}
+
+.rw-chart-inner canvas {
+  height: 100%;
+  display: block;
+}
+
+.rw-legend-grid {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border-light, #cbd5e1);
+  font-size: 10.5px;
+  color: #475569;
+}
+
+.rw-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.rw-dot-legend {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Empty & Loading Box */
+.rw-empty-box,
+.rw-loading-box {
+  text-align: center;
+  padding: 38px 16px;
+  color: #64748b;
+  font-size: 13px;
+  background: #f8fafc;
+  border: 1px dashed var(--border-light, #cbd5e1);
+  border-radius: 12px;
+}
+
+.rw-loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.rw-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 16px;
+}
+
+.rw-dots span {
+  width: 9px;
+  height: 9px;
+  background-color: var(--primary, #824653);
+  border-radius: 50%;
+  display: inline-block;
+  animation: rwPulse 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.rw-dots span:nth-child(2) { animation-delay: 0.2s; }
+.rw-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes rwPulse {
+  0%, 100% { transform: scale(0.65); opacity: 0.35; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+
+/* Responsif Layar HP (Portal Siswa) */
+@media (max-width: 640px) {
+  .rw-search-grid {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .rw-range-wrap {
+    width: 100%;
+  }
+  .rw-inline-subfilter {
+    width: 100%;
+  }
+  .rw-inline-subfilter .rw-dropdown,
+  .rw-inline-subfilter input[type="date"] {
+    flex: 1 1 130px;
+    min-width: 0;
+  }
+  .rw-stat-pill {
+    flex: 1 1 calc(33.33% - 8px);
+    min-width: 76px;
+  }
+}
