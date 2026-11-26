@@ -647,7 +647,7 @@
       if (!canvas || !wrapper || !scrollContainer) return;
 
       const ctx = canvas.getContext("2d");
-      const dpr = window.devicePixelRatio || 1;
+      const renderScale = Math.max(window.devicePixelRatio || 1, 2);
       const primaryColor = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim() || "#824653";
 
       const levelColors = {
@@ -690,13 +690,18 @@
         computedWidth = points.length * 82 + 24;
       }
 
-      wrapper.style.width = computedWidth + "px";
-      canvas.width = computedWidth * dpr;
-      canvas.height = wrapper.clientHeight * dpr;
-      ctx.scale(dpr, dpr);
-
       const width = computedWidth;
-      const height = wrapper.clientHeight;
+      const height = wrapper.clientHeight || 240;
+
+      wrapper.style.width = width + "px";
+      canvas.style.width = width + "px";
+      canvas.style.height = height + "px";
+      canvas.width = Math.round(width * renderScale);
+      canvas.height = Math.round(height * renderScale);
+
+      ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
       ctx.clearRect(0, 0, width, height);
 
       if (points.length === 0) {
@@ -746,11 +751,14 @@
         ctx.fill();
       }
 
-      // Garis Kurva Bezier
+      // Garis Kurva Bezier (Halus / Anti-Aliased)
       if (points.length > 1) {
+        ctx.save();
         ctx.beginPath();
         ctx.strokeStyle = primaryColor;
         ctx.lineWidth = 2.5;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
         for (let i = 0; i < points.length; i++) {
           const { x, y } = points[i];
           if (i === 0) ctx.moveTo(x, y);
@@ -761,6 +769,7 @@
           }
         }
         ctx.stroke();
+        ctx.restore();
       }
 
       // Crosshair jika dot diklik
